@@ -62,3 +62,24 @@ duplicate-request control flow.
 Same eventId + same logical request -> replay stored response.
 Same eventId + different logical request -> 409 IDEMPOTENCY_KEY_REUSE.
 ```
+
+### GOV-004 — Pull Request Governance Template
+
+- Status: DONE
+- Branch: `chore/m0-governance`
+- PR template: `.github/PULL_REQUEST_TEMPLATE.md`
+- Task ID required: YES
+- Contract impact declaration required: YES
+- API / DB / Security / Client impact declaration required: YES
+- Test evidence required: YES
+- Reviewer declaration required: YES
+- Contract changes: None
+- Verified at: 2026-08-31
+
+Evidence:
+
+```text
+Repository now provides a governed Pull Request template requiring
+task traceability, impact declaration, validation evidence,
+reviewer gates, backward-compatibility assessment, and Definition of Done.
+```
