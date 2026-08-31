@@ -107,3 +107,28 @@ reference valid Master Backlog Task IDs.
 The M0 governance branch was normalized to:
 chore/GOV-001-GOV-007-m0-governance
 ```
+
+### GOV-006 — Implementation Baseline Freeze Verification
+
+- Status: DONE
+- Branch: `chore/GOV-001-GOV-007-m0-governance`
+- Baseline tag: `baseline-v1-implementation-ready`
+- Baseline commit: `ff6e13f4fe1444879b28d846801d0caa555bf4a7`
+- Tag type: Annotated
+- Baseline audit at tagged commit: PASS
+- Remote tag: VERIFIED
+- Tag moved or rewritten: NO
+- Contract changes: None
+- Verified at: 2026-08-31
+
+Evidence:
+
+```text
+Local tag dereferences to:
+ff6e13f4fe1444879b28d846801d0caa555bf4a7
+
+Remote annotated tag is present on origin and dereferences to the same
+implementation-ready baseline commit.
+
+The existing baseline tag was not moved, rewritten, or force-pushed.
+```
