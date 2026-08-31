@@ -71,6 +71,36 @@ for p in ROOT.rglob('*.md'):
         if m: nums.append(int(m.group(1)))
     if len(nums)!=len(set(nums)): fail('DUPLICATE_H1_NUMBER',rel)
 
+# Ngăn hướng dẫn idempotency active quay lại flow bắt exception do race.
+# Reconciliation đã ARCHIVED — INTEGRATED được bỏ qua để giữ provenance lịch sử.
+forbidden_idempotency_guidance=[
+    re.compile(r'catch/inspect (?:database |duplicate-key )?conflict',re.I),
+    re.compile(r'catch unique violation',re.I),
+    re.compile(r'DataIntegrityViolationException'),
+    re.compile(r'application must handle the database duplicate-key conflict',re.I),
+    re.compile(r'duplicate-key race is an expected control-flow case',re.I),
+    re.compile(r'use (?:a )?unique-constraint exception as (?:the )?normal duplicate-claim control flow',re.I),
+    re.compile(r'catch a duplicate-key exception and continue work',re.I),
+]
+negated_guidance=re.compile(
+    r'(?:do\s+(?:\*\*)?not|must\s+not|không(?:\s+còn)?|no\s+longer|removed|prohibited|forbidden|reject)',
+    re.I,
+)
+for p in ROOT.rglob('*.md'):
+    rel=p.relative_to(ROOT).as_posix()
+    if rel.startswith('docs/reconciliation/'):
+        continue
+    s=p.read_text(encoding='utf-8')
+    if re.search(r'^\*\*Status:\*\*\s*(?:ARCHIVED|SUPERSEDED)\b',s,re.M):
+        continue
+    for line_no,line in enumerate(s.splitlines(),start=1):
+        for pattern in forbidden_idempotency_guidance:
+            for match in pattern.finditer(line):
+                # Cho phép câu cấm rõ ràng như "Do not catch ..." trong guidance canonical.
+                if negated_guidance.search(line[:match.start()]):
+                    continue
+                fail('STALE_IDEMPOTENCY_EXCEPTION_FLOW',f'{rel}:{line_no}: {match.group(0)}')
+
 # DB invariants
 db=(ROOT/'docs/database/English_AI_Coach_Database_Schema_v1.6.md').read_text(encoding='utf-8')
 for name in ['assessment_items','goal_topics','daily_plan_items','user_devices','notification_preferences']:

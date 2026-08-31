@@ -802,18 +802,19 @@ findById(eventId)
 Race-safe mechanism:
 
 ```text
-attempt INSERT
+INSERT ... ON CONFLICT (event_id) DO NOTHING
  ↓
-duplicate-key conflict?
- ↓
-catch/inspect database conflict
- ↓
-reload eventId
- ↓
-compare user/endpoint/requestHash
- ↓
-replay or 409
+claim inserted?
+ ├─ yes → execute business mutation
+ │        → persist successful response snapshot
+ │        → commit atomically
+ └─ no  → load existing eventId
+          → compare user_id separately + endpoint + SHA-256 canonical request_hash
+          → same logical request: replay stored response
+          → different logical request: 409 IDEMPOTENCY_KEY_REUSE
 ```
+
+Do not use unique-constraint exceptions as normal duplicate-claim control flow. Do not catch a duplicate-key exception and continue work in the same failed PostgreSQL transaction. A business failure rolls back the claim together with the mutation; expected duplicate races must not escape as HTTP 500.
 
 Do not allow concurrent duplicate requests to become accidental HTTP 500 errors.
 

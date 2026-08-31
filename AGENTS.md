@@ -261,7 +261,7 @@ same eventId + different endpoint/request/user
 → 409 IDEMPOTENCY_KEY_REUSE
 ```
 
-For concurrent duplicate INSERT, application must handle the database duplicate-key conflict, reload the record, compare identity/hash, then replay or return 409. It must not become an accidental 500.
+For concurrent claims, use PostgreSQL `INSERT ... ON CONFLICT (event_id) DO NOTHING`. If the claim is not inserted, load the existing `eventId`, compare `user_id` separately together with endpoint identity and the SHA-256 canonical `request_hash`, then replay the stored response or return `409 IDEMPOTENCY_KEY_REUSE`. Do not use unique-constraint exceptions as normal duplicate-claim control flow or continue work in a failed PostgreSQL transaction. The business mutation and successful idempotency result must commit atomically; expected duplicate races must not become HTTP 500.
 
 ## Optimistic locking
 

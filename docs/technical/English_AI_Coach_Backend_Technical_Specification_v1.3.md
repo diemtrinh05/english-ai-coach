@@ -4710,7 +4710,7 @@ AI
 
 # 191. Final Idempotency Concurrency Decision
 
-The official V1.2 rule is:
+This section is normative and uses the same canonical PostgreSQL rule as Section 23.
 
 ```text
 Do not rely on:
@@ -4720,31 +4720,28 @@ findById(eventId)
 
 Use:
 
-```text
-PRIMARY KEY(event_id)
-+
-attempt INSERT
-+
-catch/inspect duplicate-key conflict
-+
-reload existing key
-+
-compare user/endpoint/request_hash
-+
-replay or 409
+```sql
+INSERT INTO idempotency_keys(event_id, user_id, endpoint, request_hash, created_at)
+VALUES (:eventId, :userId, :endpoint, :requestHash, now())
+ON CONFLICT (event_id) DO NOTHING;
 ```
 
-The duplicate-key race is an expected control-flow case, not an application crash.
+Then follow one unambiguous flow:
 
 ```text
-race condition
-→ controlled idempotency outcome
+claim inserted
+→ execute the business mutation
+→ persist the successful response snapshot/status
+→ commit the mutation and idempotency result atomically
 
-not
-
-race condition
-→ HTTP 500
+claim not inserted
+→ load the existing eventId
+→ compare user_id separately + endpoint identity + SHA-256 canonical request_hash
+→ same logical request: replay the stored response
+→ different logical request: HTTP 409 IDEMPOTENCY_KEY_REUSE
 ```
+
+Do not use unique-constraint exceptions, including `DataIntegrityViolationException`, as normal duplicate-claim control flow. Do not catch a duplicate-key exception and continue work in the same failed PostgreSQL transaction. If the business mutation fails, the claim rolls back in the same transaction. Expected duplicate races must not escape as HTTP 500.
 
 ---
 
