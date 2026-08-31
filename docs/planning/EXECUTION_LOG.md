@@ -4,7 +4,7 @@
 
 ### GOV-001 — Baseline Input Verification
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Input commit: `ff6e13f4fe1444879b28d846801d0caa555bf4a7`
 - Baseline tag: `baseline-v1-implementation-ready`
@@ -21,7 +21,7 @@ Canonical baseline files present; OpenAPI parses; BR contract checks passed.
 
 ### GOV-002 — Implementation Planning Binding
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Implementation Plan: `docs/planning/IMPLEMENTATION_PLAN.md`
 - Master Backlog: `docs/planning/MASTER_BACKLOG.md`
@@ -40,7 +40,7 @@ Every implementation change must reference a valid Master Backlog Task ID.
 
 ### GOV-003 — Canonical Idempotency Guidance
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Updated document: `docs/agents/CODEX_BACKEND_LEAD.md`
 - Canonical claim strategy: PostgreSQL `INSERT ... ON CONFLICT DO NOTHING`
@@ -65,7 +65,7 @@ Same eventId + different logical request -> 409 IDEMPOTENCY_KEY_REUSE.
 
 ### GOV-004 — Pull Request Governance Template
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - PR template: `.github/PULL_REQUEST_TEMPLATE.md`
 - Task ID required: YES
@@ -86,7 +86,7 @@ reviewer gates, backward-compatibility assessment, and Definition of Done.
 
 ### GOV-005 — Task Lifecycle and Git Naming Governance
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Allowed task statuses: `TODO`, `READY`, `IN_PROGRESS`, `BLOCKED`, `IN_REVIEW`, `DONE`
 - Task ID in implementation branch naming: REQUIRED
@@ -110,7 +110,7 @@ chore/GOV-001-GOV-007-m0-governance
 
 ### GOV-006 — Implementation Baseline Freeze Verification
 
-- Status: DONE
+- Status: IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Baseline tag: `baseline-v1-implementation-ready`
 - Baseline commit: `ff6e13f4fe1444879b28d846801d0caa555bf4a7`
@@ -131,4 +131,95 @@ Remote annotated tag is present on origin and dereferences to the same
 implementation-ready baseline commit.
 
 The existing baseline tag was not moved, rewritten, or force-pushed.
+```
+
+### GOV-007 — Execution Log and Milestone Reporting Cadence
+
+- Status: IN_REVIEW
+- Branch: `chore/GOV-001-GOV-007-m0-governance`
+- Execution log: `docs/planning/EXECUTION_LOG.md`
+- Decision logging: ENABLED
+- Blocker logging: ENABLED
+- Review-result logging: ENABLED
+- Milestone completion reporting: ENABLED
+- Secret logging: PROHIBITED
+- Contract changes: None
+- Verified at: 2026-08-31
+
+#### Reporting cadence
+
+Update this execution log:
+
+- when a backlog task changes status;
+- when a non-contract implementation decision is made;
+- when a blocker is discovered, changed, or resolved;
+- when a required reviewer returns PASS, FAIL, or findings;
+- before and after each milestone gate;
+- before merging a milestone or task branch into `main`.
+
+Do not record passwords, API keys, access tokens, refresh tokens,
+private keys, production credentials, or other secrets in this log.
+
+#### Task execution record
+
+For each executed task, record:
+
+```text
+Task ID:
+Status:
+Branch:
+Commit:
+Dependencies:
+Validation:
+Required reviewers:
+Review result:
+Blockers:
+Non-contract decisions:
+Contract changes:
+```
+
+#### Decision log
+
+Record only implementation decisions that do not modify the approved baseline contract.
+
+| Date       | Task ID          | Decision                                            | Reason                                                        | Contract impact |
+| ---------- | ---------------- | --------------------------------------------------- | ------------------------------------------------------------- | --------------- |
+| 2026-08-31 | GOV-001..GOV-007 | Use one governed M0 batch branch with Task ID range | Governance tasks are closely related and explicitly traceable | None            |
+
+If a proposed decision would change an approved contract, do not record it as an implementation decision and do not proceed. Stop and use the approved contract-change process instead.
+
+#### Blocker log
+
+| Date       | Task ID          | Status | Blocker | Resolution |
+| ---------- | ---------------- | ------ | ------- | ---------- |
+| 2026-08-31 | GOV-001..GOV-007 | CLEAR  | None    | —          |
+
+#### Review result log
+
+| Date | Task ID(s) | Reviewer | Result  | Findings / evidence                 |
+| ---- | ---------- | -------- | ------- | ----------------------------------- |
+| —    | —          | —        | PENDING | M0 reviewer gates not yet completed |
+
+#### Milestone status
+
+| Milestone                                | Execution complete | Total | Execution progress | DoD status  |
+| ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
+| M0 — Execution Governance                |                  7 |     7 |               100% | IN_REVIEW   |
+| M1 — Foundation Ready                    |                  0 |    27 |                 0% | NOT_STARTED |
+| M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
+| M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
+| M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
+| M5                                       |                  0 |    18 |                 0% | NOT_STARTED |
+| M6                                       |                  0 |     8 |                 0% | NOT_STARTED |
+| M7                                       |                  0 |    21 |                 0% | NOT_STARTED |
+| M8                                       |                  0 |    25 |                 0% | NOT_STARTED |
+| M9                                       |                  0 |    18 |                 0% | NOT_STARTED |
+
+Evidence:
+
+```text
+Execution logging now defines a repeatable cadence for task status,
+non-contract decisions, blockers, reviewer results, and milestone completion.
+
+Secrets and credentials are explicitly prohibited from execution logs.
 ```
