@@ -149,21 +149,46 @@ idempotency_keys
 
 Concurrency mechanism:
 
-```text
-attempt INSERT
-↓
-duplicate-key conflict?
-↓
-catch/inspect the idempotency constraint violation
-↓
-reload eventId
-↓
-compare user + endpoint + request_hash
-↓
-replay or 409
+```sql
+INSERT INTO idempotency_keys (...)
+VALUES (...)
+ON CONFLICT (event_id) DO NOTHING;
 ```
 
-Do not let expected duplicate-key races escape as HTTP 500.
+Then:
+
+```text
+claim inserted?
+├─ yes
+│  ↓
+│  execute the business mutation
+│  ↓
+│  persist the idempotency response/result atomically
+│  ↓
+│  COMMIT
+│
+└─ no
+   ↓
+   reload eventId
+   ↓
+   compare user + endpoint + request_hash
+   ↓
+   same logical request?
+   ├─ yes → replay the stored response
+   └─ no  → 409 IDEMPOTENCY_KEY_REUSE
+```
+
+Rules:
+
+- `eventId` in the request body is the canonical V1 idempotency key.
+- Do not introduce or require any idempotency request header; V1 uses body `eventId` only.
+- Claim `eventId` with PostgreSQL `INSERT ... ON CONFLICT DO NOTHING`.
+- Do not use a unique-constraint exception as the normal duplicate-claim control flow.
+- Do not catch a duplicate-key exception and continue work in the same failed transaction.
+- Compare `user + endpoint + request_hash` before replaying an existing result.
+- The business mutation and persisted idempotency result must commit atomically.
+- Expected duplicate requests must never escape as HTTP 500.
+- Reuse of the same `eventId` for a different logical request must return `409 IDEMPOTENCY_KEY_REUSE`.
 
 ## Error codes
 
@@ -307,4 +332,5 @@ rate limiting where configured
 ---
 
 ## Reconciled implementation authority
+
 Implement only approved algorithms/contracts from SRS v1.2 → DB v1.6 → Architecture v1.3 → AI v1.3 → API/OpenAPI v1.4 → Technical/Backend v1.2/v1.3. Use typed property classes for canonical constants. Do not reintroduce idempotency headers, async AI jobs, dynamic Daily Plan reranking, or V1 AI CEFR suggestion.

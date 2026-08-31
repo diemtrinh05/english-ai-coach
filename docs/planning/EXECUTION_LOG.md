@@ -37,3 +37,28 @@ AGENTS.md now requires implementation tasks to follow
 IMPLEMENTATION_PLAN.md and MASTER_BACKLOG.md.
 Every implementation change must reference a valid Master Backlog Task ID.
 ```
+
+### GOV-003 — Canonical Idempotency Guidance
+
+- Status: DONE
+- Branch: `chore/m0-governance`
+- Updated document: `docs/agents/CODEX_BACKEND_LEAD.md`
+- Canonical claim strategy: PostgreSQL `INSERT ... ON CONFLICT DO NOTHING`
+- Request idempotency key: body `eventId`
+- Idempotency request header: NOT USED
+- Duplicate exception control flow: REMOVED
+- Contract changes: None
+- Verified at: 2026-08-31
+
+Evidence:
+
+```text
+CODEX_BACKEND_LEAD.md now requires PostgreSQL
+INSERT ... ON CONFLICT DO NOTHING for idempotency claims.
+
+Duplicate-key exceptions are no longer used as the normal
+duplicate-request control flow.
+
+Same eventId + same logical request -> replay stored response.
+Same eventId + different logical request -> 409 IDEMPOTENCY_KEY_REUSE.
+```
