@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import re, sys, yaml
+ROOT=Path(__file__).resolve().parents[1]
+issues=[]
+
+def fail(code,detail): issues.append((code,detail))
+
+# Required files
+required=[
+'docs/requirements/English_AI_Coach_SRS_v1.2.md',
+'docs/database/English_AI_Coach_Database_Schema_v1.6.md',
+'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md',
+'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md',
+'docs/api/English_AI_Coach_API_Specification_v1.4.md',
+'docs/api/English_AI_Coach_OpenAPI_Swagger_v1_4.md',
+'docs/technical/English_AI_Coach_Technical_Specification_v1.2.md',
+'docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md',
+'docs/mobile/English_AI_Coach_Android_Java_Technical_Specification_v1_1.md',
+'docs/flutter/English_AI_Coach_Flutter_Technical_Specification_v1.1.md',
+'docs/admin/English_AI_Coach_Admin_Web_Technical_Specification_v1.1.md']
+for r in required:
+    if not (ROOT/r).exists(): fail('MISSING_BASELINE',r)
+
+expected_headers={
+'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md':'# System Architecture v1.3 — English AI Coach',
+'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md':'# AI Personalization Specification v1.3 — English AI Coach',
+'docs/api/English_AI_Coach_API_Specification_v1.4.md':'# API Specification v1.4 — English AI Coach',
+'docs/api/English_AI_Coach_OpenAPI_Swagger_v1_4.md':'# OpenAPI / Swagger YAML v1.4 — English AI Coach',
+'docs/technical/English_AI_Coach_Technical_Specification_v1.2.md':'# Technical Specification v1.2 — English AI Coach',
+'docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md':'# Backend Technical Specification v1.3 — English AI Coach',
+'docs/mobile/English_AI_Coach_Android_Java_Technical_Specification_v1_1.md':'# Android Java Technical Specification v1.1 — English AI Coach',
+'docs/flutter/English_AI_Coach_Flutter_Technical_Specification_v1.1.md':'# Flutter Technical Specification v1.1 — English AI Coach',
+'docs/admin/English_AI_Coach_Admin_Web_Technical_Specification_v1.1.md':'# Admin Web Technical Specification v1.1 — English AI Coach',
+}
+for rel,header in expected_headers.items():
+    p=ROOT/rel
+    if p.exists() and not p.read_text(encoding='utf-8').startswith(header): fail('VERSION_HEADER_MISMATCH',rel)
+
+# General hygiene (exclude historical reconciliation)
+for p in ROOT.rglob('*.md'):
+    rel=p.relative_to(ROOT).as_posix()
+    if rel.startswith('docs/reconciliation/'): continue
+    s=p.read_text(encoding='utf-8')
+    if 'filecite' in s: fail('FILECITE_ARTIFACT',rel)
+    if '/api/v1/admin/ai-usage' in s: fail('STALE_AI_USAGE_ROUTE',rel)
+    if re.search(r'POST\s+/personalized-exercise\b',s): fail('STALE_PERSONALIZED_ROUTE',rel)
+    if 'Idempotency-Key' in s: fail('IDEMPOTENCY_HEADER_ACTIVE',rel)
+    if 'Admin Web: Java Spring Boot' in s: fail('STALE_ADMIN_STACK',rel)
+    stale_refs=[
+      'OpenAPI / Swagger           v1.3', 'OpenAPI / Swagger v1.3',
+      'Database Schema             v1.5', 'Database Schema v1.5',
+      'System Architecture         v1.2', 'System Architecture v1.2',
+      'AI Personalization          v1.2', 'AI Personalization Specification v1.1',
+      'API Specification           v1.3', 'API Specification v1.3',
+      'Technical Specification     v1.1', 'Technical Specification v1.0',
+      'Backend Technical Spec      v1.2', 'Android Java Technical Spec v1.0',
+      'English_AI_Coach_Database_Schema_v1.1.md',
+      'Android Technical Specification v1.2', 'Android Java Technical Specification v1.2',
+      'Flutter Technical Specification v1.2', 'Admin Web Technical Specification v1.2'
+    ]
+    for token in stale_refs:
+        if token in s: fail('STALE_BASELINE_REFERENCE',f'{rel}: {token}')
+    status=re.search(r'^\*\*Status:\*\*\s*(.+?)\s*$',s,re.M)
+    if status and not status.group(1).startswith('APPROVED BASELINE'):
+        fail('NONCANONICAL_STATUS',f'{rel}: {status.group(1)}')
+    # duplicate numbered H1
+    nums=[]
+    for line in s.splitlines():
+        m=re.match(r'^#\s+(\d+)\.\s+',line)
+        if m: nums.append(int(m.group(1)))
+    if len(nums)!=len(set(nums)): fail('DUPLICATE_H1_NUMBER',rel)
+
+# DB invariants
+db=(ROOT/'docs/database/English_AI_Coach_Database_Schema_v1.6.md').read_text(encoding='utf-8')
+for name in ['assessment_items','goal_topics','daily_plan_items','user_devices','notification_preferences']:
+    if name not in db: fail('DB_MISSING_TABLE',name)
+if '| answer_quality | SMALLINT | NOT NULL |' not in db: fail('DB_ANSWER_QUALITY_NULLABLE','session_attempts')
+if 'CHECK(is_correct = (answer_quality >= 3))' not in db: fail('DB_CORRECTNESS_CHECK','missing')
+if 'ON CONFLICT (event_id) DO NOTHING' not in db: fail('DB_IDEMPOTENCY_CLAIM','missing')
+if '> **Tổng số bảng:** 34' not in db: fail('DB_TABLE_COUNT_METADATA','expected 34')
+actual_tables=re.findall(r'^##\s+\d+\.\d+\.\s+([a-z][a-z0-9_]*)',db,re.M)
+if len(actual_tables)!=34 or len(set(actual_tables))!=34:
+    fail('DB_ACTUAL_TABLE_COUNT',f'expected 34 unique table definitions, got {len(actual_tables)} / {len(set(actual_tables))} unique')
+
+# BR-001..BR-024 authoritative integration fingerprints.
+texts={
+ 'rules':(ROOT/'docs/PROJECT_RULES.md').read_text(encoding='utf-8'),
+ 'srs':(ROOT/'docs/requirements/English_AI_Coach_SRS_v1.2.md').read_text(encoding='utf-8'),
+ 'db':db,
+ 'arch':(ROOT/'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md').read_text(encoding='utf-8'),
+ 'ai':(ROOT/'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md').read_text(encoding='utf-8'),
+ 'api':(ROOT/'docs/api/English_AI_Coach_API_Specification_v1.4.md').read_text(encoding='utf-8'),
+ 'backend':(ROOT/'docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md').read_text(encoding='utf-8'),
+ 'antigravity':(ROOT/'docs/agents/ANTIGRAVITY_FRONTEND_LEAD.md').read_text(encoding='utf-8'),
+ 'admin':(ROOT/'docs/admin/English_AI_Coach_Admin_Web_Technical_Specification_v1.1.md').read_text(encoding='utf-8'),
+}
+def require_fingerprint(br,key,needle):
+    if needle not in texts[key]: fail('BR_INTEGRATION_GAP',f'{br} missing in {key}: {needle}')
+require_fingerprint('BR-001','srs','**Admin Web:** React + TypeScript + Vite')
+require_fingerprint('BR-003','rules','single-locale Vietnamese (`vi-VN`)')
+require_fingerprint('BR-003','antigravity','Android `strings.xml`')
+require_fingerprint('BR-004','ai','Constants: min 20, max 50, block size 4')
+require_fingerprint('BR-005','db','## 6.3. assessment_items')
+require_fingerprint('BR-006','ai','NEW first accepted attempt → LEARNING')
+require_fingerprint('BR-007','ai','weakness_score = .40*error_rate + .20*normalized_response_time + .20*low_quality_rate + .20*recent_failure_rate')
+require_fingerprint('BR-008','ai','risk_score = .45*time_pressure + .25*error_rate + .15*quality_penalty + .10*repetition_penalty + .05*response_penalty')
+require_fingerprint('BR-009','ai','## Deterministic recommendation')
+require_fingerprint('BR-010','db','## 5.3. goal_topics')
+require_fingerprint('BR-011','ai','Raw change HIGH +10%, LOW -20%, otherwise 0%, with hard guard +20%/-30%')
+require_fingerprint('BR-012','db','daily_plan_items ⭐')
+require_fingerprint('BR-012','srs','Daily Plan is a persisted snapshot')
+require_fingerprint('BR-013','srs','Daily Plan completed = 50 XP')
+require_fingerprint('BR-014','db','user_devices ⭐')
+require_fingerprint('BR-014','db','notification_preferences ⭐')
+require_fingerprint('BR-016','backend','ON CONFLICT (event_id) DO NOTHING')
+require_fingerprint('BR-017','api','V1 is synchronous and returns **201 Created**')
+require_fingerprint('BR-018','admin','AI CEFR Suggestion is Future/V2')
+require_fingerprint('BR-019','api','GET /api/v1/admin/statistics/ai-usage')
+require_fingerprint('BR-020','api','POST /api/v1/learning/personalized-exercise')
+require_fingerprint('BR-022','db','CREATE UPDATE ACTIVATE DEACTIVATE APPROVE REJECT PUBLISH UNPUBLISH LOCK_USER UNLOCK_USER')
+
+# OpenAPI parse + contract
+opfile=ROOT/'docs/api/English_AI_Coach_OpenAPI_Swagger_v1_4.md'
+s=opfile.read_text(encoding='utf-8'); m=re.search(r'```yaml\n(.*?)\n```',s,re.S)
+if not m: fail('OPENAPI_BLOCK','missing')
+else:
+    try: d=yaml.safe_load(m.group(1))
+    except Exception as e: fail('OPENAPI_PARSE',str(e)); d=None
+    if d:
+        if d.get('openapi')!='3.1.0': fail('OPENAPI_VERSION',d.get('openapi'))
+        if d.get('info',{}).get('version')!='1.4.0': fail('API_INFO_VERSION',d.get('info',{}).get('version'))
+        if 'IdempotencyKeyOptional' in d.get('components',{}).get('parameters',{}): fail('OPENAPI_IDEMPOTENCY_HEADER','present')
+        if 'AsyncJobResponse' in d.get('components',{}).get('schemas',{}): fail('OPENAPI_ASYNC_JOB','present')
+        if '202' in d['paths']['/admin/ai-content/generate']['post']['responses']: fail('OPENAPI_AI_202','present')
+        for path in ['/devices/{installationId}/push-token','/devices/{installationId}','/notification-preferences']:
+            if path not in d['paths']: fail('OPENAPI_MISSING_PATH',path)
+        expected={
+          '/assessments':'StartAssessmentRequest',
+          '/assessments/{assessmentId}/answers':'SubmitAssessmentAnswerRequest',
+          '/learning/sessions':'StartLearningSessionRequest',
+          '/learning/sessions/{sessionId}/complete':'EventIdRequest',
+          '/learning/attempts':'SubmitLearningAttemptRequest',
+          '/learning/today/complete':'EventIdRequest',
+          '/quizzes/{quizId}/attempts':'StartQuizAttemptRequest',
+          '/quiz-attempts/{attemptId}/answers':'SubmitQuizAnswerRequest',
+          '/quiz-attempts/{attemptId}/complete':'CompleteQuizAttemptRequest',
+          '/learning/personalized-exercise':'PersonalizedExerciseRequest',
+          '/admin/ai-content/generate':'GenerateAiContentRequest'}
+        schemas=d['components']['schemas']
+        for path,name in expected.items():
+            if 'eventId' not in schemas.get(name,{}).get('required',[]): fail('OPENAPI_EVENTID_REQUIRED',f'{path} -> {name}')
+        dpi=schemas.get('DailyPlanItem',{})
+        if 'vocabularyId' in dpi.get('required',[]): fail('OPENAPI_DAILYPLAN_VOCAB_REQUIRED','must be nullable/not required')
+        if 'itemId' not in dpi.get('required',[]): fail('OPENAPI_DAILYPLAN_ITEM_ID','missing')
+        # All internal refs must resolve and operationIds must be unique.
+        refs=[]
+        def walk(x):
+            if isinstance(x,dict):
+                for k,v in x.items():
+                    if k=='$ref': refs.append(v)
+                    else: walk(v)
+            elif isinstance(x,list):
+                for v in x: walk(v)
+        walk(d)
+        for ref in refs:
+            if not ref.startswith('#/'): continue
+            cur=d
+            try:
+                for part in ref[2:].split('/'):
+                    part=part.replace('~1','/').replace('~0','~')
+                    cur=cur[part]
+            except Exception:
+                fail('OPENAPI_BAD_REF',ref)
+        operation_ids=[]
+        for path,item in d.get('paths',{}).items():
+            for method in ['get','post','put','patch','delete']:
+                if method in item:
+                    opid=item[method].get('operationId')
+                    if opid: operation_ids.append(opid)
+        if len(operation_ids)!=len(set(operation_ids)): fail('OPENAPI_DUPLICATE_OPERATION_ID','duplicate operationId')
+        if len(d.get('paths',{}))!=72: fail('OPENAPI_PATH_COUNT',len(d.get('paths',{})))
+        if len(operation_ids)!=76: fail('OPENAPI_OPERATION_COUNT',len(operation_ids))
+
+# Exact Markdown document references must resolve to a file in the reconciled tree.
+all_md_names={p.name for p in ROOT.rglob('*.md')}
+for p in ROOT.rglob('*.md'):
+    rel=p.relative_to(ROOT).as_posix()
+    if rel.startswith('docs/reconciliation/'): continue
+    text=p.read_text(encoding='utf-8')
+    for match in re.finditer(r'((?:English_AI_Coach|PROJECT_RULES|AGENTS|REVIEW_TEMPLATE)[A-Za-z0-9_.-]*\.md)',text):
+        name=match.group(1)
+        if name not in all_md_names: fail('BROKEN_MD_REFERENCE',f'{rel}: {name}')
+
+# API spec ↔ OpenAPI explicit operation parity
+api_text=(ROOT/'docs/api/English_AI_Coach_API_Specification_v1.4.md').read_text(encoding='utf-8')
+api_ops=set()
+for mm in re.finditer(r'^(GET|POST|PUT|PATCH|DELETE)\s+(/api/v1/[^\s`]+)',api_text,re.M):
+    method,path=mm.groups(); path=path.split('?')[0].rstrip('.,'); api_ops.add((method.lower(),path.removeprefix('/api/v1')))
+if 'd' in locals() and d:
+    openapi_ops={(method,path) for path,item in d['paths'].items() for method in ['get','post','put','patch','delete'] if method in item}
+    if api_ops != openapi_ops:
+        fail('API_OPENAPI_PARITY',f'missing_in_openapi={sorted(api_ops-openapi_ops)} extra_in_openapi={sorted(openapi_ops-api_ops)}')
+
+if issues:
+    print(f'BASELINE AUDIT: FAIL ({len(issues)} issues)')
+    for c,d in issues: print(f'- {c}: {d}')
+    sys.exit(1)
+print('BASELINE AUDIT: PASS')
+print('Canonical baseline files present; OpenAPI parses; BR contract checks passed.')

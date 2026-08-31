@@ -1,0 +1,628 @@
+# ============================================================
+# English AI Coach
+# Root .gitignore
+#
+# Covers:
+# - Java / Spring Boot
+# - Gradle / Maven
+# - PostgreSQL / Flyway
+# - Android Java
+# - React + TypeScript + Vite
+# - Flutter / Dart (V2)
+# - Python development tools
+# - Docker
+# - IntelliJ / Android Studio / VS Code
+# - Test / coverage / build artifacts
+# - Environment files / credentials / secrets
+# - AI Agent local scratch/cache
+# ============================================================
+
+
+# ============================================================
+# 1. ENVIRONMENT VARIABLES / SECRETS
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Generic secrets
+secrets/
+**/secrets/
+
+*.secret
+*.secrets
+
+# Certificates / private keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Java / Android signing credentials
+*.jks
+*.keystore
+
+# Cloud / service credentials
+credentials.json
+credentials-*.json
+service-account.json
+service-account-*.json
+firebase-adminsdk-*.json
+
+# Firebase Android configuration
+# Inject this through local environment / CI when needed.
+**/google-services.json
+!**/google-services.example.json
+
+# Local Spring configuration containing machine-specific secrets
+application-local.yml
+application-local.yaml
+application-local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-local.properties
+
+# Optional external secret config
+application-secret.yml
+application-secret.yaml
+application-secrets.yml
+application-secrets.yaml
+**/application-secret.yml
+**/application-secret.yaml
+**/application-secrets.yml
+**/application-secrets.yaml
+
+
+# ============================================================
+# 2. PYTHON TOOLING
+# ============================================================
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.coverage
+.coverage.*
+htmlcov/
+
+# Python packaging
+*.egg
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Python local environment
+.python-version
+
+
+# ============================================================
+# 3. JAVA / SPRING BOOT
+# ============================================================
+
+*.class
+
+# Maven build output
+target/
+**/target/
+
+# Gradle build output
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# Generic Java output
+out/
+**/out/
+
+# Java crash/runtime files
+hs_err_pid*
+replay_pid*
+
+# Spring runtime
+spring-shell.log
+
+# Do NOT ignore:
+# gradlew
+# gradlew.bat
+# gradle/wrapper/*
+# mvnw
+# mvnw.cmd
+# .mvn/wrapper/*
+
+
+# ============================================================
+# 4. ANDROID / ANDROID STUDIO
+# ============================================================
+
+# Machine-specific Android SDK path
+local.properties
+**/local.properties
+
+# Android generated directories
+.externalNativeBuild/
+**/.externalNativeBuild/
+
+.cxx/
+**/.cxx/
+
+captures/
+**/captures/
+
+.navigation/
+**/.navigation/
+
+# Android packages / build artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Android lint generated
+lint-results*.xml
+
+# Android profiling
+*.hprof
+
+# Native build files
+cmake-build-*/
+
+
+# ============================================================
+# 5. REACT / TYPESCRIPT / VITE / NODE.JS
+# ============================================================
+
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+
+# Vite
+.vite/
+**/.vite/
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+**/coverage/
+
+# Istanbul / NYC
+.nyc_output/
+**/.nyc_output/
+
+# Package manager caches
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.pnpm-store/
+
+# npm logs
+npm-debug.log*
+npm-error.log*
+
+# Yarn logs
+yarn-debug.log*
+yarn-error.log*
+
+# pnpm logs
+pnpm-debug.log*
+
+# ESLint cache
+.eslintcache
+**/.eslintcache
+
+# Parcel/Webpack caches if introduced later
+.parcel-cache/
+.webpack-cache/
+
+# Storybook build if introduced later
+storybook-static/
+
+# Do NOT ignore lock files:
+# package-lock.json
+# pnpm-lock.yaml
+# yarn.lock
+
+
+# ============================================================
+# 6. FLUTTER / DART — FUTURE V2
+# ============================================================
+
+.dart_tool/
+**/.dart_tool/
+
+.packages
+
+.pub/
+.pub-cache/
+
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Flutter build output is already covered by build/
+# but kept explicit for clarity.
+**/flutter/build/
+
+# Generated documentation
+doc/api/
+
+# Dart coverage
+**/coverage/lcov.info
+
+# Do NOT ignore pubspec.lock for application projects.
+# Flutter application should commit:
+# pubspec.yaml
+# pubspec.lock
+
+
+# ============================================================
+# 7. INTELLIJ IDEA / ANDROID STUDIO
+# ============================================================
+
+.idea/
+**/.idea/
+
+*.iml
+*.ipr
+*.iws
+
+# IntelliJ generated output
+.idea_modules/
+
+# IDE HTTP client local variables
+http-client.private.env.json
+
+# IntelliJ Shelf
+.idea/shelf/
+
+
+# ============================================================
+# 8. VISUAL STUDIO CODE
+# ============================================================
+
+.vscode/
+**/.vscode/
+
+# If shared VS Code configuration is needed later,
+# replace the blanket ignore above with an allow-list.
+
+
+# ============================================================
+# 9. ECLIPSE / STS
+# ============================================================
+
+.project
+.classpath
+.factorypath
+.settings/
+**/.settings/
+
+.springBeans
+.sts4-cache/
+
+
+# ============================================================
+# 10. OPERATING SYSTEM FILES
+# ============================================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+
+# ============================================================
+# 11. LOGS
+# ============================================================
+
+*.log
+
+logs/
+**/logs/
+
+log/
+**/log/
+
+
+# ============================================================
+# 12. TEMPORARY / BACKUP FILES
+# ============================================================
+
+*.tmp
+*.temp
+
+*.bak
+*.backup
+
+*.swp
+*.swo
+
+*.orig
+
+*.rej
+
+*.old
+
+tmp/
+**/tmp/
+
+temp/
+**/temp/
+
+.cache/
+**/.cache/
+
+scratch/
+**/scratch/
+
+
+# ============================================================
+# 13. TEST RESULTS / REPORTS
+# ============================================================
+
+test-results/
+**/test-results/
+
+test-output/
+**/test-output/
+
+reports/
+**/reports/
+
+# Java coverage
+jacoco.exec
+*.exec
+
+# Allure
+allure-results/
+allure-report/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Cypress
+cypress/screenshots/
+cypress/videos/
+
+# JUnit local reports if emitted outside build/
+junit-results/
+
+
+# ============================================================
+# 14. DATABASE / POSTGRESQL LOCAL DATA
+# ============================================================
+
+# Embedded/local DB files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Local PostgreSQL persistent volumes
+postgres-data/
+**/postgres-data/
+
+pgdata/
+**/pgdata/
+
+# Generic Docker persisted DB data
+docker-data/
+**/docker-data/
+
+data/postgres/
+**/data/postgres/
+
+# PostgreSQL dump files generated locally
+*.dump
+*.backup.sql
+
+# SQL dumps
+dump.sql
+database-dump.sql
+
+# IMPORTANT:
+# Do NOT ignore Flyway migration scripts.
+# db/migration/*.sql must be committed.
+
+
+# ============================================================
+# 15. DOCKER LOCAL FILES
+# ============================================================
+
+docker-compose.override.yml
+compose.override.yml
+
+# Local Docker environment
+docker/.env
+**/docker/.env
+
+
+# ============================================================
+# 16. GENERATED SOURCE / API CLIENTS
+# ============================================================
+
+generated/
+**/generated/
+
+generated-sources/
+**/generated-sources/
+
+openapi-generated/
+**/openapi-generated/
+
+generated-client/
+**/generated-client/
+
+generated-server/
+**/generated-server/
+
+# IMPORTANT:
+# Do NOT ignore authoritative API/OpenAPI files under docs/.
+# The canonical OpenAPI baseline must stay committed.
+
+
+# ============================================================
+# 17. AI / AGENT LOCAL FILES
+# ============================================================
+
+# Local agent caches/state
+.agent-cache/
+**/.agent-cache/
+
+.ai-cache/
+**/.ai-cache/
+
+.codex/
+**/.codex/
+
+.antigravity/
+**/.antigravity/
+
+# Local agent scratch/worktree files
+.agent-work/
+**/.agent-work/
+
+.agent-tmp/
+**/.agent-tmp/
+
+# Do NOT ignore:
+# AGENTS.md
+# docs/agents/*
+# PROJECT_RULES.md
+
+
+# ============================================================
+# 18. LOCAL DEVELOPER FILES
+# ============================================================
+
+.local/
+**/.local/
+
+*.local
+
+.local-settings/
+developer-settings.*
+
+
+# ============================================================
+# 19. ARCHIVES GENERATED LOCALLY
+# ============================================================
+
+# Generated project/package archives should normally not live in Git.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+
+# ============================================================
+# 20. PATCH / DIFF OUTPUT GENERATED LOCALLY
+# ============================================================
+
+*.patch.tmp
+*.diff.tmp
+
+
+# ============================================================
+# 21. PERFORMANCE / PROFILING OUTPUT
+# ============================================================
+
+*.jfr
+*.prof
+*.profraw
+
+profiles/
+**/profiles/
+
+
+# ============================================================
+# 22. LOCAL HTTP/API TEST ENVIRONMENTS
+# ============================================================
+
+*.private.env.json
+
+.http-client.env.json.local
+
+
+# ============================================================
+# 23. KEEP IMPORTANT REPOSITORY FILES
+# ============================================================
+
+# Explicit safeguards. These normally aren't ignored above,
+# but keep the project policy obvious.
+
+!.gitignore
+
+!requirements-dev.txt
+
+!.env.example
+!.env.*.example
+
+!README.md
+!AGENTS.md
+
+# Gradle wrapper
+!gradlew
+!gradlew.bat
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/**
+
+# Maven wrapper
+!mvnw
+!mvnw.cmd
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/**
+
+# Node dependency lock files
+!package-lock.json
+!pnpm-lock.yaml
+!yarn.lock
+
+# Flutter lock file
+!pubspec.lock

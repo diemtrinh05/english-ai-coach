@@ -1,0 +1,230 @@
+project: English AI Coach
+reconciliation_version: "1.0"
+status: ARCHIVED_INTEGRATED
+effective_date: "2026-08-31"
+
+scope:
+  v1:
+    - vocabulary_flashcards
+    - extended_sm2_srs
+    - rule_based_personalization
+    - ai_content_generation
+    - quiz
+    - gamification
+    - progress_dashboard
+    - notifications
+    - android_java
+    - react_typescript_vite_admin
+  excluded:
+    - speaking
+    - writing
+    - listening
+    - conversational_ai_tutor
+    - offline_learning_sync
+    - advanced_ml
+
+locked_invariants:
+  answer_quality:
+    min: 0
+    max: 5
+    correct_threshold: 3
+    client_must_not_send_is_correct: true
+  optimistic_lock_error: CONCURRENT_UPDATE
+  idempotency_reuse_error: IDEMPOTENCY_KEY_REUSE
+  idempotency_retention_days: 30
+  max_daily_workload_increase_percent: 20
+  max_daily_workload_decrease_percent: 30
+  login_bruteforce:
+    failed_attempts: 5
+    lock_minutes: 5
+  online_first: true
+
+technology:
+  backend: "Java Spring Boot Modular Monolith"
+  database: PostgreSQL
+  migration: Flyway
+  orm: JPA/Hibernate
+  mobile_v1: "Android Java MVVM"
+  admin_web: "React + TypeScript + Vite"
+  mobile_v2: Flutter
+
+localization:
+  v1_locale: vi-VN
+  android: strings.xml
+  admin: typed_vietnamese_messages_module
+  flutter_v2: flutter_localization_mechanism
+  locale_switcher_v1: false
+
+assessment:
+  algorithm_version: assessment-block-v1
+  start_level: A1
+  min_questions: 20
+  max_questions: 50
+  block_size: 4
+  promote_min_correct: 3
+  demote_max_correct: 1
+  stable_blocks_required: 2
+  levels: [A1, A2, B1, B2, C1, C2]
+  question_type: VOCABULARY_MEANING_MCQ
+  options: 4
+  min_active_vocabulary_per_cefr: 30
+
+srs:
+  algorithm_version: sm2-ext-v1
+  initial_ease_factor: 2.50
+  min_ease_factor: 1.30
+  min_interval_days: 1
+  max_interval_days: 180
+  response_reference_ms: 3000
+  mastered_min_repetitions: 5
+  mastered_min_interval_days: 30
+  mastered_entry_min_quality: 4
+
+weakness:
+  algorithm_version: weakness-rule-v1
+  score_window: 10
+  recent_window: 5
+  min_attempts: 3
+  weights:
+    error_rate: 0.40
+    normalized_response_time: 0.20
+    low_quality_rate: 0.20
+    recent_failure_rate: 0.20
+  weak_accuracy_threshold: 0.60
+  consecutive_failure_threshold: 2
+  slow_recall_ms: 6000
+  low_quality_average_threshold: 3.5
+
+forgetting_risk:
+  algorithm_version: forgetting-risk-v1
+  weights:
+    time_pressure: 0.45
+    error_rate: 0.25
+    quality_penalty: 0.15
+    repetition_penalty: 0.10
+    response_penalty: 0.05
+  thresholds:
+    medium: 0.40
+    high: 0.70
+
+recommendation:
+  v1_mode: deterministic_ranking
+  weighted_formula_normative: false
+  topic_diversity_max_share: 0.40
+  exact_cefr_first: true
+  fallback_cefr_levels_below: 1
+  allow_above_current_cefr: false
+
+workload:
+  algorithm_version: daily-plan-v1
+  performance_window_days: 7
+  min_active_days_for_adjustment: 3
+  high_performance:
+    completion_rate_min: 0.90
+    accuracy_min: 0.85
+    raw_change_percent: 10
+  low_performance:
+    completion_rate_below: 0.70
+    accuracy_below: 0.60
+    raw_change_percent: -20
+  initial_units_per_minute: 1.5
+  estimated_seconds:
+    new_word: 60
+    review_word: 30
+    quiz_question: 45
+  ratios:
+    high_review_backlog: {review: 0.80, new: 0.15, quiz: 0.05}
+    high_retention: {review: 0.50, new: 0.35, quiz: 0.15}
+    normal: {review: 0.60, new: 0.25, quiz: 0.15}
+
+daily_plan:
+  persistence: snapshot
+  key: [user_id, plan_date]
+  regenerate_midday: false
+  quiz_target_unit: question_count
+  item_types: [REVIEW, NEW, QUIZ]
+  final_statuses: [COMPLETED, PARTIAL]
+  completion_xp_only_if_all_targets: true
+
+gamification:
+  algorithm_version: gamification-v1
+  xp:
+    learning_correct: 5
+    quiz_correct: 5
+    session_completed: 10
+    daily_plan_completed: 50
+    streak_maintained: 10
+  level:
+    xp_per_level: 500
+    formula: "floor(totalXp / 500) + 1"
+    next_level_xp: "level * 500"
+  badges:
+    - {code: FIRST_LESSON, condition_type: LEARNING_SESSION_COUNT, condition_value: 1}
+    - {code: STREAK_7, condition_type: LONGEST_STREAK, condition_value: 7}
+    - {code: WORDS_100, condition_type: WORDS_LEARNED, condition_value: 100}
+    - {code: WORDS_500, condition_type: WORDS_LEARNED, condition_value: 500}
+    - {code: PERFECT_QUIZ, condition_type: PERFECT_QUIZ, condition_value: null}
+
+notifications:
+  provider: FCM
+  ai_timing: false
+  default_preferred_study_time: "19:00"
+  daily_plan_time_local: "07:00"
+  streak_reminder_time_local: "21:00"
+  read_tracking_v1: false
+
+idempotency:
+  mechanism: eventId_body
+  http_header: null
+  hash_algorithm: SHA-256
+  postgres_claim: INSERT_ON_CONFLICT_DO_NOTHING
+  retention_days: 30
+  required_mutations:
+    - "POST /api/v1/assessments"
+    - "POST /api/v1/assessments/{assessmentId}/answers"
+    - "POST /api/v1/learning/sessions"
+    - "POST /api/v1/learning/sessions/{sessionId}/complete"
+    - "POST /api/v1/learning/attempts"
+    - "POST /api/v1/learning/today/complete"
+    - "POST /api/v1/quizzes/{quizId}/attempts"
+    - "POST /api/v1/quiz-attempts/{attemptId}/answers"
+    - "POST /api/v1/quiz-attempts/{attemptId}/complete"
+    - "POST /api/v1/learning/personalized-exercise"
+    - "POST /api/v1/admin/ai-content/generate"
+
+ai:
+  reusable_requires_admin_review: true
+  personalized_requires_per_result_review: false
+  client_facing_async_v1: false
+  admin_generate_status: 201
+  personalized_exercise_status: 200
+  admin_cefr_suggestion_v1: false
+
+canonical_routes:
+  admin_ai_usage: "/api/v1/admin/statistics/ai-usage"
+  personalized_exercise: "/api/v1/learning/personalized-exercise"
+
+admin_audit_actions:
+  - CREATE
+  - UPDATE
+  - ACTIVATE
+  - DEACTIVATE
+  - APPROVE
+  - REJECT
+  - PUBLISH
+  - UNPUBLISH
+  - LOCK_USER
+  - UNLOCK_USER
+
+schema_v1_6:
+  new_tables:
+    - assessment_items
+    - goal_topics
+    - daily_plan_items
+    - user_devices
+    - notification_preferences
+  modified_tables:
+    - user_level_assessments
+    - session_attempts
+    - notifications
+  expected_table_count: 34
