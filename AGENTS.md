@@ -12,7 +12,6 @@ docs/PROJECT_RULES.md
 
 Then read the current approved documents relevant to the task.
 
-
 ## Language Policy
 
 All AI-agent responses and reports must be written in **Vietnamese**.
@@ -74,6 +73,27 @@ STOP
 → propose a resolution
 → wait for approval when the change affects contract/scope
 ```
+
+## Implementation Planning
+
+Before starting any implementation task, every Agent must read:
+
+1. `docs/PROJECT_RULES.md`
+2. `docs/planning/IMPLEMENTATION_PLAN.md`
+3. `docs/planning/MASTER_BACKLOG.md`
+4. the relevant approved baseline specification(s)
+5. the applicable role-specific Agent instructions
+
+Every implementation change must reference a valid Master Backlog Task ID.
+
+Agents must:
+
+- implement only the assigned task and its explicit dependencies;
+- respect milestone and dependency ordering;
+- not invent business rules, API behavior, database behavior, or client behavior outside the approved baseline;
+- report blockers instead of silently expanding scope;
+- satisfy the task acceptance criteria and required reviewer gates before marking a task `DONE`;
+- run the required validation/test commands defined by the task before completion.
 
 ## Current baseline
 
@@ -227,7 +247,6 @@ VERIFY CONTRACT
 ↓
 UPDATE DOCS IF NEEDED
 ```
-
 
 ## Document Preservation Rule
 

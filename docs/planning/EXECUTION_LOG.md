@@ -18,3 +18,22 @@ Evidence:
 BASELINE AUDIT: PASS
 Canonical baseline files present; OpenAPI parses; BR contract checks passed.
 ```
+
+### GOV-002 — Implementation Planning Binding
+
+- Status: DONE
+- Branch: `chore/m0-governance`
+- Implementation Plan: `docs/planning/IMPLEMENTATION_PLAN.md`
+- Master Backlog: `docs/planning/MASTER_BACKLOG.md`
+- Planning Validation: `docs/planning/PLANNING_VALIDATION_REPORT.md`
+- Agent workflow binding: ADDED
+- Contract changes: None
+- Verified at: 2026-08-31
+
+Evidence:
+
+```text
+AGENTS.md now requires implementation tasks to follow
+IMPLEMENTATION_PLAN.md and MASTER_BACKLOG.md.
+Every implementation change must reference a valid Master Backlog Task ID.
+```
