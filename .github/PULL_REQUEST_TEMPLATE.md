@@ -5,6 +5,8 @@
 - Backlog ID:
 - Milestone:
 - Owner:
+- Task status:
+- Dependency status:
 
 ## Summary
 
