@@ -41,12 +41,16 @@ Every implementation change must reference a valid Master Backlog Task ID.
 ### GOV-003 — Canonical Idempotency Guidance
 
 - Status: IN_REVIEW
+- Status history: IN_REVIEW → BLOCKED → IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - Updated document: `docs/agents/CODEX_BACKEND_LEAD.md`
 - Canonical claim strategy: PostgreSQL `INSERT ... ON CONFLICT DO NOTHING`
 - Request idempotency key: body `eventId`
 - Idempotency request header: NOT USED
 - Duplicate exception control flow: REMOVED
+- Architecture review result: FAIL — `ARCH-M0-001` (historical)
+- Remediation: stale active exception-based guidance replaced with the canonical PostgreSQL claim flow
+- Re-review required: NO — Architecture re-review PASS on 2026-08-31
 - Contract changes: None
 - Verified at: 2026-08-31
 
@@ -66,13 +70,19 @@ Same eventId + different logical request -> 409 IDEMPOTENCY_KEY_REUSE.
 ### GOV-004 — Pull Request Governance Template
 
 - Status: IN_REVIEW
+- Status history: IN_REVIEW → BLOCKED → IN_REVIEW
 - Branch: `chore/GOV-001-GOV-007-m0-governance`
 - PR template: `.github/PULL_REQUEST_TEMPLATE.md`
 - Task ID required: YES
+- Task status required: YES
+- Dependency status required: YES
 - Contract impact declaration required: YES
 - API / DB / Security / Client impact declaration required: YES
 - Test evidence required: YES
 - Reviewer declaration required: YES
+- Architecture review result: FAIL — `ARCH-M0-002` (historical)
+- Remediation: required Task status and Dependency status metadata fields added
+- Re-review required: NO — Architecture re-review PASS on 2026-08-31
 - Contract changes: None
 - Verified at: 2026-08-31
 
@@ -190,15 +200,18 @@ If a proposed decision would change an approved contract, do not record it as an
 
 #### Blocker log
 
-| Date       | Task ID          | Status | Blocker | Resolution |
-| ---------- | ---------------- | ------ | ------- | ---------- |
-| 2026-08-31 | GOV-001..GOV-007 | CLEAR  | None    | —          |
+| Date       | Task ID | Status   | Blocker | Resolution |
+| ---------- | ------- | -------- | ------- | ---------- |
+| 2026-08-31 | GOV-003 | RESOLVED | `ARCH-M0-001` — active documentation contradicted the canonical PostgreSQL idempotency claim with exception-based duplicate handling. | Replaced all identified active stale passages with `INSERT ... ON CONFLICT (event_id) DO NOTHING`, load/compare/replay-or-409 flow; Architecture re-review PASS on 2026-08-31. |
+| 2026-08-31 | GOV-004 | RESOLVED | `ARCH-M0-002` — PR template omitted required Task status and Dependency status metadata. | Added both required fields without removing existing governance sections; Architecture re-review PASS on 2026-08-31. |
 
 #### Review result log
 
-| Date | Task ID(s) | Reviewer | Result  | Findings / evidence                 |
-| ---- | ---------- | -------- | ------- | ----------------------------------- |
-| —    | —          | —        | PENDING | M0 reviewer gates not yet completed |
+| Date       | Task ID(s) | Reviewer              | Result | Findings / evidence |
+| ---------- | ---------- | --------------------- | ------ | ------------------- |
+| 2026-08-31 | GOV-003 | Architecture Reviewer | FAIL | `ARCH-M0-001` — canonical PostgreSQL idempotency guidance was contradicted by stale exception-based duplicate-key guidance. Remediation was required; subsequently RESOLVED by Architecture re-review PASS on 2026-08-31. |
+| 2026-08-31 | GOV-004 | Architecture Reviewer | FAIL | `ARCH-M0-002` — PR template did not collect Task status and Dependency status. Remediation was required; subsequently RESOLVED by Architecture re-review PASS on 2026-08-31. |
+| 2026-08-31 | GOV-002, GOV-003, GOV-004, GOV-006 | Architecture Reviewer | PASS | Architecture re-review: `ARCH-M0-001` and `ARCH-M0-002` RESOLVED; no new blocking or non-blocking findings; recommendation APPROVE. |
 
 #### Milestone status
 
