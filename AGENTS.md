@@ -95,6 +95,107 @@ Agents must:
 - satisfy the task acceptance criteria and required reviewer gates before marking a task `DONE`;
 - run the required validation/test commands defined by the task before completion.
 
+## Task Lifecycle and Git Naming
+
+Every implementation or governance change must be traceable to one or more valid Task IDs from `docs/planning/MASTER_BACKLOG.md`.
+
+### Task statuses
+
+Use only these task statuses:
+
+```text
+TODO
+READY
+IN_PROGRESS
+BLOCKED
+IN_REVIEW
+DONE
+```
+
+Normal lifecycle:
+
+```text
+TODO
+↓
+READY
+↓
+IN_PROGRESS
+↓
+IN_REVIEW
+↓
+DONE
+```
+
+A task may move to `BLOCKED` from `READY`, `IN_PROGRESS`, or `IN_REVIEW` when an unresolved dependency, contract ambiguity, failed required gate, or external blocker prevents progress.
+
+A task must not be marked `DONE` until its acceptance criteria, required validation, and reviewer gates are satisfied.
+
+### Branch naming
+
+For a single-task branch, use:
+
+```text
+<type>/<TASK-ID>-<short-slug>
+```
+
+Examples:
+
+```text
+feat/BE-FND-001-spring-bootstrap
+fix/BE-FND-008-idempotency-race
+chore/CI-FND-001-ci-pipeline
+docs/GOV-005-task-workflow
+test/QA-FND-001-foundation-tests
+```
+
+For an explicitly approved milestone batch containing multiple closely related governance tasks, include the covered Task ID range:
+
+```text
+chore/GOV-001-GOV-007-m0-governance
+```
+
+Do not create generic implementation branches such as:
+
+```text
+feature/backend
+fix/stuff
+development
+work
+temp
+```
+
+### Commit naming
+
+Each task-scoped commit must include its Task ID:
+
+```text
+<type>(<TASK-ID>): <description>
+```
+
+Examples:
+
+```text
+feat(BE-FND-001): bootstrap Spring Boot backend
+fix(BE-FND-008): handle concurrent idempotency claims
+test(QA-FND-001): add foundation integration tests
+docs(GOV-005): define task lifecycle and Git naming
+```
+
+A commit covering an approved multi-task governance batch may reference the relevant Task IDs in the commit body, but implementation commits should normally remain task-scoped.
+
+### Pull Request traceability
+
+Every Pull Request must identify:
+
+- the applicable Backlog Task ID(s);
+- milestone;
+- task status;
+- dependency status;
+- required reviewers;
+- validation/test evidence.
+
+PRs must not silently combine unrelated backlog tasks.
+
 ## Current baseline
 
 ```text
