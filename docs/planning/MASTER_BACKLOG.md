@@ -69,7 +69,7 @@
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `GOV-008` | Clarify pre-CI bootstrap gate | INT | `GOV-007` | P0 | AR,QAR | `PRE_CI_BOOTSTRAP_NA` được định nghĩa hẹp; eligible prerequisite tasks được liệt kê tường minh; CI đang fail không bao giờ được waive; `CI-FND-001` phải pass CI thực tế; ngoại lệ hết hiệu lực sau khi `CI-FND-001` `DONE` và merge; gate thoát M1 vẫn yêu cầu `CI PASS` thực tế. | Baseline audit + governance consistency checks. | IN_REVIEW |
+| `GOV-008` | Clarify pre-CI bootstrap gate | INT | `GOV-007` | P0 | AR,QAR | `PRE_CI_BOOTSTRAP_NA` được định nghĩa hẹp; eligible prerequisite tasks được liệt kê tường minh; CI đang fail không bao giờ được waive; `CI-FND-001` phải pass CI thực tế; ngoại lệ hết hiệu lực sau khi `CI-FND-001` `DONE` và merge; gate thoát M1 vẫn yêu cầu `CI PASS` thực tế. | Baseline audit + governance consistency checks. | DONE |
 
 ## Foundation
 

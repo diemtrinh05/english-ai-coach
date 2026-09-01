@@ -307,23 +307,28 @@ and final QA re-review PASS. Final QA recommendation: APPROVE M0.
 #### GOV-008 — Clarify Pre-CI Bootstrap Gate
 
 - Owner approval: APPROVED — project owner explicitly approved `GOV-008` and the `PRE_CI_BOOTSTRAP` rule on 2026-09-01
-- Status: IN_REVIEW
-- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW → DONE
 - Branch: `chore/GOV-008-pre-ci-bootstrap-gate`
+- Pull Request: #3 — `chore(GOV-008): clarify pre-CI bootstrap gate`
 - Dependencies: `GOV-007` DONE
 - Milestone placement: M1 — Governance Amendment / Pre-Foundation
 - M0 impact: None — historical M0 remains closed at GOV-001..GOV-007, 7/7, 100%, PASS
 - Bootstrap deadlock: IDENTIFIED — Global DoD required `CI PASS` for prerequisite tasks needed to build `CI-FND-001`
 - Resolution: narrowly scoped `PRE_CI_BOOTSTRAP_NA` CI state introduced
 - Eligible Task IDs: `GOV-008`, `BE-FND-001`, `BE-FND-002`, `DB-FND-001`, `DB-FND-002`, `BE-FND-004`, `BE-FND-005`, `BE-FND-007`, `QA-FND-001`, `QA-FND-002`
-- CI status for PR metadata: `PRE_CI_BOOTSTRAP_NA` — AR,QAR PASS recorded; final closure remains subject to PR-level evidence for explicit CI status, eligible Task ID, reason, local validation, and confirmation that no existing CI check is failing
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `GOV-008`
 - CI status reason: `GOV-008` is an approved eligible governance prerequisite and the required pipeline does not exist before `CI-FND-001`
+- PR-level PRE_CI evidence: PR #3 explicitly records the CI status, eligible Task ID, reason, and local validation evidence
+- GitHub PR CI checks: 0 — `CI-FND-001` does not exist yet
+- Existing failing CI check: NONE
 - Failing existing CI check waiver: PROHIBITED
 - `CI-FND-001` final gate: REAL CI PASS REQUIRED
 - Expiry: immediately after `CI-FND-001` is DONE and merged into `main`
 - Post-expiry Global DoD: ACTUAL CI PASS REQUIRED
 - M1 exit gate: ACTUAL CI PASS REQUIRED
-- Validation: `python tools/baseline_audit.py` PASS; `python -m py_compile tools/baseline_audit.py` PASS; targeted planning checks PASS; `git diff --check` PASS; status/stat/full diff inspected
+- Validation: `python tools/baseline_audit.py` PASS; `python -m py_compile tools/baseline_audit.py` PASS; targeted planning checks PASS; final acceptance checks PASS; `git diff --check` PASS; status/stat/full diff inspected
 - Required reviewers: AR,QAR
 - Current reviewer state: AR PASS; QAR PASS
 - Architecture initial review result: FAIL — `ARCH-GOV-008-001`
@@ -338,9 +343,11 @@ and final QA re-review PASS. Final QA recommendation: APPROVE M0.
 - QA review result: PASS
 - QA review findings: None
 - QA recommendation: APPROVE
+- All required reviewer gates: PASS
 - Unresolved reviewer findings: None
 - Blocker status: RESOLVED by focused remediation and Architecture re-review PASS
-- Final closure gate: PENDING — required PR-level `PRE_CI_BOOTSTRAP_NA` evidence has not yet been recorded; task remains `IN_REVIEW`
+- Unresolved blockers: None
+- Final closure gate: PASS — reviewer gates and PR-level `PRE_CI_BOOTSTRAP_NA` evidence are satisfied
 - Merge ordering: `GOV-008` must merge before PR #2 / `BE-FND-001` may use `PRE_CI_BOOTSTRAP_NA`; `BE-FND-001` dependency metadata remains unchanged
 - Non-contract decision: approved governance/process clarification only
 - Product/technical contract impact: None
@@ -369,10 +376,20 @@ dependency graph, PRE_CI eligible list, M1 CI exit gate, BE-FND-001 metadata,
 branch state, scope, and baseline-v1-implementation-ready-r1 provenance verified.
 git diff --check: PASS.
 git status --short, git diff --stat, and full git diff: inspected.
+GOV-008 final acceptance checks: PASS — PRE_CI scope/list/invariants, PR template
+evidence fields, reviewer gates, historical M0 integrity, and planning integrity.
 Architecture initial FAIL and HIGH — Blocking finding ARCH-GOV-008-001 remain
 in history. Focused remediation was re-reviewed with PASS; regression: NO;
 ARCH-GOV-008-001: RESOLVED; recommendation: APPROVE.
 QA Reviewer result: PASS; findings: none; recommendation: APPROVE.
-AR and QAR are PASS. Required PR-level PRE_CI_BOOTSTRAP_NA evidence remains
-pending, so GOV-008 remains IN_REVIEW and is not marked DONE.
+AR and QAR are PASS. Required PR-level PRE_CI_BOOTSTRAP_NA evidence is
+satisfied in PR #3: CI status PRE_CI_BOOTSTRAP_NA; eligible Task ID GOV-008;
+reason and local validation evidence recorded; GitHub CI checks: 0; existing
+failing CI check: NONE. GOV-008 is closed as DONE.
 ```
+
+#### Current M1 milestone status after GOV-008 closure
+
+| Milestone | Execution complete | Total | Execution progress | DoD status |
+| --- | ---: | ---: | ---: | --- |
+| M1 — Foundation Ready | 1 | 28 | 3.6% | IN_PROGRESS |
