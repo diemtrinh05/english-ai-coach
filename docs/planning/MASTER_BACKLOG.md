@@ -55,13 +55,13 @@
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `GOV-001` | Chạy baseline audit trên commit đầu vào | INT | — | P0 | QAR | `python tools/baseline_audit.py` PASS; ghi commit SHA đầu vào trong execution log. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-002` | Đưa IMPLEMENTATION_PLAN và MASTER_BACKLOG vào docs/planning | INT | `GOV-001` | P0 | AR,QAR | Hai tài liệu được commit, cross-link từ AGENTS/README nếu phù hợp; không thay đổi contract. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-003` | Đồng bộ hướng dẫn Codex về PostgreSQL idempotency với canonical spec | CBL | `GOV-001` | P0 | AR,DBR,SR,QAR | `CODEX_BACKEND_LEAD.md` không còn khuyến nghị catch unique violation rồi tiếp tục transaction; dùng `INSERT ... ON CONFLICT DO NOTHING` theo Backend v1.3/PROJECT_RULES. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-004` | Thiết lập PR template + Change Impact + reviewer gate | INT | `GOV-002` | P0 | AR,DBR,SR,QAR | PR template bắt buộc nêu docs/API/DB/client/tests/backward compatibility và reviewer cần thiết. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-005` | Thiết lập branch/task naming và trạng thái backlog | INT | `GOV-002` | P1 | QAR | Task ID xuất hiện trong branch/PR/commit; trạng thái dùng TODO/READY/IN_PROGRESS/BLOCKED/IN_REVIEW/DONE. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-006` | Freeze implementation baseline bằng Git tag | INT | `GOV-003`<br>`GOV-004` | P0 | AR,QAR | Tag `baseline-v1-implementation-ready` (hoặc convention repo) trỏ đúng commit baseline audit PASS. | Theo global DoD + acceptance. | IN_REVIEW |
-| `GOV-007` | Tạo execution log và cadence báo cáo milestone | INT | `GOV-005` | P1 | QAR | Có log quyết định non-contract, blocker, review result và % completion theo milestone; không ghi secret. | Theo global DoD + acceptance. | IN_REVIEW |
+| `GOV-001` | Chạy baseline audit trên commit đầu vào | INT | — | P0 | QAR | `python tools/baseline_audit.py` PASS; ghi commit SHA đầu vào trong execution log. | Theo global DoD + acceptance. | DONE |
+| `GOV-002` | Đưa IMPLEMENTATION_PLAN và MASTER_BACKLOG vào docs/planning | INT | `GOV-001` | P0 | AR,QAR | Hai tài liệu được commit, cross-link từ AGENTS/README nếu phù hợp; không thay đổi contract. | Theo global DoD + acceptance. | DONE |
+| `GOV-003` | Đồng bộ hướng dẫn Codex về PostgreSQL idempotency với canonical spec | CBL | `GOV-001` | P0 | AR,DBR,SR,QAR | `CODEX_BACKEND_LEAD.md` không còn khuyến nghị catch unique violation rồi tiếp tục transaction; dùng `INSERT ... ON CONFLICT DO NOTHING` theo Backend v1.3/PROJECT_RULES. | Theo global DoD + acceptance. | DONE |
+| `GOV-004` | Thiết lập PR template + Change Impact + reviewer gate | INT | `GOV-002` | P0 | AR,DBR,SR,QAR | PR template bắt buộc nêu docs/API/DB/client/tests/backward compatibility và reviewer cần thiết. | Theo global DoD + acceptance. | DONE |
+| `GOV-005` | Thiết lập branch/task naming và trạng thái backlog | INT | `GOV-002` | P1 | QAR | Task ID xuất hiện trong branch/PR/commit; trạng thái dùng TODO/READY/IN_PROGRESS/BLOCKED/IN_REVIEW/DONE. | Theo global DoD + acceptance. | DONE |
+| `GOV-006` | Freeze implementation baseline bằng Git tag | INT | `GOV-003`<br>`GOV-004` | P0 | AR,QAR | Tag `baseline-v1-implementation-ready` (hoặc convention repo) trỏ đúng commit baseline audit PASS. | Theo global DoD + acceptance. | DONE |
+| `GOV-007` | Tạo execution log và cadence báo cáo milestone | INT | `GOV-005` | P1 | QAR | Có log quyết định non-contract, blocker, review result và % completion theo milestone; không ghi secret. | Theo global DoD + acceptance. | DONE |
 
 # M1 — Foundation Ready
 
@@ -870,4 +870,3 @@ P0 tasks:
 - Dependency cycles: **0**
 - OpenAPI operation mapping: **76/76**
 - Database table mapping: **34/34**
-
