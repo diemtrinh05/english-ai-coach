@@ -22,6 +22,21 @@ required=[
 for r in required:
     if not (ROOT/r).exists(): fail('MISSING_BASELINE',r)
 
+# Governance guard hẹp cho Database / Flyway gate trong PR template.
+pr_template_path=ROOT/'.github/PULL_REQUEST_TEMPLATE.md'
+if not pr_template_path.exists():
+    fail('MISSING_PR_TEMPLATE','.github/PULL_REQUEST_TEMPLATE.md')
+else:
+    pr_template=pr_template_path.read_text(encoding='utf-8')
+    pr_database_markers={
+        'PR_DB_REVIEWER_GATE':'Database Reviewer is mandatory when any Database / Flyway impact is declared.',
+        'PR_SCHEMA_FLYWAY_DECLARATION':'Corresponding Flyway migration (required for every production schema change):',
+        'PR_SCHEMA_FLYWAY_EXCEPTION':'Schema-impacting PR without a Flyway migration — explicit exception reason (Database Reviewer approval required):',
+        'PR_DB_VALIDATION_EVIDENCE':'Database validation evidence (required for every database-impacting PR):',
+    }
+    for code,marker in pr_database_markers.items():
+        if marker not in pr_template: fail(code,'missing from .github/PULL_REQUEST_TEMPLATE.md')
+
 expected_headers={
 'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md':'# System Architecture v1.3 — English AI Coach',
 'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md':'# AI Personalization Specification v1.3 — English AI Coach',

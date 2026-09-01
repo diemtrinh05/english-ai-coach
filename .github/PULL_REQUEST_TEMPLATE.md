@@ -38,10 +38,29 @@ Details:
 
 ### Database / Flyway
 
-- [ ] No database impact
+- [ ] No database impact (mutually exclusive with every database-impact option below)
 - [ ] Schema change
-- [ ] New migration
+- [ ] New Flyway migration
 - [ ] Data migration
+- [ ] Other database-impacting change
+
+If any database-impact option is selected, Database Reviewer approval is required and cannot be replaced by an explanation.
+
+Corresponding Flyway migration (required for every production schema change):
+
+Schema-impacting PR without a Flyway migration — explicit exception reason (Database Reviewer approval required):
+
+Ordinary production schema changes must not be applied manually.
+
+Database validation evidence (required for every database-impacting PR):
+
+- [ ] Migration validation, where applicable
+- [ ] Testcontainers / integration validation, where applicable
+- [ ] Schema validation, where applicable
+- [ ] Rollback / forward-migration evidence, where applicable
+- [ ] Relevant database tests, where applicable
+
+Documentation-only PRs must provide evidence relevant to their actual scope and do not need irrelevant test types.
 
 Details:
 
@@ -87,11 +106,13 @@ Paste relevant validation/test results here.
 ## Required Reviewers
 
 - [ ] Architecture Reviewer
-- [ ] Database Reviewer
+- [ ] Database Reviewer — mandatory when any Database / Flyway impact is declared.
 - [ ] Security Reviewer
 - [ ] QA Reviewer
 
-Explain omitted reviewers where applicable.
+Database Reviewer is mandatory when any Database / Flyway impact is declared.
+
+Explain omitted reviewers where applicable. This rule does not permit Database Reviewer omission when any Database / Flyway impact is declared.
 
 ## Backward Compatibility
 
