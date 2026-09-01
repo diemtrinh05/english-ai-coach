@@ -4,7 +4,7 @@
 **Execution readiness:** READY  
 **Authority:** Planning artifact only; approved baseline remains source of truth  
 **Companion:** `IMPLEMENTATION_PLAN.md`  
-**Executable task count:** 175  
+**Executable task count:** 176
 
 ## 1. Conventions
 
@@ -37,7 +37,7 @@
 | Milestone | Tasks | P0 | P1 | P2 |
 |---|---:|---:|---:|---:|
 | M0 | 7 | 5 | 2 | 0 |
-| M1 | 27 | 21 | 6 | 0 |
+| M1 | 28 | 22 | 6 | 0 |
 | M2 | 21 | 18 | 3 | 0 |
 | M3 | 16 | 16 | 0 | 0 |
 | M4 | 14 | 14 | 0 | 0 |
@@ -64,6 +64,12 @@
 | `GOV-007` | Tạo execution log và cadence báo cáo milestone | INT | `GOV-005` | P1 | QAR | Có log quyết định non-contract, blocker, review result và % completion theo milestone; không ghi secret. | Theo global DoD + acceptance. | DONE |
 
 # M1 — Foundation Ready
+
+## Governance Amendment / Pre-Foundation
+
+| ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
+|---|---|---|---|---|---|---|---|---|
+| `GOV-008` | Clarify pre-CI bootstrap gate | INT | `GOV-007` | P0 | AR,QAR | `PRE_CI_BOOTSTRAP_NA` được định nghĩa hẹp; eligible prerequisite tasks được liệt kê tường minh; CI đang fail không bao giờ được waive; `CI-FND-001` phải pass CI thực tế; ngoại lệ hết hiệu lực sau khi `CI-FND-001` `DONE` và merge; gate thoát M1 vẫn yêu cầu `CI PASS` thực tế. | Baseline audit + governance consistency checks. | IN_REVIEW |
 
 ## Foundation
 
@@ -613,6 +619,15 @@ Mỗi executable task chỉ chuyển `DONE` khi:
 [ ] baseline_audit PASS
 ```
 
+Ngoại lệ bootstrap có thời hạn cho checklist trên:
+
+- Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ đúng các task `GOV-008`, `BE-FND-001`, `BE-FND-002`, `DB-FND-001`, `DB-FND-002`, `BE-FND-004`, `BE-FND-005`, `BE-FND-007`, `QA-FND-001`, `QA-FND-002` được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`.
+- `PRE_CI_BOOTSTRAP_NA` chỉ hợp lệ khi tất cả dependency đã `DONE`; acceptance criteria đã thỏa mãn; local/unit/integration/task tests bắt buộc đã `PASS` khi áp dụng; reviewer bắt buộc đã `PASS`; `baseline_audit` đã `PASS`; build/static/git/diff validations áp dụng đã `PASS`; PR ghi rõ eligible Task ID, lý do và bằng chứng local; và không có CI check hiện hữu nào đang fail.
+- CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ bootstrap này.
+- `CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Pipeline thực tế phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
+- Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, `PRE_CI_BOOTSTRAP_NA` tự động hết hiệu lực; Global Definition of Done trở lại yêu cầu `CI PASS` thực tế cho mọi executable task tiếp theo trước `DONE`/merge.
+- Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+
 # 7. Milestone gate checklist
 
 ## M0 — Execution Governance
@@ -631,11 +646,12 @@ P0 tasks:
 
 ## M1 — Foundation Ready
 
-**Exit:** Fresh DB migrate; CI PASS; idempotency/locking/error/token foundations sẵn; clients build.
+**Exit:** Fresh DB migrate; CI PASS thực tế; idempotency/locking/error/token foundations sẵn; clients build. `PRE_CI_BOOTSTRAP_NA` không thỏa gate thoát M1.
 
 P0 tasks:
 
 ```text
+[ ] GOV-008
 [ ] BE-FND-001
 [ ] BE-FND-002
 [ ] BE-FND-003
@@ -865,7 +881,7 @@ P0 tasks:
 
 # 9. Backlog integrity
 
-- Unique executable task IDs: **175**
+- Unique executable task IDs: **176**
 - Missing dependency references: **0**
 - Dependency cycles: **0**
 - OpenAPI operation mapping: **76/76**

@@ -130,6 +130,31 @@ A task may move to `BLOCKED` from `READY`, `IN_PROGRESS`, or `IN_REVIEW` when an
 
 A task must not be marked `DONE` until its acceptance criteria, required validation, and reviewer gates are satisfied.
 
+### Pre-CI bootstrap gate
+
+Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ các task tiên quyết sau được phép ghi CI status là `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`:
+
+```text
+GOV-008
+BE-FND-001
+BE-FND-002
+DB-FND-001
+DB-FND-002
+BE-FND-004
+BE-FND-005
+BE-FND-007
+QA-FND-001
+QA-FND-002
+```
+
+`PRE_CI_BOOTSTRAP_NA` chỉ hợp lệ khi tất cả dependency đã `DONE`; acceptance criteria đã thỏa mãn; local/unit/integration/task tests bắt buộc đã `PASS` khi áp dụng; reviewer bắt buộc đã `PASS`; `baseline_audit` đã `PASS`; build/static/git/diff validations áp dụng đã `PASS`; PR ghi rõ eligible Task ID, lý do và bằng chứng local; và không có CI check hiện hữu nào đang fail.
+
+CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ bootstrap này.
+
+`CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Task này phải đưa pipeline CI bắt buộc vào hoạt động và pipeline đó phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
+
+Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, `PRE_CI_BOOTSTRAP_NA` tự động hết hiệu lực. Mọi executable task tiếp theo phải có `CI PASS` trước `DONE`/merge. Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+
 ### Branch naming
 
 For a single-task branch, use:

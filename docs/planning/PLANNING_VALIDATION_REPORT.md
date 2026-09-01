@@ -1,6 +1,6 @@
 # English AI Coach — Implementation Planning Validation Report
 
-**Date:** 2026-08-31  
+**Date:** 2026-09-01
 **Artifacts:** `IMPLEMENTATION_PLAN.md`, `MASTER_BACKLOG.md`  
 
 ## Result
@@ -9,10 +9,13 @@
 
 | Check | Result |
 |---|---|
-| Executable task IDs | 175 unique / 175 tasks |
+| Executable task IDs | 176 unique / 176 tasks |
+| Duplicate executable task IDs | 0 |
 | Missing dependency references | 0 |
 | Dependency cycles | 0 |
 | Future-milestone dependency inversions | 0 |
+| Milestone task-count sum | 176 |
+| GOV-008 placement | M1 exactly once; not in M0 |
 | OpenAPI operations mapped | 76/76 |
 | OpenAPI paths observed | 72 |
 | DB tables mapped | 34/34 |
@@ -23,7 +26,7 @@
 | Milestone | Count |
 |---|---:|
 | M0 | 7 |
-| M1 | 27 |
+| M1 | 28 |
 | M2 | 21 |
 | M3 | 16 |
 | M4 | 14 |
@@ -40,4 +43,3 @@
 - Deferred V2 items are separated from executable V1 tasks.
 - No task depends on a later milestone.
 - Dependency graph is acyclic.
-
