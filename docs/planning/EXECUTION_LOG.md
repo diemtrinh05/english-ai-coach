@@ -324,7 +324,16 @@ and final QA re-review PASS. Final QA recommendation: APPROVE M0.
 - Blockers: None
 - Remediation ready for QA re-review: 2026-09-01
 - Closed at: 2026-09-01
-- PR #2 PRE_CI evidence synchronization: PENDING after `GOV-008` governance synchronization; this conflict resolution does not claim new PR-level evidence
+- Pull Request: #2 — `feat(BE-FND-001): bootstrap Spring Boot backend`
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-001`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3 and merged into this branch
+- CI status reason: `CI-FND-001` has not yet been implemented and `BE-FND-001` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- PRE_CI reviewer state: Architecture Reviewer PASS; QA Reviewer PASS
+- PRE_CI finding state: `QA-BE-FND-001-001` RESOLVED; regression introduced: NO
+- PRE_CI unresolved blockers: NONE
 
 Reviewer evidence:
 
