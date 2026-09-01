@@ -83,6 +83,62 @@ for rel,header in expected_headers.items():
     p=ROOT/rel
     if p.exists() and not p.read_text(encoding='utf-8').startswith(header): fail('VERSION_HEADER_MISMATCH',rel)
 
+# Guard hẹp cho skeleton chuẩn ở Section 109: kết quả claim phải kiểm soát mutation.
+backend_spec_path=ROOT/'docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md'
+if backend_spec_path.exists():
+    backend_spec=backend_spec_path.read_text(encoding='utf-8')
+    section_109_match=re.search(
+        r'^# 109\. Idempotency Service Skeleton\s*$([\s\S]*?)(?=^# 110\.)',
+        backend_spec,
+        re.M,
+    )
+    if not section_109_match:
+        fail('BACKEND_IDEMPOTENCY_SECTION_109','missing authoritative Section 109 skeleton')
+    else:
+        code_match=re.search(r'```java\s*\n([\s\S]*?)\n```',section_109_match.group(1))
+        if not code_match:
+            fail('BACKEND_IDEMPOTENCY_SECTION_109_CODE','missing Java skeleton')
+        else:
+            skeleton=code_match.group(1)
+            claim_match=re.search(
+                r'\bboolean\s+inserted\s*=\s*claimWithOnConflictDoNothing\s*\(',
+                skeleton,
+            )
+            inserted_branch=re.search(r'\bif\s*\(\s*inserted\s*\)\s*\{',skeleton)
+            if not claim_match:
+                fail('BACKEND_IDEMPOTENCY_CLAIM_RESULT','Section 109 must capture the PostgreSQL claim result')
+            if not inserted_branch:
+                fail('BACKEND_IDEMPOTENCY_INSERTED_BRANCH','Section 109 must branch on whether the claim was inserted')
+            elif claim_match and claim_match.start() > inserted_branch.start():
+                fail('BACKEND_IDEMPOTENCY_CLAIM_ORDER','Section 109 must claim before testing inserted')
+            else:
+                # Tìm đúng block inserted để bảo đảm operation.get() không nằm ngoài nhánh này.
+                block_start=skeleton.find('{',inserted_branch.start())
+                depth=0
+                block_end=None
+                for index in range(block_start,len(skeleton)):
+                    if skeleton[index]=='{': depth+=1
+                    elif skeleton[index]=='}':
+                        depth-=1
+                        if depth==0:
+                            block_end=index
+                            break
+                mutations=[match.start() for match in re.finditer(r'\boperation\.get\(\)',skeleton)]
+                if block_end is None:
+                    fail('BACKEND_IDEMPOTENCY_INSERTED_BLOCK','Section 109 inserted branch is incomplete')
+                elif not mutations or any(not (block_start < pos < block_end) for pos in mutations):
+                    fail('BACKEND_IDEMPOTENCY_MUTATION_GUARD','Section 109 business mutation must execute only after an inserted claim')
+                else:
+                    not_inserted_path=skeleton[block_end+1:]
+                    if not re.match(r'\s*else\s*\{',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_BRANCH','Section 109 must contain an explicit claim-not-inserted branch')
+                    if not re.search(r'repository\.findById\(eventId\)',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_RELOAD','Section 109 must reload eventId when claim was not inserted')
+                    if not re.search(r'validateReuse\s*\([\s\S]*?userId[\s\S]*?endpoint[\s\S]*?requestHash[\s\S]*?\)',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_VALIDATE','Section 109 must validate user, endpoint, and canonical request hash before replay')
+                    if not re.search(r'return\s+replay\s*\(',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_REPLAY','Section 109 must replay only after validating the existing claim')
+
 # General hygiene (exclude historical reconciliation)
 for p in ROOT.rglob('*.md'):
     rel=p.relative_to(ROOT).as_posix()

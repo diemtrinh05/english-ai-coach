@@ -2872,6 +2872,7 @@ Implementation details may differ, but business order must remain transactionall
 # 109. Idempotency Service Skeleton
 
 ```java
+@Transactional
 public <T> T execute(
         UUID userId,
         String endpoint,
@@ -2894,20 +2895,40 @@ public <T> T execute(
         return replay(existing.get());
     }
 
-    claim(eventId, userId, endpoint, requestHash);
-
-    T response = operation.get();
-
-    storeResponse(
+    boolean inserted = claimWithOnConflictDoNothing(
         eventId,
-        response,
-        httpStatusOf(response));
+        userId,
+        endpoint,
+        requestHash);
 
-    return response;
+    if (inserted) {
+        T response = operation.get();
+
+        storeResponse(
+            eventId,
+            response,
+            httpStatusOf(response));
+
+        return response;
+    } else {
+        IdempotencyKey claimedByConcurrentRequest =
+            repository.findById(eventId)
+                .orElseThrow();
+
+        validateReuse(
+            claimedByConcurrentRequest,
+            userId,
+            endpoint,
+            requestHash);
+
+        return replay(claimedByConcurrentRequest);
+    }
 }
 ```
 
-Actual implementation must account for concurrent claims and transaction behavior.
+The initial lookup is only a fast path. `claimWithOnConflictDoNothing(...)` must execute PostgreSQL `INSERT ... ON CONFLICT (event_id) DO NOTHING` and return whether this transaction inserted the claim. The business operation executes only in the `inserted` branch. If the claim was not inserted, the service reloads `eventId`; `validateReuse(...)` compares `user_id` separately together with endpoint identity and the canonical SHA-256 `request_hash`, then replay occurs only for the same logical request. Any mismatch returns HTTP 409 `IDEMPOTENCY_KEY_REUSE`.
+
+The claim, business mutation, and successful response snapshot/status share this transaction and commit atomically. A business failure rolls back the claim. The claim-not-inserted branch never invokes `operation.get()`.
 
 ---
 
