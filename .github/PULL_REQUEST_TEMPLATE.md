@@ -81,12 +81,14 @@ Details:
 
 ### Security
 
-- [ ] No security-sensitive change
+- [ ] No security-sensitive change (mutually exclusive with every security-sensitive impact option below)
 - [ ] Authentication / authorization
 - [ ] Secrets / credentials
 - [ ] Idempotency / concurrency
 - [ ] AI / external provider
 - [ ] Push token / personal data
+
+If any security-sensitive impact option is selected, Security Reviewer approval is required and cannot be replaced by the generic omitted-reviewer explanation.
 
 ## Tests
 
@@ -107,12 +109,14 @@ Paste relevant validation/test results here.
 
 - [ ] Architecture Reviewer
 - [ ] Database Reviewer — mandatory when any Database / Flyway impact is declared.
-- [ ] Security Reviewer
+- [ ] Security Reviewer — mandatory when any security-sensitive impact is declared.
 - [ ] QA Reviewer
 
 Database Reviewer is mandatory when any Database / Flyway impact is declared.
 
-Explain omitted reviewers where applicable. This rule does not permit Database Reviewer omission when any Database / Flyway impact is declared.
+Security Reviewer is mandatory when any security-sensitive impact is declared.
+
+Explain omitted reviewers where applicable. This generic omitted-reviewer rule does not permit Database Reviewer omission when any Database / Flyway impact is declared, or Security Reviewer omission when any security-sensitive impact is declared.
 
 ## Backward Compatibility
 

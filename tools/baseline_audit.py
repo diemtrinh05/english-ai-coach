@@ -37,6 +37,37 @@ else:
     for code,marker in pr_database_markers.items():
         if marker not in pr_template: fail(code,'missing from .github/PULL_REQUEST_TEMPLATE.md')
 
+    # Governance guard hẹp cho Security Reviewer gate; kiểm tra theo ngữ nghĩa
+    # trong đúng section để không khóa template vào một câu chữ tuyệt đối.
+    security_section_match=re.search(r'^### Security\s*$([\s\S]*?)(?=^## Tests\s*$)',pr_template,re.M)
+    reviewer_section_match=re.search(r'^## Required Reviewers\s*$([\s\S]*?)(?=^## Backward Compatibility\s*$)',pr_template,re.M)
+    if not security_section_match:
+        fail('PR_SECURITY_SECTION','missing Security section from .github/PULL_REQUEST_TEMPLATE.md')
+    else:
+        security_section=security_section_match.group(1)
+        security_impact_options=[
+            'Authentication / authorization',
+            'Secrets / credentials',
+            'Idempotency / concurrency',
+            'AI / external provider',
+            'Push token / personal data',
+        ]
+        for option in security_impact_options:
+            if option not in security_section:
+                fail('PR_SECURITY_IMPACT_OPTION',f'missing security impact option: {option}')
+        if not re.search(r'No security-sensitive change[^\n]*mutually exclusive',security_section,re.I):
+            fail('PR_SECURITY_NO_IMPACT_EXCLUSIVE','No security-sensitive change must be mutually exclusive with security impact options')
+        if not re.search(r'any security-sensitive impact[\s\S]{0,160}Security Reviewer approval is required',security_section,re.I):
+            fail('PR_SECURITY_REVIEWER_GATE','security-sensitive impact must require Security Reviewer approval')
+    if not reviewer_section_match:
+        fail('PR_REQUIRED_REVIEWERS_SECTION','missing Required Reviewers section from .github/PULL_REQUEST_TEMPLATE.md')
+    else:
+        reviewer_section=reviewer_section_match.group(1)
+        if not re.search(r'Security Reviewer[^\n]{0,120}mandatory[^\n]{0,120}security-sensitive impact',reviewer_section,re.I):
+            fail('PR_SECURITY_REVIEWER_MANDATORY','Required Reviewers must make Security Reviewer mandatory for security-sensitive impact')
+        if not re.search(r'generic omitted-reviewer[^\n]{0,240}(?:does not permit|cannot)[^\n]{0,160}Security Reviewer omission[^\n]{0,160}security-sensitive impact',reviewer_section,re.I):
+            fail('PR_SECURITY_OMISSION_BYPASS','generic omitted-reviewer explanation must not permit Security Reviewer omission')
+
 expected_headers={
 'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md':'# System Architecture v1.3 — English AI Coach',
 'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md':'# AI Personalization Specification v1.3 — English AI Coach',
