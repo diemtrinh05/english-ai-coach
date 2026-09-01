@@ -8,6 +8,27 @@
 - Task status:
 - Dependency status:
 
+## CI Gate
+
+CI status (select exactly one):
+
+- [ ] `PASS`
+- [ ] `PRE_CI_BOOTSTRAP_NA`
+- [ ] `NOT_APPLICABLE`
+
+If `PRE_CI_BOOTSTRAP_NA` is selected:
+
+- Eligible Task ID:
+- Reason:
+- Local validation evidence:
+- [ ] Confirmed that no existing CI check is failing.
+
+`PRE_CI_BOOTSTRAP_NA` is valid only for the explicit eligible task list and conditions in the active governance documents, and only before `CI-FND-001` is `DONE` and merged into `main`. A failing CI check can never be waived. `CI-FND-001` cannot use `PRE_CI_BOOTSTRAP_NA` for its final gate.
+
+If `NOT_APPLICABLE` is selected, explain why the CI gate genuinely does not apply. `NOT_APPLICABLE` must not be used as a substitute for `PRE_CI_BOOTSTRAP_NA`.
+
+Details:
+
 ## Summary
 
 Describe what this PR changes and why.
@@ -134,3 +155,4 @@ List unresolved risks or blockers.
 - [ ] No secrets committed
 - [ ] No unrelated changes
 - [ ] Required reviewer findings resolved
+- [ ] CI gate state and evidence recorded

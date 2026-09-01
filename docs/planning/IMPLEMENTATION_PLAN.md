@@ -83,7 +83,7 @@ TODO → READY → IN_PROGRESS → IN_REVIEW → DONE
 
 - `READY`: tất cả dependency DONE, source docs đã đọc, không có unresolved contract question.
 - `IN_REVIEW`: code + tests + change-impact note đã sẵn sàng.
-- `DONE`: reviewer cần thiết pass, CI pass, backlog evidence được cập nhật.
+- `DONE`: reviewer cần thiết pass, CI pass, backlog evidence được cập nhật; chỉ ngoại lệ pre-CI bootstrap được phê duyệt tại Section 15 mới có thể thay CI pass tạm thời.
 
 ## 7. Nguyên tắc PR / branch
 
@@ -99,7 +99,7 @@ TODO → READY → IN_PROGRESS → IN_REVIEW → DONE
 | Milestone | Name | Tasks | Goal | Exit gate |
 |---|---|---:|---|---|
 | M0 | Execution Governance | 7 | Khóa cách thực thi, backlog, PR/reviewer gate; sửa operational instruction còn lệch canonical. | GOV-001..GOV-007 hoàn tất; baseline audit PASS; tag baseline tồn tại. |
-| M1 | Foundation Ready | 27 | Backend/DB/CI/Admin/Android shell và cross-cutting infrastructure. | Fresh DB migrate; CI PASS; idempotency/locking/error/token foundations sẵn; clients build. |
+| M1 | Foundation Ready | 28 | Governance/pre-foundation amendment, Backend/DB/CI/Admin/Android shell và cross-cutting infrastructure. | Fresh DB migrate; CI PASS thực tế; idempotency/locking/error/token foundations sẵn; clients build. `PRE_CI_BOOTSTRAP_NA` không thỏa gate này. |
 | M2 | Identity & Catalog | 21 | Auth, profile/goals, CEFR, vocabulary/topic foundation và content đủ cho assessment. | Auth lifecycle pass; catalog APIs pass; >=30 usable vocabulary/CEFR. |
 | M3 | First Vertical Slice — Learning/SRS | 16 | Kiểm chứng kiến trúc end-to-end bằng Vocabulary→Session→Attempt→SRS→Progress. | QA-E2E-001 PASS, gồm replay/reuse/concurrency. |
 | M4 | Assessment & Quiz | 14 | Placement deterministic và quiz engine end-to-end. | Assessment/quiz algorithm + Android flow PASS. |
@@ -108,6 +108,12 @@ TODO → READY → IN_PROGRESS → IN_REVIEW → DONE
 | M7 | AI & Notifications | 21 | Reusable/personalized AI synchronous + budget + FCM notification. | AI cost/idempotency + notification timezone/dedupe tests PASS. |
 | M8 | Client/Admin Completion | 25 | Admin V1 đầy đủ, Android V1 đầy đủ, full learner/admin E2E. | QA-E2E-006 và QA-E2E-007 PASS. |
 | M9 | Hardening & Release Candidate | 18 | Security, performance, resilience, ops, reviewer gates và RC. | Architecture/DB/Security/QA final pass; REL-001/REL-002 DONE. |
+
+### 8.1. M1 Governance Amendment / Pre-Foundation
+
+`GOV-008` là task governance/pre-foundation đầu tiên của M1, với owner `INT`, dependency `GOV-007`, priority `P0`, reviewer `AR,QAR` và trạng thái `IN_REVIEW`. Task này không thuộc M0 và không thay đổi closure lịch sử `GOV-001..GOV-007`.
+
+`GOV-008` phải được merge trước khi PR #2 / `BE-FND-001` được phép dùng `PRE_CI_BOOTSTRAP_NA`. Điều này không thêm `GOV-008` retroactively vào dependency metadata của `BE-FND-001`.
 
 ## 9. Critical path
 
@@ -248,6 +254,42 @@ baseline_audit
 
 P0 PR không merge nếu reviewer bắt buộc chưa pass.
 
+### 15.1. PRE_CI_BOOTSTRAP
+
+Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ đúng các task sau được phép ghi CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`:
+
+```text
+GOV-008
+BE-FND-001
+BE-FND-002
+DB-FND-001
+DB-FND-002
+BE-FND-004
+BE-FND-005
+BE-FND-007
+QA-FND-001
+QA-FND-002
+```
+
+Điều kiện bắt buộc:
+
+```text
+all dependencies are DONE
+acceptance criteria are satisfied
+required local/unit/integration/task tests PASS as applicable
+required reviewers PASS
+baseline_audit PASS
+applicable build/static/git/diff validations PASS
+PR records eligible Task ID + reason + local validation evidence
+no existing CI check is failing
+```
+
+CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ này.
+
+`CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Pipeline thực tế phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
+
+Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, ngoại lệ tự động hết hiệu lực. Mọi executable task tiếp theo phải có `CI PASS` thực tế trước `DONE`/merge. Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+
 ## 16. Security gates
 
 - JWT/refresh token: expiry, revoke, rotation, hashed persistence.
@@ -294,6 +336,8 @@ Production seed không được chứa default password hard-coded.
 [ ] CI PASS
 [ ] backlog evidence updated
 ```
+
+Trước khi `CI-FND-001` `DONE` và được merge vào `main`, checklist `CI PASS` ở trên chỉ có thể được thay bằng `PRE_CI_BOOTSTRAP_NA` cho đúng các task và điều kiện tại Section 15.1. Sau thời điểm đó, Global DoD yêu cầu `CI PASS` thực tế, không có ngoại lệ bootstrap.
 
 ### Milestone DONE
 
@@ -360,24 +404,24 @@ Thứ tự khuyến nghị ngay khi bắt đầu:
 3. `GOV-003` — Đồng bộ hướng dẫn Codex về PostgreSQL idempotency với canonical spec
 4. `GOV-004` — Thiết lập PR template + Change Impact + reviewer gate
 5. `GOV-006` — Freeze implementation baseline bằng Git tag
-6. `BE-FND-001` — Bootstrap Spring Boot backend project
-7. `DB-FND-001` — Dựng PostgreSQL local + Docker Compose
-8. `BE-FND-002` — Dựng modular-monolith package/module skeleton
-9. `BE-FND-003` — Thiết lập application profiles và typed configuration
-10. `DB-FND-002` — Tạo Flyway schema baseline cho 34 bảng
-11. `QA-FND-001` — Testcontainers PostgreSQL integration harness
-12. `CI-FND-001` — CI pipeline bắt buộc
-13. `ADM-FND-001` — Bootstrap React + TypeScript + Vite Admin
-14. `AND-FND-001` — Bootstrap Android Java MVVM project
+6. `GOV-008` — Clarify pre-CI bootstrap gate
+7. `BE-FND-001` — Bootstrap Spring Boot backend project
+8. `DB-FND-001` — Dựng PostgreSQL local + Docker Compose
+9. `BE-FND-002` — Dựng modular-monolith package/module skeleton
+10. `BE-FND-003` — Thiết lập application profiles và typed configuration
+11. `DB-FND-002` — Tạo Flyway schema baseline cho 34 bảng
+12. `QA-FND-001` — Testcontainers PostgreSQL integration harness
+13. `CI-FND-001` — CI pipeline bắt buộc
+14. `ADM-FND-001` — Bootstrap React + TypeScript + Vite Admin
+15. `AND-FND-001` — Bootstrap Android Java MVVM project
 
 Sau `QA-E2E-001`, dự án đã chứng minh được critical architecture path và có thể tăng parallelism cho M4/M5.
 
 ## 24. Planning artifact integrity
 
-- Executable tasks: **175**
+- Executable tasks: **176**
 - OpenAPI mapped operations: **76/76**
 - Database mapped tables: **34/34**
 - Task IDs unique: validated
 - Dependency references: validated
 - Dependency cycles: none
-
