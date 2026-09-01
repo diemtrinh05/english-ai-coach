@@ -1719,6 +1719,42 @@ UI state handled
 documentation synchronized
 ```
 
+## 59.1. Pre-CI Bootstrap Gate
+
+Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ các task tiên quyết sau được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`:
+
+```text
+GOV-008
+BE-FND-001
+BE-FND-002
+DB-FND-001
+DB-FND-002
+BE-FND-004
+BE-FND-005
+BE-FND-007
+QA-FND-001
+QA-FND-002
+```
+
+`PRE_CI_BOOTSTRAP_NA` chỉ hợp lệ khi:
+
+```text
+all dependencies are DONE
+acceptance criteria are satisfied
+required local/unit/integration/task tests PASS as applicable
+required reviewers PASS
+baseline_audit PASS
+applicable build/static/git/diff validations PASS
+the PR records the eligible Task ID, reason, and local validation evidence
+no existing CI check is failing
+```
+
+CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ bootstrap này.
+
+`CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Pipeline CI thực tế do task này tạo ra phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
+
+Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, ngoại lệ tự động hết hiệu lực. Từ thời điểm đó, mọi executable task tiếp theo phải có `CI PASS` thực tế trước `DONE`/merge. Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+
 ---
 
 # 60. Final Agent Checklist
