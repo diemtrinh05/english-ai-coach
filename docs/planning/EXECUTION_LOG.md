@@ -50,7 +50,8 @@ Every implementation change must reference a valid Master Backlog Task ID.
 - Duplicate exception control flow: REMOVED
 - Architecture review result: FAIL — `ARCH-M0-001` (historical)
 - Remediation: stale active exception-based guidance replaced with the canonical PostgreSQL claim flow
-- Re-review required: NO — Architecture re-review PASS on 2026-08-31
+- Architecture re-review required: NO — Architecture re-review PASS on 2026-08-31
+- Database review result: PASS
 - Contract changes: None
 - Verified at: 2026-08-31
 
@@ -82,9 +83,12 @@ Same eventId + different logical request -> 409 IDEMPOTENCY_KEY_REUSE.
 - Reviewer declaration required: YES
 - Architecture review result: FAIL — `ARCH-M0-002` (historical)
 - Remediation: required Task status and Dependency status metadata fields added
-- Re-review required: NO — Architecture re-review PASS on 2026-08-31
+- Architecture re-review required: NO — Architecture re-review PASS on 2026-08-31
+- Database review result: FAIL — `DB-M0-001` (historical)
+- Database remediation: mandatory Database Reviewer gate, schema-to-Flyway declaration, approved no-migration exception, and database validation evidence added
+- Database re-review required: NO — Database re-review PASS on 2026-09-01
 - Contract changes: None
-- Verified at: 2026-08-31
+- Verified at: 2026-09-01
 
 Evidence:
 
@@ -92,6 +96,11 @@ Evidence:
 Repository now provides a governed Pull Request template requiring
 task traceability, impact declaration, validation evidence,
 reviewer gates, backward-compatibility assessment, and Definition of Done.
+
+Database-impacting PRs now require Database Reviewer approval and relevant
+database validation evidence. Every production schema change must identify
+its Flyway migration, or document an explicit exception approved by the
+Database Reviewer. Database re-review PASS on 2026-09-01.
 ```
 
 ### GOV-005 — Task Lifecycle and Git Naming Governance
@@ -204,6 +213,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | ---------- | ------- | -------- | ------- | ---------- |
 | 2026-08-31 | GOV-003 | RESOLVED | `ARCH-M0-001` — active documentation contradicted the canonical PostgreSQL idempotency claim with exception-based duplicate handling. | Replaced all identified active stale passages with `INSERT ... ON CONFLICT (event_id) DO NOTHING`, load/compare/replay-or-409 flow; Architecture re-review PASS on 2026-08-31. |
 | 2026-08-31 | GOV-004 | RESOLVED | `ARCH-M0-002` — PR template omitted required Task status and Dependency status metadata. | Added both required fields without removing existing governance sections; Architecture re-review PASS on 2026-08-31. |
+| 2026-09-01 | GOV-004 | RESOLVED | `DB-M0-001` — PR template did not require Database Reviewer approval for declared database impact and did not bind production schema changes to a Flyway migration or an approved exception. | Added the mandatory Database Reviewer gate, mutually exclusive no-impact declaration, schema/Flyway and approved-exception declarations, and relevant database validation evidence. Historical Database FAIL is preserved; Database re-review PASS on 2026-09-01. |
 
 #### Review result log
 
@@ -212,6 +222,9 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-08-31 | GOV-003 | Architecture Reviewer | FAIL | `ARCH-M0-001` — canonical PostgreSQL idempotency guidance was contradicted by stale exception-based duplicate-key guidance. Remediation was required; subsequently RESOLVED by Architecture re-review PASS on 2026-08-31. |
 | 2026-08-31 | GOV-004 | Architecture Reviewer | FAIL | `ARCH-M0-002` — PR template did not collect Task status and Dependency status. Remediation was required; subsequently RESOLVED by Architecture re-review PASS on 2026-08-31. |
 | 2026-08-31 | GOV-002, GOV-003, GOV-004, GOV-006 | Architecture Reviewer | PASS | Architecture re-review: `ARCH-M0-001` and `ARCH-M0-002` RESOLVED; no new blocking or non-blocking findings; recommendation APPROVE. |
+| 2026-09-01 | GOV-003 | Database Reviewer | PASS | Canonical PostgreSQL idempotency guidance is aligned with Database Schema v1.6 and the approved `INSERT ... ON CONFLICT (event_id) DO NOTHING` claim flow. |
+| 2026-09-01 | GOV-004 | Database Reviewer | FAIL | `DB-M0-001` — PR template allowed database impact without mandatory Database Reviewer approval and lacked a required schema-change/Flyway declaration. Remediation was required; subsequently RESOLVED by Database re-review PASS on 2026-09-01. |
+| 2026-09-01 | GOV-003, GOV-004 | Database Reviewer | PASS | Database re-review: `DB-M0-001` RESOLVED; no new blocking or non-blocking findings; Database v1.6 unchanged; no Flyway migration required; recommendation APPROVE. |
 
 #### Milestone status
 
