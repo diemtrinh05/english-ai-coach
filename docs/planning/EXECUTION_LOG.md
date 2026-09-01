@@ -247,6 +247,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | GOV-004 | RESOLVED | `DB-M0-001` — PR template did not require Database Reviewer approval for declared database impact and did not bind production schema changes to a Flyway migration or an approved exception. | Added the mandatory Database Reviewer gate, mutually exclusive no-impact declaration, schema/Flyway and approved-exception declarations, and relevant database validation evidence. Historical Database FAIL is preserved; Database re-review PASS on 2026-09-01. |
 | 2026-09-01 | GOV-004 | RESOLVED | `SEC-M0-001` — PR template declared security-sensitive impacts without making Security Reviewer approval mandatory and allowed the generic omitted-reviewer explanation to bypass Security Reviewer. | Added the mandatory Security Reviewer gate, made `No security-sensitive change` mutually exclusive with all security-impact options, and prohibited Security Reviewer omission through the generic explanation. Historical Security FAIL is preserved; Security re-review PASS on 2026-09-01. |
 | 2026-09-01 | GOV-003 | RESOLVED | `QA-M0-001` — Section 109 performed a pre-read and claim, then executed `operation.get()` without checking whether `INSERT ... ON CONFLICT (event_id) DO NOTHING` inserted the claim. | Section 109 was remediated so the claim result is authoritative: only the inserted branch executes the mutation and stores the response atomically; the not-inserted branch reloads, validates user/endpoint/hash, and replays or returns 409. Architecture, Database, and Security focused re-reviews PASS; QA re-review PASS on 2026-09-01. |
+| 2026-09-01 | BE-FND-001 | RESOLVED | `QA-BE-FND-001-001` — README documents build commands and artifact location but omits the executable Spring Boot JAR run command. | README now documents unambiguous build/test/run commands from the repository root; implementation-side validation passed; QA re-review PASS confirmed the finding resolved with no regression and recommendation APPROVE. |
 
 #### Review result log
 
@@ -272,13 +273,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | GOV-003 | Database Reviewer | PASS | Focused re-review of `QA-M0-001`: PostgreSQL claim flow and transaction semantics are correct; concurrent loser cannot execute the mutation; Database Schema v1.6 unchanged; no Flyway migration required; recommendation APPROVE. |
 | 2026-09-01 | GOV-003 | Security Reviewer | PASS | Focused re-review of `QA-M0-001`: concurrent duplicate mutation is prevented; user_id/endpoint/request_hash binding and replay/reuse-conflict semantics are preserved; no security contract change; recommendation APPROVE. |
 | 2026-09-01 | GOV-003 | QA Reviewer | PASS | QA re-review of `QA-M0-001`: Section 109 is race-safe; duplicate side effects are prevented; canonical idempotency semantics are preserved; no API/OpenAPI, Database Schema v1.6, security, or business-rule contract change; recommendation APPROVE M0. |
+| 2026-09-01 | BE-FND-001 | QA Reviewer | FAIL | `QA-BE-FND-001-001` (P1 — Blocking) — README omits the executable Spring Boot JAR run command; focused remediation and QA re-review required. |
+| 2026-09-01 | BE-FND-001 | QA Reviewer | PASS | Focused re-review: `QA-BE-FND-001-001` RESOLVED; README build/test/run usage is unambiguous; no regression introduced; recommendation APPROVE. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  0 |    27 |                 0% | NOT_STARTED |
+| M1 — Foundation Ready                    |                  2 |    28 |               7.1% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -301,6 +304,136 @@ and final QA re-review PASS. Final QA recommendation: APPROVE M0.
 ```
 
 ## M1 — Foundation Ready
+
+### BE-FND-001 — Bootstrap Spring Boot backend project
+
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW → DONE
+- Branch: `feat/BE-FND-001-spring-bootstrap`
+- Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Dependencies: `GOV-006` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: Project build được; Java/Spring Boot theo Technical Spec; build tool được ghi rõ trong README; không thêm dependency ngoài nhu cầu baseline.
+- Required tests: Build smoke test
+- Contract changes: None
+- Started at: 2026-09-01
+- Ready for review: 2026-09-01
+- Reviewer results: Architecture Reviewer PASS; QA Reviewer FAIL (historical) — `QA-BE-FND-001-001`; QA re-review PASS
+- Final reviewer gates: AR=PASS; QAR=PASS
+- Blockers: None
+- Remediation ready for QA re-review: 2026-09-01
+- Closed at: 2026-09-01
+- Pull Request: #2 — `feat(BE-FND-001): bootstrap Spring Boot backend`
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-001`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3 and merged into this branch
+- CI status reason: `CI-FND-001` has not yet been implemented and `BE-FND-001` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- PRE_CI reviewer state: Architecture Reviewer PASS; QA Reviewer PASS
+- PRE_CI finding state: `QA-BE-FND-001-001` RESOLVED; regression introduced: NO
+- PRE_CI unresolved blockers: NONE
+
+Reviewer evidence:
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+Recommendation: APPROVE
+Scope creep: none
+Contract impact: none
+```
+
+QA reviewer evidence (historical):
+
+```text
+Reviewer: QA Reviewer
+Result: FAIL
+Finding ID: QA-BE-FND-001-001
+Severity: P1 — Blocking
+Finding: README documents clean verify/build commands and artifact location but
+does not document how to run the executable Spring Boot JAR.
+Required action: Add the executable JAR run command for the documented working
+directory and make build/test/run usage unambiguous.
+Finding status: REMEDIATED — QA RE-REVIEW PENDING
+QA re-review: REQUIRED
+```
+
+Non-contract decisions:
+
+```text
+Build tool: Maven + Maven Wrapper
+Java baseline: 21 LTS
+Spring Boot: 4.1.1
+Reason: Technical/Backend Specifications cho phép Maven hoặc Gradle và không khóa
+số phiên bản; lựa chọn này dùng stable Spring Boot hiện tại, Java LTS và dependency
+management do Spring Boot cung cấp mà không thay đổi API/DB/business contract.
+```
+
+Implementation evidence:
+
+```text
+Maven Wrapper 3.3.4 khóa Maven 3.9.16.
+Spring Boot entry point dùng package com.example.englishaicoach.
+Direct runtime dependency: spring-boot-starter-webmvc.
+Direct test dependency: spring-boot-starter-webmvc-test.
+README ghi rõ build tool, JDK requirement, lệnh smoke build và artifact path.
+Không thêm API, DB, Flyway, security, profile/config hoặc business logic của task kế tiếp.
+```
+
+Validation evidence:
+
+```text
+.\mvnw.cmd clean verify
+→ BUILD SUCCESS
+→ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+
+java -jar target\english-ai-coach-backend-0.0.1-SNAPSHOT.jar --server.port=0
+→ Embedded Tomcat started successfully on an ephemeral port
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+```
+
+Focused remediation evidence — `QA-BE-FND-001-001`:
+
+```text
+README working directory: repository root
+Build and smoke test: .\backend\mvnw.cmd -f backend\pom.xml clean verify
+Run executable JAR: java -jar backend\target\english-ai-coach-backend-0.0.1-SNAPSHOT.jar
+Build result: BUILD SUCCESS
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+Run result: embedded Tomcat started successfully on an ephemeral port
+baseline_audit.py: PASS
+py_compile: PASS
+git diff --check: PASS
+QA re-review: REQUIRED — no QA PASS claimed
+```
+
+QA re-review and closure evidence:
+
+```text
+Reviewer: QA Reviewer
+Result: PASS
+Finding ID: QA-BE-FND-001-001
+Finding status: RESOLVED
+Regression introduced: NO
+Recommendation: APPROVE
+Final reviewer gates: AR=PASS; QAR=PASS
+Unresolved blockers: none
+API/OpenAPI changes: none
+Database/Flyway changes: none
+Security changes: none
+Business/client contract changes: none
+```
 
 ### Governance Amendment / Pre-Foundation
 

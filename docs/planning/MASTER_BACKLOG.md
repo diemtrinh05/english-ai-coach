@@ -75,7 +75,7 @@
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `BE-FND-001` | Bootstrap Spring Boot backend project | CBL | `GOV-006` | P0 | AR,QAR | Project build được; Java/Spring Boot theo Technical Spec; build tool được ghi rõ trong README; không thêm dependency ngoài nhu cầu baseline. | Build smoke test. | TODO |
+| `BE-FND-001` | Bootstrap Spring Boot backend project | CBL | `GOV-006` | P0 | AR,QAR | Project build được; Java/Spring Boot theo Technical Spec; build tool được ghi rõ trong README; không thêm dependency ngoài nhu cầu baseline. | Build smoke test. | DONE |
 | `BE-FND-002` | Dựng modular-monolith package/module skeleton | CBL | `BE-FND-001` | P0 | AR,QAR | Có module/package cho auth,user,onboarding,vocabulary,learning,personalization,quiz,progress,gamification,notification,ai,admin,audit,common; dependency direction đúng Architecture v1.3. | Theo global DoD + acceptance. | TODO |
 | `BE-FND-003` | Thiết lập application profiles và typed configuration | CBL | `BE-FND-001` | P0 | AR,SR,QAR | `application.yml/local/test/prod`; typed properties cho assessment/SRS/personalization/gamification/notification/idempotency; default constants khớp baseline. | Theo global DoD + acceptance. | TODO |
 | `DB-FND-001` | Dựng PostgreSQL local + Docker Compose | CBL | `BE-FND-001` | P0 | DBR,QAR | Local PostgreSQL start/stop reproducible; credential lấy từ env; healthcheck hoạt động. | Theo global DoD + acceptance. | TODO |
