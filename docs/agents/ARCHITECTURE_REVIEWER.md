@@ -121,12 +121,15 @@ idempotency_keys
 Race:
 
 ```text
-duplicate INSERT
-→ catch/inspect conflict
-→ reload
-→ compare
-→ replay or 409
+INSERT ... ON CONFLICT (event_id) DO NOTHING
+→ claim inserted: mutation + successful response commit atomically
+→ claim not inserted: load existing eventId
+→ compare user_id separately + endpoint + SHA-256 canonical request_hash
+→ same logical request: replay stored response
+→ different logical request: 409 IDEMPOTENCY_KEY_REUSE
 ```
+
+Reject implementations that use unique-constraint exceptions as normal duplicate-claim control flow or continue work in the same failed PostgreSQL transaction. Business failure must roll back the claim, and expected duplicate races must not escape as HTTP 500.
 
 ## Concurrency
 

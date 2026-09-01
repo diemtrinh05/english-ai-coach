@@ -22,6 +22,52 @@ required=[
 for r in required:
     if not (ROOT/r).exists(): fail('MISSING_BASELINE',r)
 
+# Governance guard hẹp cho Database / Flyway gate trong PR template.
+pr_template_path=ROOT/'.github/PULL_REQUEST_TEMPLATE.md'
+if not pr_template_path.exists():
+    fail('MISSING_PR_TEMPLATE','.github/PULL_REQUEST_TEMPLATE.md')
+else:
+    pr_template=pr_template_path.read_text(encoding='utf-8')
+    pr_database_markers={
+        'PR_DB_REVIEWER_GATE':'Database Reviewer is mandatory when any Database / Flyway impact is declared.',
+        'PR_SCHEMA_FLYWAY_DECLARATION':'Corresponding Flyway migration (required for every production schema change):',
+        'PR_SCHEMA_FLYWAY_EXCEPTION':'Schema-impacting PR without a Flyway migration — explicit exception reason (Database Reviewer approval required):',
+        'PR_DB_VALIDATION_EVIDENCE':'Database validation evidence (required for every database-impacting PR):',
+    }
+    for code,marker in pr_database_markers.items():
+        if marker not in pr_template: fail(code,'missing from .github/PULL_REQUEST_TEMPLATE.md')
+
+    # Governance guard hẹp cho Security Reviewer gate; kiểm tra theo ngữ nghĩa
+    # trong đúng section để không khóa template vào một câu chữ tuyệt đối.
+    security_section_match=re.search(r'^### Security\s*$([\s\S]*?)(?=^## Tests\s*$)',pr_template,re.M)
+    reviewer_section_match=re.search(r'^## Required Reviewers\s*$([\s\S]*?)(?=^## Backward Compatibility\s*$)',pr_template,re.M)
+    if not security_section_match:
+        fail('PR_SECURITY_SECTION','missing Security section from .github/PULL_REQUEST_TEMPLATE.md')
+    else:
+        security_section=security_section_match.group(1)
+        security_impact_options=[
+            'Authentication / authorization',
+            'Secrets / credentials',
+            'Idempotency / concurrency',
+            'AI / external provider',
+            'Push token / personal data',
+        ]
+        for option in security_impact_options:
+            if option not in security_section:
+                fail('PR_SECURITY_IMPACT_OPTION',f'missing security impact option: {option}')
+        if not re.search(r'No security-sensitive change[^\n]*mutually exclusive',security_section,re.I):
+            fail('PR_SECURITY_NO_IMPACT_EXCLUSIVE','No security-sensitive change must be mutually exclusive with security impact options')
+        if not re.search(r'any security-sensitive impact[\s\S]{0,160}Security Reviewer approval is required',security_section,re.I):
+            fail('PR_SECURITY_REVIEWER_GATE','security-sensitive impact must require Security Reviewer approval')
+    if not reviewer_section_match:
+        fail('PR_REQUIRED_REVIEWERS_SECTION','missing Required Reviewers section from .github/PULL_REQUEST_TEMPLATE.md')
+    else:
+        reviewer_section=reviewer_section_match.group(1)
+        if not re.search(r'Security Reviewer[^\n]{0,120}mandatory[^\n]{0,120}security-sensitive impact',reviewer_section,re.I):
+            fail('PR_SECURITY_REVIEWER_MANDATORY','Required Reviewers must make Security Reviewer mandatory for security-sensitive impact')
+        if not re.search(r'generic omitted-reviewer[^\n]{0,240}(?:does not permit|cannot)[^\n]{0,160}Security Reviewer omission[^\n]{0,160}security-sensitive impact',reviewer_section,re.I):
+            fail('PR_SECURITY_OMISSION_BYPASS','generic omitted-reviewer explanation must not permit Security Reviewer omission')
+
 expected_headers={
 'docs/architecture/English_AI_Coach_System_Architecture_v1.3.md':'# System Architecture v1.3 — English AI Coach',
 'docs/ai/English_AI_Coach_AI_Personalization_Specification_v1.3.md':'# AI Personalization Specification v1.3 — English AI Coach',
@@ -36,6 +82,62 @@ expected_headers={
 for rel,header in expected_headers.items():
     p=ROOT/rel
     if p.exists() and not p.read_text(encoding='utf-8').startswith(header): fail('VERSION_HEADER_MISMATCH',rel)
+
+# Guard hẹp cho skeleton chuẩn ở Section 109: kết quả claim phải kiểm soát mutation.
+backend_spec_path=ROOT/'docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md'
+if backend_spec_path.exists():
+    backend_spec=backend_spec_path.read_text(encoding='utf-8')
+    section_109_match=re.search(
+        r'^# 109\. Idempotency Service Skeleton\s*$([\s\S]*?)(?=^# 110\.)',
+        backend_spec,
+        re.M,
+    )
+    if not section_109_match:
+        fail('BACKEND_IDEMPOTENCY_SECTION_109','missing authoritative Section 109 skeleton')
+    else:
+        code_match=re.search(r'```java\s*\n([\s\S]*?)\n```',section_109_match.group(1))
+        if not code_match:
+            fail('BACKEND_IDEMPOTENCY_SECTION_109_CODE','missing Java skeleton')
+        else:
+            skeleton=code_match.group(1)
+            claim_match=re.search(
+                r'\bboolean\s+inserted\s*=\s*claimWithOnConflictDoNothing\s*\(',
+                skeleton,
+            )
+            inserted_branch=re.search(r'\bif\s*\(\s*inserted\s*\)\s*\{',skeleton)
+            if not claim_match:
+                fail('BACKEND_IDEMPOTENCY_CLAIM_RESULT','Section 109 must capture the PostgreSQL claim result')
+            if not inserted_branch:
+                fail('BACKEND_IDEMPOTENCY_INSERTED_BRANCH','Section 109 must branch on whether the claim was inserted')
+            elif claim_match and claim_match.start() > inserted_branch.start():
+                fail('BACKEND_IDEMPOTENCY_CLAIM_ORDER','Section 109 must claim before testing inserted')
+            else:
+                # Tìm đúng block inserted để bảo đảm operation.get() không nằm ngoài nhánh này.
+                block_start=skeleton.find('{',inserted_branch.start())
+                depth=0
+                block_end=None
+                for index in range(block_start,len(skeleton)):
+                    if skeleton[index]=='{': depth+=1
+                    elif skeleton[index]=='}':
+                        depth-=1
+                        if depth==0:
+                            block_end=index
+                            break
+                mutations=[match.start() for match in re.finditer(r'\boperation\.get\(\)',skeleton)]
+                if block_end is None:
+                    fail('BACKEND_IDEMPOTENCY_INSERTED_BLOCK','Section 109 inserted branch is incomplete')
+                elif not mutations or any(not (block_start < pos < block_end) for pos in mutations):
+                    fail('BACKEND_IDEMPOTENCY_MUTATION_GUARD','Section 109 business mutation must execute only after an inserted claim')
+                else:
+                    not_inserted_path=skeleton[block_end+1:]
+                    if not re.match(r'\s*else\s*\{',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_BRANCH','Section 109 must contain an explicit claim-not-inserted branch')
+                    if not re.search(r'repository\.findById\(eventId\)',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_RELOAD','Section 109 must reload eventId when claim was not inserted')
+                    if not re.search(r'validateReuse\s*\([\s\S]*?userId[\s\S]*?endpoint[\s\S]*?requestHash[\s\S]*?\)',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_VALIDATE','Section 109 must validate user, endpoint, and canonical request hash before replay')
+                    if not re.search(r'return\s+replay\s*\(',not_inserted_path):
+                        fail('BACKEND_IDEMPOTENCY_NOT_INSERTED_REPLAY','Section 109 must replay only after validating the existing claim')
 
 # General hygiene (exclude historical reconciliation)
 for p in ROOT.rglob('*.md'):
@@ -70,6 +172,36 @@ for p in ROOT.rglob('*.md'):
         m=re.match(r'^#\s+(\d+)\.\s+',line)
         if m: nums.append(int(m.group(1)))
     if len(nums)!=len(set(nums)): fail('DUPLICATE_H1_NUMBER',rel)
+
+# Ngăn hướng dẫn idempotency active quay lại flow bắt exception do race.
+# Reconciliation đã ARCHIVED — INTEGRATED được bỏ qua để giữ provenance lịch sử.
+forbidden_idempotency_guidance=[
+    re.compile(r'catch/inspect (?:database |duplicate-key )?conflict',re.I),
+    re.compile(r'catch unique violation',re.I),
+    re.compile(r'DataIntegrityViolationException'),
+    re.compile(r'application must handle the database duplicate-key conflict',re.I),
+    re.compile(r'duplicate-key race is an expected control-flow case',re.I),
+    re.compile(r'use (?:a )?unique-constraint exception as (?:the )?normal duplicate-claim control flow',re.I),
+    re.compile(r'catch a duplicate-key exception and continue work',re.I),
+]
+negated_guidance=re.compile(
+    r'(?:do\s+(?:\*\*)?not|must\s+not|không(?:\s+còn)?|no\s+longer|removed|prohibited|forbidden|reject)',
+    re.I,
+)
+for p in ROOT.rglob('*.md'):
+    rel=p.relative_to(ROOT).as_posix()
+    if rel.startswith('docs/reconciliation/'):
+        continue
+    s=p.read_text(encoding='utf-8')
+    if re.search(r'^\*\*Status:\*\*\s*(?:ARCHIVED|SUPERSEDED)\b',s,re.M):
+        continue
+    for line_no,line in enumerate(s.splitlines(),start=1):
+        for pattern in forbidden_idempotency_guidance:
+            for match in pattern.finditer(line):
+                # Cho phép câu cấm rõ ràng như "Do not catch ..." trong guidance canonical.
+                if negated_guidance.search(line[:match.start()]):
+                    continue
+                fail('STALE_IDEMPOTENCY_EXCEPTION_FLOW',f'{rel}:{line_no}: {match.group(0)}')
 
 # DB invariants
 db=(ROOT/'docs/database/English_AI_Coach_Database_Schema_v1.6.md').read_text(encoding='utf-8')

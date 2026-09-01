@@ -2872,6 +2872,7 @@ Implementation details may differ, but business order must remain transactionall
 # 109. Idempotency Service Skeleton
 
 ```java
+@Transactional
 public <T> T execute(
         UUID userId,
         String endpoint,
@@ -2894,20 +2895,40 @@ public <T> T execute(
         return replay(existing.get());
     }
 
-    claim(eventId, userId, endpoint, requestHash);
-
-    T response = operation.get();
-
-    storeResponse(
+    boolean inserted = claimWithOnConflictDoNothing(
         eventId,
-        response,
-        httpStatusOf(response));
+        userId,
+        endpoint,
+        requestHash);
 
-    return response;
+    if (inserted) {
+        T response = operation.get();
+
+        storeResponse(
+            eventId,
+            response,
+            httpStatusOf(response));
+
+        return response;
+    } else {
+        IdempotencyKey claimedByConcurrentRequest =
+            repository.findById(eventId)
+                .orElseThrow();
+
+        validateReuse(
+            claimedByConcurrentRequest,
+            userId,
+            endpoint,
+            requestHash);
+
+        return replay(claimedByConcurrentRequest);
+    }
 }
 ```
 
-Actual implementation must account for concurrent claims and transaction behavior.
+The initial lookup is only a fast path. `claimWithOnConflictDoNothing(...)` must execute PostgreSQL `INSERT ... ON CONFLICT (event_id) DO NOTHING` and return whether this transaction inserted the claim. The business operation executes only in the `inserted` branch. If the claim was not inserted, the service reloads `eventId`; `validateReuse(...)` compares `user_id` separately together with endpoint identity and the canonical SHA-256 `request_hash`, then replay occurs only for the same logical request. Any mismatch returns HTTP 409 `IDEMPOTENCY_KEY_REUSE`.
+
+The claim, business mutation, and successful response snapshot/status share this transaction and commit atomically. A business failure rolls back the claim. The claim-not-inserted branch never invokes `operation.get()`.
 
 ---
 
@@ -4710,7 +4731,7 @@ AI
 
 # 191. Final Idempotency Concurrency Decision
 
-The official V1.2 rule is:
+This section is normative and uses the same canonical PostgreSQL rule as Section 23.
 
 ```text
 Do not rely on:
@@ -4720,31 +4741,28 @@ findById(eventId)
 
 Use:
 
-```text
-PRIMARY KEY(event_id)
-+
-attempt INSERT
-+
-catch/inspect duplicate-key conflict
-+
-reload existing key
-+
-compare user/endpoint/request_hash
-+
-replay or 409
+```sql
+INSERT INTO idempotency_keys(event_id, user_id, endpoint, request_hash, created_at)
+VALUES (:eventId, :userId, :endpoint, :requestHash, now())
+ON CONFLICT (event_id) DO NOTHING;
 ```
 
-The duplicate-key race is an expected control-flow case, not an application crash.
+Then follow one unambiguous flow:
 
 ```text
-race condition
-→ controlled idempotency outcome
+claim inserted
+→ execute the business mutation
+→ persist the successful response snapshot/status
+→ commit the mutation and idempotency result atomically
 
-not
-
-race condition
-→ HTTP 500
+claim not inserted
+→ load the existing eventId
+→ compare user_id separately + endpoint identity + SHA-256 canonical request_hash
+→ same logical request: replay the stored response
+→ different logical request: HTTP 409 IDEMPOTENCY_KEY_REUSE
 ```
+
+Do not use unique-constraint exceptions, including `DataIntegrityViolationException`, as normal duplicate-claim control flow. Do not catch a duplicate-key exception and continue work in the same failed PostgreSQL transaction. If the business mutation fails, the claim rolls back in the same transaction. Expected duplicate races must not escape as HTTP 500.
 
 ---
 

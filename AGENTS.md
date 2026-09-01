@@ -12,7 +12,6 @@ docs/PROJECT_RULES.md
 
 Then read the current approved documents relevant to the task.
 
-
 ## Language Policy
 
 All AI-agent responses and reports must be written in **Vietnamese**.
@@ -74,6 +73,128 @@ STOP
 → propose a resolution
 → wait for approval when the change affects contract/scope
 ```
+
+## Implementation Planning
+
+Before starting any implementation task, every Agent must read:
+
+1. `docs/PROJECT_RULES.md`
+2. `docs/planning/IMPLEMENTATION_PLAN.md`
+3. `docs/planning/MASTER_BACKLOG.md`
+4. the relevant approved baseline specification(s)
+5. the applicable role-specific Agent instructions
+
+Every implementation change must reference a valid Master Backlog Task ID.
+
+Agents must:
+
+- implement only the assigned task and its explicit dependencies;
+- respect milestone and dependency ordering;
+- not invent business rules, API behavior, database behavior, or client behavior outside the approved baseline;
+- report blockers instead of silently expanding scope;
+- satisfy the task acceptance criteria and required reviewer gates before marking a task `DONE`;
+- run the required validation/test commands defined by the task before completion.
+
+## Task Lifecycle and Git Naming
+
+Every implementation or governance change must be traceable to one or more valid Task IDs from `docs/planning/MASTER_BACKLOG.md`.
+
+### Task statuses
+
+Use only these task statuses:
+
+```text
+TODO
+READY
+IN_PROGRESS
+BLOCKED
+IN_REVIEW
+DONE
+```
+
+Normal lifecycle:
+
+```text
+TODO
+↓
+READY
+↓
+IN_PROGRESS
+↓
+IN_REVIEW
+↓
+DONE
+```
+
+A task may move to `BLOCKED` from `READY`, `IN_PROGRESS`, or `IN_REVIEW` when an unresolved dependency, contract ambiguity, failed required gate, or external blocker prevents progress.
+
+A task must not be marked `DONE` until its acceptance criteria, required validation, and reviewer gates are satisfied.
+
+### Branch naming
+
+For a single-task branch, use:
+
+```text
+<type>/<TASK-ID>-<short-slug>
+```
+
+Examples:
+
+```text
+feat/BE-FND-001-spring-bootstrap
+fix/BE-FND-008-idempotency-race
+chore/CI-FND-001-ci-pipeline
+docs/GOV-005-task-workflow
+test/QA-FND-001-foundation-tests
+```
+
+For an explicitly approved milestone batch containing multiple closely related governance tasks, include the covered Task ID range:
+
+```text
+chore/GOV-001-GOV-007-m0-governance
+```
+
+Do not create generic implementation branches such as:
+
+```text
+feature/backend
+fix/stuff
+development
+work
+temp
+```
+
+### Commit naming
+
+Each task-scoped commit must include its Task ID:
+
+```text
+<type>(<TASK-ID>): <description>
+```
+
+Examples:
+
+```text
+feat(BE-FND-001): bootstrap Spring Boot backend
+fix(BE-FND-008): handle concurrent idempotency claims
+test(QA-FND-001): add foundation integration tests
+docs(GOV-005): define task lifecycle and Git naming
+```
+
+A commit covering an approved multi-task governance batch may reference the relevant Task IDs in the commit body, but implementation commits should normally remain task-scoped.
+
+### Pull Request traceability
+
+Every Pull Request must identify:
+
+- the applicable Backlog Task ID(s);
+- milestone;
+- task status;
+- dependency status;
+- required reviewers;
+- validation/test evidence.
+
+PRs must not silently combine unrelated backlog tasks.
 
 ## Current baseline
 
@@ -140,7 +261,7 @@ same eventId + different endpoint/request/user
 → 409 IDEMPOTENCY_KEY_REUSE
 ```
 
-For concurrent duplicate INSERT, application must handle the database duplicate-key conflict, reload the record, compare identity/hash, then replay or return 409. It must not become an accidental 500.
+For concurrent claims, use PostgreSQL `INSERT ... ON CONFLICT (event_id) DO NOTHING`. If the claim is not inserted, load the existing `eventId`, compare `user_id` separately together with endpoint identity and the SHA-256 canonical `request_hash`, then replay the stored response or return `409 IDEMPOTENCY_KEY_REUSE`. Do not use unique-constraint exceptions as normal duplicate-claim control flow or continue work in a failed PostgreSQL transaction. The business mutation and successful idempotency result must commit atomically; expected duplicate races must not become HTTP 500.
 
 ## Optimistic locking
 
@@ -227,7 +348,6 @@ VERIFY CONTRACT
 ↓
 UPDATE DOCS IF NEEDED
 ```
-
 
 ## Document Preservation Rule
 
