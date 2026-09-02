@@ -275,6 +275,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | GOV-003 | QA Reviewer | PASS | QA re-review of `QA-M0-001`: Section 109 is race-safe; duplicate side effects are prevented; canonical idempotency semantics are preserved; no API/OpenAPI, Database Schema v1.6, security, or business-rule contract change; recommendation APPROVE M0. |
 | 2026-09-01 | BE-FND-001 | QA Reviewer | FAIL | `QA-BE-FND-001-001` (P1 — Blocking) — README omits the executable Spring Boot JAR run command; focused remediation and QA re-review required. |
 | 2026-09-01 | BE-FND-001 | QA Reviewer | PASS | Focused re-review: `QA-BE-FND-001-001` RESOLVED; README build/test/run usage is unambiguous; no regression introduced; recommendation APPROVE. |
+| 2026-09-02 | BE-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
+| 2026-09-02 | BE-FND-002 | QA Reviewer | PASS | Independent QA review completed with no findings. |
 
 #### Milestone status
 
@@ -433,6 +435,117 @@ API/OpenAPI changes: none
 Database/Flyway changes: none
 Security changes: none
 Business/client contract changes: none
+```
+
+### BE-FND-002 — Dựng modular-monolith package/module skeleton
+
+- Status: IN_REVIEW
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW
+- Branch: `feat/BE-FND-002-modular-monolith-skeleton`
+- Dependencies: `BE-FND-001` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: Có module/package cho auth, user, onboarding, vocabulary, learning, personalization, quiz, progress, gamification, notification, ai, admin, audit, common; dependency direction đúng Architecture v1.3.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Blockers: None
+- Contract changes: None
+- Started at: 2026-09-02
+- Ready for review: 2026-09-02
+- Reviewer results: Architecture Reviewer PASS — no findings; QA Reviewer PASS — no findings
+- Final reviewer gates: AR=PASS; QAR=PASS
+- Unresolved reviewer findings: None
+- PRE_CI eligibility: `BE-FND-002` is eligible; required reviewer PASS is satisfied; final `PRE_CI_BOOTSTRAP_NA` evidence remains pending PR-level evidence only
+
+Reviewer evidence:
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+```
+
+```text
+Reviewer: QA Reviewer
+Result: PASS
+Findings: none
+```
+
+Closure state:
+
+```text
+Required reviewer gates: AR=PASS; QAR=PASS.
+Task remains IN_REVIEW because PR-level PRE_CI_BOOTSTRAP_NA evidence is pending.
+No DONE transition is recorded.
+```
+
+Implementation plan:
+
+```text
+Create one package-info.java skeleton for each package named by the acceptance criteria.
+Add a focused structural test that verifies all required package skeletons exist,
+declare the expected package, and introduce no imports/cross-module dependencies.
+Do not add assessment/config/security/storage subpackages, framework dependencies,
+API, persistence, configuration, security, provider, or business implementation.
+```
+
+Non-contract decision:
+
+```text
+Use package-info.java instead of placeholder services/controllers/entities.
+Reason: package-info.java makes every package version-controlled and documents its
+approved responsibility without inventing later-task implementation. The dependency-
+free skeleton is consistent with the Architecture v1.3 layered direction at this stage.
+```
+
+Implementation evidence:
+
+```text
+Added package-info.java for exactly the 14 acceptance packages:
+auth, user, onboarding, vocabulary, learning, personalization, quiz, progress,
+gamification, notification, ai, admin, audit, common.
+Each skeleton is dependency-free and contains only package responsibility
+documentation plus its package declaration.
+Added ModulePackageStructureTests to verify every required package skeleton,
+its canonical package declaration, and absence of imports in the skeleton.
+No dependency was added and pom.xml remains unchanged.
+```
+
+Implementation-side validation evidence:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+→ Context smoke test: PASS
+→ Module package structure tests: PASS (2 tests)
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and git diff
+→ INSPECTED
+```
+
+Change impact:
+
+```text
+Change: Add the BE-FND-002 modular-monolith root package skeleton and structural tests.
+Why: Satisfy the approved BE-FND-002 acceptance criteria.
+Affected documents: MASTER_BACKLOG.md and EXECUTION_LOG.md lifecycle/evidence only.
+Affected API/OpenAPI: None.
+Affected database/Flyway: None.
+Affected security: None.
+Affected clients: None.
+Migration: None.
+Tests: Build smoke test plus focused module package structure tests.
+Backward compatibility: Preserved; no runtime or contract behavior changed.
 ```
 
 ### Governance Amendment / Pre-Foundation
