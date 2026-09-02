@@ -66,6 +66,9 @@ application-local.properties
 **/application-local.yaml
 **/application-local.properties
 
+# BE-FND-003 cố ý track profile local dùng chung này; file chỉ kích hoạt profile và không chứa secret.
+!backend/src/main/resources/application-local.yml
+
 # Optional external secret config
 application-secret.yml
 application-secret.yaml

@@ -1,0 +1,6 @@
+# Profile local dùng chung được cố ý track để mọi developer có cùng điểm khởi đầu.
+# File này chỉ kích hoạt profile, không chứa secret hoặc override theo từng máy.
+spring:
+  config:
+    activate:
+      on-profile: local

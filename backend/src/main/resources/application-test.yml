@@ -1,0 +1,5 @@
+# Profile test chỉ kích hoạt lớp cấu hình môi trường; default vẫn kế thừa từ application.yml.
+spring:
+  config:
+    activate:
+      on-profile: test
