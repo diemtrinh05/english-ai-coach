@@ -1,0 +1,117 @@
+# Nguồn default dùng chung cho mọi profile của BE-FND-003.
+# Các file profile chỉ override khi có yêu cầu môi trường đã được phê duyệt; không sao chép
+# các giá trị baseline sang từng profile để tránh drift.
+spring:
+  application:
+    name: english-ai-coach-backend
+
+app:
+  # Số câu hỏi, kích thước block và ngưỡng chuyển mức của assessment-block-v1.
+  assessment:
+    algorithm-version: assessment-block-v1
+    minimum-questions: 20
+    maximum-questions: 50
+    block-size: 4
+    promote-correct-threshold: 3
+    demote-correct-threshold: 1
+    stable-hold-blocks-required: 2
+    starting-level: A1
+    options-per-question: 4
+    minimum-vocabulary-per-level: 30
+  # Interval dùng ngày; response time dùng Duration; quality dùng thang 0..5.
+  srs:
+    algorithm-version: sm2-ext-v1
+    initial-ease-factor: 2.50
+    minimum-ease-factor: 1.30
+    minimum-interval-days: 1
+    maximum-interval-days: 180
+    first-success-interval-days: 1
+    second-success-interval-days: 6
+    response-time-reference: 3s
+    response-time-floor: 1s
+    minimum-time-factor: 0.85
+    maximum-time-factor: 1.10
+    correct-quality-threshold: 3
+    mastered-minimum-quality: 4
+    mastered-minimum-repetitions: 5
+    mastered-minimum-interval-days: 30
+  # Tỷ lệ/trọng số là số không đơn vị; các allocation percent trong mỗi bộ có tổng 100.
+  personalization:
+    weakness-algorithm-version: weakness-rule-v1
+    forgetting-risk-algorithm-version: forgetting-risk-v1
+    daily-plan-algorithm-version: daily-plan-v1
+    weakness:
+      history-window: 10
+      recent-window: 5
+      minimum-attempts: 3
+      response-time-baseline: 2s
+      response-time-range: 6s
+      weak-accuracy-threshold: 0.60
+      consecutive-failures-threshold: 2
+      slow-recall-threshold: 6s
+      low-answer-quality-threshold: 3.5
+      error-rate-weight: 0.40
+      response-time-weight: 0.20
+      low-quality-weight: 0.20
+      recent-failure-weight: 0.20
+    forgetting-risk:
+      default-last-quality: 2.5
+      maximum-repetitions: 5
+      time-pressure-weight: 0.45
+      error-rate-weight: 0.25
+      quality-penalty-weight: 0.15
+      repetition-penalty-weight: 0.10
+      response-penalty-weight: 0.05
+      medium-threshold: 0.40
+      high-threshold: 0.70
+    recommendation:
+      lower-level-fallback: 1
+      topic-diversity-minimum-new-words: 5
+      topic-diversity-cap: 0.40
+      non-primary-goal-multiplier: 0.5
+    workload:
+      performance-window-days: 7
+      minimum-active-days: 3
+      high-completion-threshold: 0.90
+      high-accuracy-threshold: 0.85
+      low-completion-threshold: 0.70
+      low-accuracy-threshold: 0.60
+      high-change-percent: 10
+      low-change-percent: -20
+      maximum-increase-percent: 20
+      maximum-decrease-percent: 30
+      initial-units-per-minute: 1.5
+      minimum-initial-units: 5
+    allocation:
+      high-backlog-minimum: 10
+      high-backlog-multiplier: 1.5
+      high-backlog-review-percent: 80
+      high-backlog-new-percent: 15
+      high-backlog-quiz-percent: 5
+      high-retention-review-percent: 50
+      high-retention-new-percent: 35
+      high-retention-quiz-percent: 15
+      normal-review-percent: 60
+      normal-new-percent: 25
+      normal-quiz-percent: 15
+      new-item-estimated-seconds: 60
+      review-item-estimated-seconds: 30
+      quiz-question-estimated-seconds: 45
+  # Các giá trị thưởng dùng đơn vị XP; thay đổi default cần approved baseline change.
+  gamification:
+    algorithm-version: gamification-v1
+    correct-learning-attempt-xp: 5
+    correct-quiz-answer-xp: 5
+    completed-learning-session-xp: 10
+    completed-daily-plan-xp: 50
+    maintained-streak-xp: 10
+    xp-per-level: 500
+    perfect-quiz-minimum-questions: 5
+  # Các giờ local được diễn giải theo timezone của user bởi notification flow sau này.
+  notification:
+    default-preferred-study-time: "19:00"
+    daily-plan-reminder-time: "07:00"
+    streak-reminder-time: "21:00"
+  # Thời gian lưu idempotency record dùng Duration; 30d là default đã phê duyệt.
+  idempotency:
+    retention: 30d

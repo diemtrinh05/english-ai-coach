@@ -582,6 +582,210 @@ Existing failing CI check: NONE
 Unresolved blockers: NONE
 ```
 
+### BE-FND-003 — Thiết lập application profiles và typed configuration
+
+- Status: IN_REVIEW
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW
+- Branch: `feat/BE-FND-003-application-profiles-config`
+- Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Dependencies: `BE-FND-001` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, Security Reviewer, QA Reviewer
+- Acceptance: `application.yml/local/test/prod`; typed properties cho assessment/SRS/personalization/gamification/notification/idempotency; default constants khớp baseline.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: SRS v1.2; System Architecture v1.3; AI Personalization v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Blockers: actual CI PASS pending; BE-FND-003 is not eligible for `PRE_CI_BOOTSTRAP_NA`
+- Contract changes: None
+- Started at: 2026-09-02
+- Ready for review: 2026-09-02
+- Current reviewer state: AR=PASS; SR=PASS; QAR=PASS
+
+Historical QA finding:
+
+```text
+Reviewer: QA Reviewer
+Result: FAIL
+Finding ID: QA-BE-FND-003-001
+Severity: HIGH
+Blocking: YES
+Finding: maximum-decrease-percent represented the canonical maximum workload decrease
+as signed -30 instead of the approved positive magnitude 30.
+Required action: change only maximum-decrease-percent to 30 and update its focused test;
+preserve low-change-percent = -20 because it is a signed raw change.
+Finding status: RESOLVED
+```
+
+Focused remediation for `QA-BE-FND-003-001`:
+
+```text
+Changed only app.personalization.workload.maximum-decrease-percent from -30 to 30
+so the maximum decrease is represented as the approved positive magnitude.
+Updated only the corresponding maximumDecreasePercent test expectation from -30 to 30.
+Preserved app.personalization.workload.low-change-percent = -20 and its test expectation
+because lowChangePercent is the signed raw change applied in the low-performance branch.
+Focused ConfigurationPropertiesTests: PASS — 4 tests, 0 failures, 0 errors, 0 skipped.
+No other configuration value, typed field, behavior, dependency, or contract changed.
+QA-BE-FND-003-001 current status is RESOLVED; its original QA result FAIL remains
+preserved in the historical finding above.
+```
+
+Historical QA re-review finding:
+
+```text
+Finding ID: QA-BE-FND-003-002
+Reviewer: QA Reviewer
+Result: FAIL
+Severity: MEDIUM
+Blocking: YES
+Finding: historical metadata for QA-BE-FND-003-001 did not preserve its original
+Severity: HIGH, Blocking: YES, and current status RESOLVED.
+Required action: restore that metadata exactly without changing product code,
+configuration values, tests, reviewer results, or unrelated planning history.
+Remediation: restored Severity: HIGH, added Blocking: YES, and restored Finding status:
+RESOLVED for QA-BE-FND-003-001 while preserving its historical Result: FAIL.
+Finding status: RESOLVED
+Governance validation: baseline_audit PASS; py_compile PASS; git diff --check PASS;
+git status, diff stat, and full execution-log diff inspected.
+```
+
+Independent reviewer results:
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+
+Reviewer: Security Reviewer
+Result: PASS
+Findings: none
+
+Reviewer: QA Reviewer
+Final re-review result: PASS
+QA-BE-FND-003-001: RESOLVED
+QA-BE-FND-003-002: RESOLVED
+Historical chain preserved: initial QA FAIL → QA-BE-FND-003-001 → remediation
+→ QA re-review FAIL → QA-BE-FND-003-002 → remediation → final QA re-review PASS.
+Final reviewer gates: AR=PASS; SR=PASS; QAR=PASS
+Unresolved reviewer findings: NONE
+```
+
+CI gate state:
+
+```text
+CI status: PENDING — actual CI PASS required before DONE
+PRE_CI_BOOTSTRAP_NA eligibility: NO — BE-FND-003 is not in the exact eligible task list
+PRE_CI_BOOTSTRAP_NA usage: NOT USED
+Closure blocker: actual CI PASS evidence is still pending
+Task status: IN_REVIEW
+```
+
+Implementation plan:
+
+```text
+Add application.yml plus local/test/prod profile resources without credentials.
+Add immutable typed configuration records for Assessment, SRS, Personalization,
+Gamification, Notification, and Idempotency under app.* prefixes.
+Bind canonical Reconciled V1 constants and verify them through Spring context tests.
+Do not implement algorithms, schedulers, persistence, providers, security controls,
+Clock abstraction, API endpoints, or secrets/env conventions owned by later tasks.
+```
+
+Non-contract decisions:
+
+```text
+Use immutable Java records with @ConfigurationProperties and centralized
+@ConfigurationPropertiesScan. Prefixes follow the task domains:
+app.assessment, app.srs, app.personalization, app.gamification,
+app.notification, app.idempotency.
+Profile-specific files only activate their named profile; all canonical defaults live
+in application.yml so local/test/prod inherit one source and cannot drift.
+```
+
+Implementation evidence:
+
+```text
+Added application.yml as the single source for approved baseline defaults and added
+application-local.yml, application-test.yml, and application-prod.yml with explicit
+profile activation only.
+Added immutable typed configuration records for assessment, SRS, personalization,
+gamification, notification, and idempotency under their documented app.* prefixes.
+Enabled centralized typed-property discovery through @ConfigurationPropertiesScan.
+Added ConfigurationPropertiesTests to load the test profile, verify all four profile
+resources, reject embedded sensitive property names, and assert every configured
+algorithm identifier, threshold, weight, duration, allocation, notification time,
+XP value, and idempotency retention value against the approved baseline.
+Added one narrow .gitignore exception for the repository-safe
+backend/src/main/resources/application-local.yml required by acceptance; the broader
+machine-local Spring configuration ignore rules remain in force.
+No dependency or pom.xml change was required.
+```
+
+Implementation-side validation evidence:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+→ Spring context smoke tests: PASS
+→ Typed configuration/profile tests: PASS (4 tests)
+→ Modular package structure tests: PASS (2 tests)
+→ Executable Spring Boot JAR packaging: PASS
+
+Profile resource safety check
+→ application.yml/local/test/prod contain no password, secret, API/access/private key,
+  client secret, or token property
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and git diff
+→ INSPECTED
+
+Scope and provenance checks
+→ PASS; no tracked target output, secret, dependency, contract, database/Flyway,
+  security behavior, later-task implementation, branch, HEAD, or baseline tag mutation
+```
+
+Acceptance state:
+
+```text
+application.yml/local/test/prod: SATISFIED
+Typed assessment properties: SATISFIED
+Typed SRS properties: SATISFIED
+Typed personalization properties: SATISFIED
+Typed gamification properties: SATISFIED
+Typed notification properties: SATISFIED
+Typed idempotency properties: SATISFIED
+Configured default constants match approved baseline: SATISFIED by focused binding tests
+Dependency BE-FND-001: DONE
+Implementation-side blockers: NONE
+Reviewer gates: AR=PASS; SR=PASS; QAR=PASS
+Task status: IN_REVIEW pending actual CI PASS
+```
+
+Change impact:
+
+```text
+Change: Add Spring application profiles, canonical typed configuration, and focused tests.
+Why: Satisfy the approved BE-FND-003 acceptance criteria.
+Affected documents: MASTER_BACKLOG.md and EXECUTION_LOG.md lifecycle/evidence only.
+Affected API/OpenAPI: None.
+Affected database/Flyway: None.
+Affected security behavior: None; no credential or secret convention implemented.
+Affected business behavior: None; algorithms remain unimplemented and only approved
+configuration values are exposed as typed inputs for later tasks.
+Affected clients: None.
+Migration: None.
+Tests: Build/context smoke, profile loading, typed binding/defaults, and secret-name scan.
+Backward compatibility: Preserved; no existing contract or dependency changed.
+```
+
 ### Governance Amendment / Pre-Foundation
 
 #### GOV-008 — Clarify Pre-CI Bootstrap Gate
