@@ -275,13 +275,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | GOV-003 | QA Reviewer | PASS | QA re-review of `QA-M0-001`: Section 109 is race-safe; duplicate side effects are prevented; canonical idempotency semantics are preserved; no API/OpenAPI, Database Schema v1.6, security, or business-rule contract change; recommendation APPROVE M0. |
 | 2026-09-01 | BE-FND-001 | QA Reviewer | FAIL | `QA-BE-FND-001-001` (P1 — Blocking) — README omits the executable Spring Boot JAR run command; focused remediation and QA re-review required. |
 | 2026-09-01 | BE-FND-001 | QA Reviewer | PASS | Focused re-review: `QA-BE-FND-001-001` RESOLVED; README build/test/run usage is unambiguous; no regression introduced; recommendation APPROVE. |
+| 2026-09-02 | BE-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
+| 2026-09-02 | BE-FND-002 | QA Reviewer | PASS | Independent QA review completed with no findings. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  2 |    28 |               7.1% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  3 |    28 |              10.7% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -433,6 +435,151 @@ API/OpenAPI changes: none
 Database/Flyway changes: none
 Security changes: none
 Business/client contract changes: none
+```
+
+### BE-FND-002 — Dựng modular-monolith package/module skeleton
+
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → DONE
+- Branch: `feat/BE-FND-002-modular-monolith-skeleton`
+- Commit: `a84da779bb352f26636a8b96c3c34db8eaec7a38`
+- Pull Request: #4 — `feat(BE-FND-002): add modular-monolith package skeleton`
+- Pull Request state at evidence sync: OPEN; non-draft; mergeable state CLEAN
+- Dependencies: `BE-FND-001` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: Có module/package cho auth, user, onboarding, vocabulary, learning, personalization, quiz, progress, gamification, notification, ai, admin, audit, common; dependency direction đúng Architecture v1.3.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Unresolved blockers: None
+- Contract changes: None
+- Started at: 2026-09-02
+- Ready for review: 2026-09-02
+- Closed at: 2026-09-02
+- Reviewer results: Architecture Reviewer PASS — no findings; QA Reviewer PASS — no findings
+- Final reviewer gates: AR=PASS; QAR=PASS
+- Unresolved reviewer findings: None
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-002`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3
+- CI status reason: `CI-FND-001` has not yet been implemented and `BE-FND-002` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- PR-level PRE_CI evidence: SATISFIED — PR #4 records the CI status, eligible Task ID, reason, local validation evidence, reviewer gates, and no-failing-check confirmation
+- GitHub PR check runs: 0
+- GitHub commit status contexts: 0
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- Final closure gate: PASS
+
+Reviewer evidence:
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+```
+
+```text
+Reviewer: QA Reviewer
+Result: PASS
+Findings: none
+```
+
+Closure state:
+
+```text
+Required reviewer gates: AR=PASS; QAR=PASS.
+PR #4 records PRE_CI_BOOTSTRAP_NA, eligible Task ID BE-FND-002, the approved
+reason, local validation evidence, and confirmation that no CI check is failing.
+GitHub evidence: 0 check runs and 0 commit status contexts at head
+a84da779bb352f26636a8b96c3c34db8eaec7a38.
+All dependency, acceptance, validation, reviewer, baseline, diff, and PR-level
+bootstrap gates are satisfied. BE-FND-002 is closed as DONE.
+```
+
+Implementation plan:
+
+```text
+Create one package-info.java skeleton for each package named by the acceptance criteria.
+Add a focused structural test that verifies all required package skeletons exist,
+declare the expected package, and introduce no imports/cross-module dependencies.
+Do not add assessment/config/security/storage subpackages, framework dependencies,
+API, persistence, configuration, security, provider, or business implementation.
+```
+
+Non-contract decision:
+
+```text
+Use package-info.java instead of placeholder services/controllers/entities.
+Reason: package-info.java makes every package version-controlled and documents its
+approved responsibility without inventing later-task implementation. The dependency-
+free skeleton is consistent with the Architecture v1.3 layered direction at this stage.
+```
+
+Implementation evidence:
+
+```text
+Added package-info.java for exactly the 14 acceptance packages:
+auth, user, onboarding, vocabulary, learning, personalization, quiz, progress,
+gamification, notification, ai, admin, audit, common.
+Each skeleton is dependency-free and contains only package responsibility
+documentation plus its package declaration.
+Added ModulePackageStructureTests to verify every required package skeleton,
+its canonical package declaration, and absence of imports in the skeleton.
+No dependency was added and pom.xml remains unchanged.
+```
+
+Implementation-side validation evidence:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+→ Context smoke test: PASS
+→ Module package structure tests: PASS (2 tests)
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and git diff
+→ INSPECTED
+```
+
+Change impact:
+
+```text
+Change: Add the BE-FND-002 modular-monolith root package skeleton and structural tests.
+Why: Satisfy the approved BE-FND-002 acceptance criteria.
+Affected documents: MASTER_BACKLOG.md and EXECUTION_LOG.md lifecycle/evidence only.
+Affected API/OpenAPI: None.
+Affected database/Flyway: None.
+Affected security: None.
+Affected clients: None.
+Migration: None.
+Tests: Build smoke test plus focused module package structure tests.
+Backward compatibility: Preserved; no runtime or contract behavior changed.
+```
+
+Final acceptance and closure validation:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+
+Required 14 package/module skeletons: PASS
+Package declarations: PASS
+Dependency-free skeleton: PASS
+Architecture Reviewer: PASS — findings none
+QA Reviewer: PASS — findings none
+PR #4 PRE_CI_BOOTSTRAP_NA evidence: PASS
+Existing failing CI check: NONE
+Unresolved blockers: NONE
 ```
 
 ### Governance Amendment / Pre-Foundation
