@@ -277,13 +277,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | BE-FND-001 | QA Reviewer | PASS | Focused re-review: `QA-BE-FND-001-001` RESOLVED; README build/test/run usage is unambiguous; no regression introduced; recommendation APPROVE. |
 | 2026-09-02 | BE-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
 | 2026-09-02 | BE-FND-002 | QA Reviewer | PASS | Independent QA review completed with no findings. |
+| 2026-09-03 | DB-FND-001 | Database Reviewer | PASS | Independent database review completed with no findings. |
+| 2026-09-03 | DB-FND-001 | QA Reviewer | PASS | Independent QA review completed with no findings. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  3 |    28 |              10.7% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  4 |    28 |              14.3% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -584,9 +586,12 @@ Unresolved blockers: NONE
 
 ### DB-FND-001 — Dựng PostgreSQL local + Docker Compose
 
-- Status: IN_REVIEW
-- Status history: TODO → READY → IN_PROGRESS → BLOCKED → IN_REVIEW
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → BLOCKED → IN_REVIEW → DONE
 - Branch: `chore/DB-FND-001-postgresql-docker-compose`
+- Commit: `de8bbb63884b27392f8ceafd08a63647ec28d0e2`
+- Pull Request: #6 — `chore(DB-FND-001): add local PostgreSQL Docker Compose`
+- Pull Request state at evidence sync: OPEN; non-draft; mergeable state CLEAN
 - Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
 - Dependencies: `BE-FND-001` DONE
 - Priority: P0
@@ -596,14 +601,23 @@ Unresolved blockers: NONE
 - Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
 - Started at: 2026-09-03
 - Ready for review: 2026-09-03
+- Closed at: 2026-09-03
 - Contract changes: None
 - Implementation/reviewer blockers: None
 - Reviewer results: Database Reviewer PASS — no findings; QA Reviewer PASS — no findings
-- Current reviewer state: DBR=PASS; QAR=PASS
+- Final reviewer gates: DBR=PASS; QAR=PASS
 - Unresolved reviewer findings: None
-- PRE_CI eligibility: YES — `DB-FND-001` is explicitly eligible for `PRE_CI_BOOTSTRAP_NA`
-- PR-level PRE_CI evidence: PENDING
-- Closure gate: PENDING — task remains `IN_REVIEW` until PR-level `PRE_CI_BOOTSTRAP_NA` evidence is synchronized
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `DB-FND-001`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3
+- CI status reason: `CI-FND-001` has not yet been implemented and `DB-FND-001` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- PR-level PRE_CI evidence: SATISFIED — PR #6 records the CI status, eligible Task ID, reason, local validation evidence, reviewer gates, and no-failing-check confirmation
+- GitHub PR check runs: 0
+- GitHub commit status contexts: 0
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- Unresolved blockers: None
+- Final closure gate: PASS
 - Historical validation blocker: Docker engine was initially unavailable; resolved by starting the installed Docker Desktop engine. Host port 5432 was unavailable, so the isolated runtime validation used the documented `POSTGRES_PORT=55432` override.
 
 Reviewer evidence:
@@ -720,7 +734,9 @@ Credentials sourced from env: SATISFIED; missing required variables fail Compose
 Persistent named volume wiring: SATISFIED
 Implementation-side blockers: NONE
 Reviewer gates: DBR=PASS; QAR=PASS
-Task status: IN_REVIEW pending PR-level PRE_CI_BOOTSTRAP_NA evidence
+PR-level PRE_CI_BOOTSTRAP_NA evidence: SATISFIED in PR #6
+Existing failing CI check: NONE
+Task status: DONE
 ```
 
 Change impact:
