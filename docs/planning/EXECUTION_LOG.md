@@ -277,13 +277,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | BE-FND-001 | QA Reviewer | PASS | Focused re-review: `QA-BE-FND-001-001` RESOLVED; README build/test/run usage is unambiguous; no regression introduced; recommendation APPROVE. |
 | 2026-09-02 | BE-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
 | 2026-09-02 | BE-FND-002 | QA Reviewer | PASS | Independent QA review completed with no findings. |
+| 2026-09-03 | DB-FND-001 | Database Reviewer | PASS | Independent database review completed with no findings. |
+| 2026-09-03 | DB-FND-001 | QA Reviewer | PASS | Independent QA review completed with no findings. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  3 |    28 |              10.7% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  4 |    28 |              14.3% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -580,6 +582,177 @@ QA Reviewer: PASS — findings none
 PR #4 PRE_CI_BOOTSTRAP_NA evidence: PASS
 Existing failing CI check: NONE
 Unresolved blockers: NONE
+```
+
+### DB-FND-001 — Dựng PostgreSQL local + Docker Compose
+
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → BLOCKED → IN_REVIEW → DONE
+- Branch: `chore/DB-FND-001-postgresql-docker-compose`
+- Commit: `de8bbb63884b27392f8ceafd08a63647ec28d0e2`
+- Pull Request: #6 — `chore(DB-FND-001): add local PostgreSQL Docker Compose`
+- Pull Request state at evidence sync: OPEN; non-draft; mergeable state CLEAN
+- Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Dependencies: `BE-FND-001` DONE
+- Priority: P0
+- Required reviewers: Database Reviewer, QA Reviewer
+- Acceptance: Local PostgreSQL start/stop reproducible; credential lấy từ env; healthcheck hoạt động.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Started at: 2026-09-03
+- Ready for review: 2026-09-03
+- Closed at: 2026-09-03
+- Contract changes: None
+- Implementation/reviewer blockers: None
+- Reviewer results: Database Reviewer PASS — no findings; QA Reviewer PASS — no findings
+- Final reviewer gates: DBR=PASS; QAR=PASS
+- Unresolved reviewer findings: None
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `DB-FND-001`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3
+- CI status reason: `CI-FND-001` has not yet been implemented and `DB-FND-001` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- PR-level PRE_CI evidence: SATISFIED — PR #6 records the CI status, eligible Task ID, reason, local validation evidence, reviewer gates, and no-failing-check confirmation
+- GitHub PR check runs: 0
+- GitHub commit status contexts: 0
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- Unresolved blockers: None
+- Final closure gate: PASS
+- Historical validation blocker: Docker engine was initially unavailable; resolved by starting the installed Docker Desktop engine. Host port 5432 was unavailable, so the isolated runtime validation used the documented `POSTGRES_PORT=55432` override.
+
+Reviewer evidence:
+
+```text
+Reviewer: Database Reviewer
+Result: PASS
+Findings: none
+```
+
+```text
+Reviewer: QA Reviewer
+Result: PASS
+Findings: none
+```
+
+Implementation plan:
+
+```text
+Add a root Compose definition containing only the local PostgreSQL service and a named
+data volume. Require database/user/password through environment interpolation, publish
+the port on loopback by default, and use pg_isready for container health.
+Add a tracked secret-free .env.example plus reproducible setup/start/health/stop/restart/
+down documentation. Do not add Flyway, schema, JPA, backend datasource, Redis, MinIO,
+Admin Web, production deployment, backup/restore, or later-task infrastructure.
+```
+
+Non-contract decision:
+
+```text
+Use Docker Official Image postgres:16.15-alpine3.24. The approved baseline requires
+PostgreSQL but does not lock a version; PostgreSQL 16 remains supported and the exact
+minor/Alpine tag avoids an unbounded latest/major-only image drift.
+```
+
+Implementation evidence:
+
+```text
+Added compose.yml with one PostgreSQL service, an exact postgres:16.15-alpine3.24
+image tag, a named persistent volume, loopback-only default port binding, required
+POSTGRES_DB/POSTGRES_USER/POSTGRES_PASSWORD environment interpolation, and a pg_isready
+healthcheck.
+Added .env.example with non-secret local placeholders; actual .env remains ignored.
+Updated README.md with reproducible setup, config validation, start, health inspection,
+stop/restart, down, and explicit destructive volume-reset instructions.
+No Flyway migration, schema, backend datasource, dependency, Redis, MinIO, Admin Web,
+production deployment, or backup/restore implementation was added.
+```
+
+Validation evidence:
+
+```text
+docker compose config --quiet without .env
+→ EXPECTED FAIL; required POSTGRES_DB, POSTGRES_USER, and POSTGRES_PASSWORD enforced
+
+docker compose --env-file .env.example config --quiet
+→ PASS
+
+docker compose --env-file .env.example config --images
+→ postgres:16.15-alpine3.24
+
+docker manifest inspect postgres:16.15-alpine3.24
+→ PASS; official image tag resolves
+
+Initial runtime attempt
+→ ENVIRONMENT BLOCKED; Docker API socket was initially unavailable
+→ RESOLVED by starting the installed Docker Desktop engine
+
+Runtime validation project: english-ai-coach-db-fnd-001-validation
+Environment override: POSTGRES_PORT=55432 because host port 5432 was unavailable
+docker compose up -d --wait postgres
+→ PASS; container state healthy
+pg_isready
+→ PASS; accepting connections
+psql SELECT 1
+→ PASS
+docker compose stop postgres
+→ PASS; container state exited
+docker compose up -d --wait postgres
+→ PASS; container returned to healthy
+psql SELECT 1 after restart
+→ PASS
+docker compose down --volumes --remove-orphans
+→ PASS; isolated validation container, network, and named volume removed
+
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS; 3 tests, 0 failures, 0 errors, 0 skipped
+
+Compose static assertions
+→ PASS; exact image, loopback binding, required env interpolation, named volume,
+  and healthcheck are present in the rendered model
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and git diff
+→ INSPECTED
+```
+
+Acceptance state:
+
+```text
+Local PostgreSQL start: SATISFIED
+Healthcheck reaches healthy: SATISFIED
+pg_isready and SQL connectivity: SATISFIED
+Stop and restart reproducibility: SATISFIED
+Credentials sourced from env: SATISFIED; missing required variables fail Compose render
+Persistent named volume wiring: SATISFIED
+Implementation-side blockers: NONE
+Reviewer gates: DBR=PASS; QAR=PASS
+PR-level PRE_CI_BOOTSTRAP_NA evidence: SATISFIED in PR #6
+Existing failing CI check: NONE
+Task status: DONE
+```
+
+Change impact:
+
+```text
+Change: Add local PostgreSQL Docker Compose foundation and usage documentation.
+Why: Satisfy DB-FND-001 local database lifecycle/env credential/healthcheck acceptance.
+Affected documents: README.md, MASTER_BACKLOG.md, and EXECUTION_LOG.md.
+Affected API/OpenAPI: None.
+Affected database schema/Flyway: None.
+Affected backend runtime/configuration: None.
+Affected security: Local credential values remain external in ignored .env; service
+binds to 127.0.0.1 by default.
+Affected clients: None.
+Migration: None.
+Backward compatibility: Preserved.
 ```
 
 ### Governance Amendment / Pre-Foundation
