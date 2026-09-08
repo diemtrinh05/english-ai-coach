@@ -40,6 +40,8 @@ java -jar backend/target/english-ai-coach-backend-0.0.1-SNAPSHOT.jar
 
 Dừng ứng dụng bằng `Ctrl+C`.
 
+Từ DB-FND-002, executable JAR cần PostgreSQL đang chạy và các biến `SPRING_DATASOURCE_*` được cấu hình như phần Flyway bên dưới; lệnh `java -jar` trần chỉ minh họa entry point của artifact.
+
 Task `BE-FND-001` chỉ bootstrap ứng dụng và smoke test. Package/module skeleton, application profiles, PostgreSQL, Flyway, security, Actuator và product API thuộc các backlog task kế tiếp.
 
 ## PostgreSQL local với Docker Compose
@@ -95,4 +97,30 @@ Chỉ khi cần xóa toàn bộ dữ liệu local và khởi tạo lại từ đ
 docker compose down --volumes
 ```
 
-Lệnh cuối xóa named volume PostgreSQL của project và không thể khôi phục dữ liệu từ volume đó nếu chưa backup. DB-FND-001 không tạo schema/Flyway migration và không cấu hình backend datasource; các phần này thuộc task kế tiếp.
+Lệnh cuối xóa named volume PostgreSQL của project và không thể khôi phục dữ liệu từ volume đó nếu chưa backup.
+
+## Flyway schema baseline
+
+DB-FND-002 cung cấp migration `V1__create_schema_baseline.sql` tại đường dẫn chuẩn `backend/src/main/resources/db/migration/`. Đây là baseline khởi tạo mới gồm đúng 34 bảng theo Database Schema v1.6; sau khi migration được chia sẻ hoặc apply, không sửa file V1 mà phải thêm migration version mới.
+
+Backend dùng Spring Boot Flyway starter và PostgreSQL driver. Sau khi PostgreSQL đã healthy, cấu hình datasource bằng biến môi trường rồi khởi động backend để Flyway tự migrate. Các giá trị phải khớp `.env`; ví dụ dưới đây dùng port/database/user mặc định của `.env.example` và yêu cầu thay placeholder password bằng giá trị local thực tế.
+
+PowerShell từ thư mục gốc repository:
+
+```powershell
+$env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:5432/english_ai_coach"
+$env:SPRING_DATASOURCE_USERNAME = "english_ai_coach"
+$env:SPRING_DATASOURCE_PASSWORD = "<same-local-password-as-.env>"
+java -jar backend\target\english-ai-coach-backend-0.0.1-SNAPSHOT.jar
+```
+
+Trên Linux/macOS:
+
+```bash
+export SPRING_DATASOURCE_URL="jdbc:postgresql://127.0.0.1:5432/english_ai_coach"
+export SPRING_DATASOURCE_USERNAME="english_ai_coach"
+export SPRING_DATASOURCE_PASSWORD="<same-local-password-as-.env>"
+java -jar backend/target/english-ai-coach-backend-0.0.1-SNAPSHOT.jar
+```
+
+Flyway ghi version đã apply vào `flyway_schema_history`. Việc seed reference data, bổ sung performance/partial indexes, JPA entity/repository và Testcontainers harness thuộc các backlog task kế tiếp.

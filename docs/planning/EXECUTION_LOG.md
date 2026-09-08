@@ -248,6 +248,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | GOV-004 | RESOLVED | `SEC-M0-001` — PR template declared security-sensitive impacts without making Security Reviewer approval mandatory and allowed the generic omitted-reviewer explanation to bypass Security Reviewer. | Added the mandatory Security Reviewer gate, made `No security-sensitive change` mutually exclusive with all security-impact options, and prohibited Security Reviewer omission through the generic explanation. Historical Security FAIL is preserved; Security re-review PASS on 2026-09-01. |
 | 2026-09-01 | GOV-003 | RESOLVED | `QA-M0-001` — Section 109 performed a pre-read and claim, then executed `operation.get()` without checking whether `INSERT ... ON CONFLICT (event_id) DO NOTHING` inserted the claim. | Section 109 was remediated so the claim result is authoritative: only the inserted branch executes the mutation and stores the response atomically; the not-inserted branch reloads, validates user/endpoint/hash, and replays or returns 409. Architecture, Database, and Security focused re-reviews PASS; QA re-review PASS on 2026-09-01. |
 | 2026-09-01 | BE-FND-001 | RESOLVED | `QA-BE-FND-001-001` — README documents build commands and artifact location but omits the executable Spring Boot JAR run command. | README now documents unambiguous build/test/run commands from the repository root; implementation-side validation passed; QA re-review PASS confirmed the finding resolved with no regression and recommendation APPROVE. |
+| 2026-09-08 | DB-FND-002 | OPEN | `QA-DB-FND-002-001` — QA could not independently reproduce the fresh migration/catalog/repeat-run evidence because the prior temporary PostgreSQL runtime had been removed. Severity: MEDIUM; Blocking: YES. | Focused remediation restored a fresh PostgreSQL runtime on `127.0.0.1:55432`, reran Flyway/catalog/constraint/repeat-run validation successfully, and left the runtime available; independent QA re-review remains pending. |
+| 2026-09-08 | DB-FND-002 | RESOLVED | `QA-DB-FND-002-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; original Status: OPEN. | Focused QA re-review PASS after independently accessible PostgreSQL runtime evidence; final finding Status: RESOLVED; unresolved findings: NONE. |
 
 #### Review result log
 
@@ -279,6 +281,10 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-02 | BE-FND-002 | QA Reviewer | PASS | Independent QA review completed with no findings. |
 | 2026-09-03 | DB-FND-001 | Database Reviewer | PASS | Independent database review completed with no findings. |
 | 2026-09-03 | DB-FND-001 | QA Reviewer | PASS | Independent QA review completed with no findings. |
+| 2026-09-08 | DB-FND-002 | Database Reviewer | PASS | Independent database review completed with no findings. |
+| 2026-09-08 | DB-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
+| 2026-09-08 | DB-FND-002 | QA Reviewer | FAIL | `QA-DB-FND-002-001` — Severity: MEDIUM; Blocking: YES; Status: OPEN. The prior temporary PostgreSQL runtime was not independently accessible. Focused remediation and QA re-review required. |
+| 2026-09-08 | DB-FND-002 | QA Reviewer | PASS | Focused QA re-review PASS; `QA-DB-FND-002-001` final Status: RESOLVED; unresolved findings: NONE. Historical QA FAIL and original OPEN metadata remain preserved. |
 
 #### Milestone status
 
@@ -753,6 +759,231 @@ binds to 127.0.0.1 by default.
 Affected clients: None.
 Migration: None.
 Backward compatibility: Preserved.
+```
+
+### DB-FND-002 — Tạo Flyway schema baseline cho 34 bảng
+
+- Status: IN_REVIEW
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW
+- Branch: `feat/DB-FND-002-flyway-schema-baseline`
+- Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Dependencies: `DB-FND-001` DONE
+- Priority: P0
+- Required reviewers: Database Reviewer, Architecture Reviewer, QA Reviewer
+- Acceptance: Fresh DB migrate từ zero tạo đúng 34 bảng theo DB v1.6; migration append-only; FK/unique/check/not-null đầy đủ.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Started at: 2026-09-08
+- Ready for review: 2026-09-08
+- Current reviewer state: DBR=PASS; AR=PASS; QAR=PASS after focused re-review
+- Historical reviewer state: QAR=FAIL for `QA-DB-FND-002-001`
+- Final reviewer gates: DBR=PASS; AR=PASS; QAR=PASS
+- Unresolved reviewer findings: NONE
+- PR-level PRE_CI evidence: PENDING
+- Contract changes: None — implementation realizes the approved Database Schema v1.6 baseline
+- Blockers: PR-level `PRE_CI_BOOTSTRAP_NA` evidence remains PENDING; no unresolved reviewer finding
+
+Implementation plan:
+
+```text
+Add the first repository Flyway migration as a final-state V1 baseline because no
+migration has previously existed or been applied from this repository. Create all 34
+canonical Database Schema v1.6 tables in FK-safe order with the documented columns,
+types, defaults, PK/FK/UNIQUE/CHECK/NOT NULL constraints.
+
+Add only the Spring Boot Flyway starter, PostgreSQL Flyway database module, and
+PostgreSQL runtime driver needed to execute the migration. Keep performance/partial
+indexes in DB-FND-003, seed data in DB-FND-004, JPA mapping in BE-FND-004, and the
+Testcontainers harness in QA-FND-001.
+```
+
+Non-contract decisions:
+
+```text
+Use V1__create_schema_baseline.sql rather than manufacturing the document's historical
+V1..V40 example sequence: the repository has no existing migration history, and
+Technical Specification v1.2 explicitly permits V1__baseline.sql for a fresh baseline.
+
+Foreign keys use PostgreSQL default NO ACTION because Database Schema v1.6 leaves user
+deletion/cascade policy as a later business decision and prohibits blind cascades.
+```
+
+Implementation evidence:
+
+```text
+Added backend/src/main/resources/db/migration/V1__create_schema_baseline.sql.
+The migration declares exactly 34 canonical tables and includes all documented
+declarative PK/FK/UNIQUE/CHECK/NOT NULL constraints, JSONB/TIMESTAMPTZ/UUID types,
+optimistic-lock version columns, idempotency response-status guard, answer-quality
+correctness invariant, Daily Plan item guards, and approved defaults.
+
+Added spring-boot-starter-flyway, flyway-database-postgresql, and the PostgreSQL runtime
+driver through Spring Boot dependency management. The existing context smoke test
+disables datasource/Flyway auto-configuration only for that database-independent test.
+Added a unit test that requires the migration to declare exactly the canonical 34-table
+set without duplicate CREATE TABLE statements.
+
+Updated README.md with migration location, immutable/append-only rule, datasource
+environment variables, automatic startup migration, flyway_schema_history, and explicit
+later-task boundaries.
+```
+
+Validation evidence:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS; 4 tests, 0 failures, 0 errors, 0 skipped
+
+Fresh isolated PostgreSQL 18.6 cluster on 127.0.0.1:55433
+→ initialized with trust authentication inside ignored .agent-tmp for validation only
+→ pg_isready PASS
+
+java -jar ... --spring.main.web-application-type=none --spring.datasource.*
+→ Flyway validated 1 migration
+→ migrated empty public schema to V1 successfully
+
+PostgreSQL catalog verification
+→ 34 canonical application tables exactly
+→ 48 foreign keys
+→ 21 UNIQUE constraints
+→ 16 CHECK constraints
+→ 34 application primary keys; flyway_schema_history adds its own primary key
+→ flyway_schema_history version=1, success=true
+
+Second application/Flyway run
+→ validation PASS; schema at V1; up to date; no migration necessary
+
+Migration/source column-set audit
+→ PASS; all 34 table column sets match Database Schema v1.6 exactly
+→ 34 distinct CREATE TABLE statements; 0 INSERT and 0 CREATE INDEX statements
+
+Maven dependency tree
+→ PASS; Spring Boot Flyway starter 4.1.1, Flyway PostgreSQL 12.4.0,
+  and PostgreSQL driver 42.7.13 resolved through dependency management
+
+docker compose --env-file .env.example config --quiet
+→ PASS
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check and new-file whitespace check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and full diff
+→ INSPECTED
+
+Validation environment cleanup
+→ temporary PostgreSQL cluster stopped and removed
+→ Docker Desktop attempt was shut down after its host-environment startup failure
+```
+
+Historical independent QA finding and focused remediation:
+
+```text
+Finding ID: QA-DB-FND-002-001
+Reviewer: QA Reviewer
+Historical QA result: FAIL
+Severity: MEDIUM
+Blocking: YES
+Finding classification: Runtime/environment evidence blocker; no product-code defect established
+Finding: The prior validation runtime had been removed, so QA could not independently
+reproduce the fresh Flyway migration, PostgreSQL catalog/constraint checks, and repeat run.
+Finding status: OPEN — focused remediation complete; independent QA re-review pending
+
+Focused remediation (2026-09-08):
+→ Attempted to restore the DB-FND-001 Docker Compose PostgreSQL 16.15 runtime first.
+→ Docker Desktop could not start its Linux engine because the host retained an
+  inaccessible stale sailor-ingest.sock reparse point; repository Compose configuration
+  was not the cause.
+→ Restored an isolated, fresh PostgreSQL 18.6 validation runtime at
+  127.0.0.1:55432, database/user english_ai_coach, with local trust authentication.
+→ Runtime data is under ignored .agent-tmp/db-fnd-002-qa-postgres and remains running
+  for focused QA re-review.
+→ QA access command:
+  D:\Database\PostgreSQL\18\bin\psql.exe -h 127.0.0.1 -p 55432
+  -U english_ai_coach -d english_ai_coach
+
+Fresh Flyway migration:
+→ Empty public schema detected.
+→ V1__create_schema_baseline.sql validated and applied successfully.
+→ flyway_schema_history contains exactly one successful V1 migration.
+
+PostgreSQL catalog and constraint verification:
+→ 34 canonical application tables exactly.
+→ 48 FOREIGN KEY, 21 UNIQUE, 16 CHECK, 221 NOT NULL, and 34 PRIMARY KEY constraints.
+→ 0 unvalidated constraints.
+
+Repeat-run validation:
+→ Flyway validated V1 and reported schema public at V1 and up to date.
+→ No migration was re-applied; 34 application tables and one successful history row remain.
+
+Product-code/config/test changes for remediation: NONE
+Implementation-side remediation status: COMPLETE
+Focused QA re-review result: PASS
+Final finding status: RESOLVED
+Unresolved findings: NONE
+Required next gate: PR-level PRE_CI_BOOTSTRAP_NA evidence
+```
+
+Reviewer evidence:
+
+```text
+Reviewer: Database Reviewer
+Result: PASS
+Findings: none
+```
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+```
+
+```text
+Reviewer: QA Reviewer
+Historical result: FAIL
+Finding: QA-DB-FND-002-001
+Severity: MEDIUM
+Blocking: YES
+Original status: OPEN
+Focused re-review result: PASS
+Final finding status: RESOLVED
+Unresolved findings: NONE
+```
+
+Acceptance state:
+
+```text
+Fresh PostgreSQL migration from zero: SATISFIED
+Exactly 34 Database Schema v1.6 tables: SATISFIED
+Migration append-only foundation: SATISFIED; first immutable V1 migration established
+Documented PK/FK/UNIQUE/CHECK/NOT NULL constraints: SATISFIED
+Implementation-side blockers: NONE
+Reviewer gates: DBR=PASS; AR=PASS; QAR=PASS
+Historical QA FAIL: PRESERVED
+QA-DB-FND-002-001: RESOLVED after focused QA re-review PASS
+Unresolved reviewer findings: NONE
+Task status: IN_REVIEW pending PR-level PRE_CI_BOOTSTRAP_NA evidence
+```
+
+Change impact:
+
+```text
+Change: Add executable Flyway baseline for the approved PostgreSQL schema.
+Why: Satisfy DB-FND-002 fresh-database migration and integrity acceptance.
+Affected documents: README.md, MASTER_BACKLOG.md, and EXECUTION_LOG.md.
+Affected API/OpenAPI: None.
+Affected database: Yes — creates the approved 34-table Database Schema v1.6 baseline.
+Affected Flyway: Yes — establishes immutable V1 migration history.
+Affected security: No contract change; no credential value is committed.
+Affected business rules: No change; documented database invariants are enforced.
+Affected clients: None.
+Migration: V1__create_schema_baseline.sql for an empty database.
+Backward compatibility: Preserved; no prior repository Flyway migration exists.
 ```
 
 ### Governance Amendment / Pre-Foundation
