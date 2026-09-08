@@ -291,7 +291,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  4 |    28 |              14.3% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  5 |    28 |              17.9% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -763,9 +763,10 @@ Backward compatibility: Preserved.
 
 ### DB-FND-002 — Tạo Flyway schema baseline cho 34 bảng
 
-- Status: IN_REVIEW
-- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW
+- Status: DONE
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW → DONE
 - Branch: `feat/DB-FND-002-flyway-schema-baseline`
+- Pull Request: #7 — `feat(DB-FND-002): add Flyway schema baseline`
 - Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
 - Dependencies: `DB-FND-001` DONE
 - Priority: P0
@@ -775,13 +776,22 @@ Backward compatibility: Preserved.
 - Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
 - Started at: 2026-09-08
 - Ready for review: 2026-09-08
+- Closed at: 2026-09-08
 - Current reviewer state: DBR=PASS; AR=PASS; QAR=PASS after focused re-review
 - Historical reviewer state: QAR=FAIL for `QA-DB-FND-002-001`
 - Final reviewer gates: DBR=PASS; AR=PASS; QAR=PASS
 - Unresolved reviewer findings: NONE
-- PR-level PRE_CI evidence: PENDING
+- CI status: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `DB-FND-002`
+- `GOV-008` prerequisite: DONE — merged to `main` through PR #3
+- CI status reason: `CI-FND-001` has not yet been implemented and `DB-FND-002` is an explicitly eligible prerequisite in the approved pre-CI bootstrap chain
+- PR-level PRE_CI evidence: SATISFIED — PR #7 records the CI status, eligible Task ID, reason, local validation evidence, reviewer gates, and no-failing-check confirmation
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED — `PRE_CI_BOOTSTRAP_NA` does not waive a failed CI check
+- Final repository evidence synchronization: COMPLETE
 - Contract changes: None — implementation realizes the approved Database Schema v1.6 baseline
-- Blockers: PR-level `PRE_CI_BOOTSTRAP_NA` evidence remains PENDING; no unresolved reviewer finding
+- Unresolved blockers: NONE
+- Final closure gate: PASS
 
 Implementation plan:
 
@@ -926,7 +936,7 @@ Implementation-side remediation status: COMPLETE
 Focused QA re-review result: PASS
 Final finding status: RESOLVED
 Unresolved findings: NONE
-Required next gate: PR-level PRE_CI_BOOTSTRAP_NA evidence
+Required next gate: NONE — PR-level PRE_CI_BOOTSTRAP_NA evidence satisfied by PR #7
 ```
 
 Reviewer evidence:
@@ -967,7 +977,10 @@ Reviewer gates: DBR=PASS; AR=PASS; QAR=PASS
 Historical QA FAIL: PRESERVED
 QA-DB-FND-002-001: RESOLVED after focused QA re-review PASS
 Unresolved reviewer findings: NONE
-Task status: IN_REVIEW pending PR-level PRE_CI_BOOTSTRAP_NA evidence
+PR-level PRE_CI_BOOTSTRAP_NA evidence: SATISFIED by PR #7
+Final repository evidence synchronization: COMPLETE
+Unresolved blockers: NONE
+Task status: DONE
 ```
 
 Change impact:
