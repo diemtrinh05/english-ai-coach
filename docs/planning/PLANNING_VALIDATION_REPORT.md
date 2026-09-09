@@ -43,3 +43,27 @@
 - Deferred V2 items are separated from executable V1 tasks.
 - No task depends on a later milestone.
 - Dependency graph is acyclic.
+
+## Current-state addendum — GOV-009 (2026-09-09)
+
+The tables above are the preserved 2026-09-01 validation snapshot. They are
+not rewritten retroactively. The current executable planning state after
+recording `GOV-009` is:
+
+| Check | Current result |
+|---|---|
+| Executable task IDs | 177 unique / 177 tasks |
+| Duplicate executable task IDs | 0 |
+| Missing dependency references | 0 |
+| Dependency cycles | 0 |
+| Milestone task-count sum | 177 |
+| M1 task count | 29 |
+| GOV-009 placement | M1 exactly once; status `DONE` |
+| Current M1 completion | 6 / 29 (20.7%) |
+| Historical milestone snapshots/totals | Preserved |
+
+All API/OpenAPI operation and database-table coverage counts remain unchanged;
+`GOV-009` is governance-only and adds no product contract coverage item.
+`PUBLISHED_MAIN_RECOVERY` is an operational incident state machine rather than
+an executable backlog task, so it adds no Task ID and does not change milestone
+or executable-task counts.

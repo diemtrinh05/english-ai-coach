@@ -1665,7 +1665,22 @@ integration tests
 build
 ```
 
-PR must pass required checks.
+Legacy/grandfathered PRs must pass required checks before merge. For a
+post-`GOV-009` direct-main task, required local checks pass before
+finalization/commit; before `CI-FND-001`, approved repository-level
+`PRE_CI_BOOTSTRAP_NA` evidence applies only to eligible tasks; after
+`CI-FND-001` is effective, remote CI verifies repository health after push.
+
+Each post-CI direct-main push sets repository health `CI_PENDING`; no next
+task may enter PLAN until required CI for latest `origin/main` restores
+`HEALTHY`. A failure sets repository health `BLOCKED` without rewriting the
+already-`DONE` task.
+
+Published direct-main CI failure uses the separate `PUBLISHED_MAIN_RECOVERY`
+mode. The originating task stays `DONE`; no unrelated task may start. Only a
+minimal `FIX_FORWARD` or `REVERT` tied to the failing task/commit may be
+published after affected checks and reviewers pass. Recovery push sets
+`CI_PENDING`; remote PASS restores `HEALTHY` and closes the incident.
 
 ---
 

@@ -4,13 +4,18 @@
 **Execution readiness:** READY  
 **Authority:** Planning artifact only; approved baseline remains source of truth  
 **Companion:** `IMPLEMENTATION_PLAN.md`  
-**Executable task count:** 176
+**Executable task count:** 177
 
 ## 1. Conventions
 
 ### Status
 
 `TODO | READY | IN_PROGRESS | BLOCKED | IN_REVIEW | DONE`
+
+Với task bắt đầu sau effective point của `GOV-009`, lifecycle mặc định là
+`TODO → IN_PROGRESS → DONE`; `READY` và `IN_REVIEW` tiếp tục được bảo lưu
+cho lịch sử và task grandfathered. `BLOCKED` chỉ dùng từ `IN_PROGRESS` khi có
+blocker thực tế. Chỉ một direct-main task được phép active tại một thời điểm.
 
 ### Priority
 
@@ -37,7 +42,7 @@
 | Milestone | Tasks | P0 | P1 | P2 |
 |---|---:|---:|---:|---:|
 | M0 | 7 | 5 | 2 | 0 |
-| M1 | 28 | 22 | 6 | 0 |
+| M1 | 29 | 23 | 6 | 0 |
 | M2 | 21 | 18 | 3 | 0 |
 | M3 | 16 | 16 | 0 | 0 |
 | M4 | 14 | 14 | 0 | 0 |
@@ -70,6 +75,7 @@
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `GOV-008` | Clarify pre-CI bootstrap gate | INT | `GOV-007` | P0 | AR,QAR | `PRE_CI_BOOTSTRAP_NA` được định nghĩa hẹp; eligible prerequisite tasks được liệt kê tường minh; CI đang fail không bao giờ được waive; `CI-FND-001` phải pass CI thực tế; ngoại lệ hết hiệu lực sau khi `CI-FND-001` `DONE` và merge; gate thoát M1 vẫn yêu cầu `CI PASS` thực tế. | Baseline audit + governance consistency checks. | DONE |
+| `GOV-009` | Simplified Main-Branch Task Workflow | INT | `GOV-008` | P0 | AR,QAR | Ghi nhận owner authorization; closure mode chỉ riêng task là `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`; AR/QAR PASS + unresolved findings `NONE` + validation/tag/no-failing-CI gates trước `DONE`; định nghĩa effective point, direct-main workflow, grandfather/PRE_CI/CI health rules; không thay đổi product/API/DB contract hoặc historical evidence. | Baseline audit + py_compile + governance consistency/diff/tag/scope/secret/generated-file checks. | DONE |
 
 ## Foundation
 
@@ -94,7 +100,7 @@
 | `BE-FND-013` | Actuator health/readiness | CBL | `DB-FND-001` | P1 | AR,SR,QAR | Health endpoint kiểm tra DB; AI provider failure không làm core app unhealthy theo spec. | Theo global DoD + acceptance. | TODO |
 | `QA-FND-001` | Testcontainers PostgreSQL integration harness | QAR | `DB-FND-002`<br>`BE-FND-004` | P0 | DBR,QAR | Integration tests chạy trên PostgreSQL thật; Flyway tự chạy; không dùng H2 thay thế cho constraint/JSONB/timestamp behavior. | Theo global DoD + acceptance. | TODO |
 | `QA-FND-002` | OpenAPI/runtime contract-test harness | QAR | `BE-FND-007` | P0 | AR,QAR | OpenAPI v1.4 parse/validate trong CI; DTO/controller/status/error contract có test khung. | Theo global DoD + acceptance. | TODO |
-| `CI-FND-001` | CI pipeline bắt buộc | CBL | `QA-FND-001`<br>`QA-FND-002`<br>`GOV-004` | P0 | AR,DBR,SR,QAR | Pipeline: baseline audit → build/static checks → unit → integration → OpenAPI → package; fail thì không merge. | Theo global DoD + acceptance. | TODO |
+| `CI-FND-001` | CI pipeline bắt buộc | CBL | `QA-FND-001`<br>`QA-FND-002`<br>`GOV-004` | P0 | AR,DBR,SR,QAR | Pipeline: baseline audit → build/static checks → unit → integration → OpenAPI → package. Giữ `IN_PROGRESS` qua PLAN/IMPLEMENT/TEST/REVIEW; bootstrap commit/push trực tiếp `main`; actual CI bắt buộc PASS trước `DONE`; CI fail giữ task `IN_PROGRESS` và repository health `BLOCKED`; sau PASS mới `DONE` + closure commit/push `origin/main`. Chỉ khi closure push thành công task mới effective và PRE_CI hết hạn vĩnh viễn. Không dùng `PRE_CI_BOOTSTRAP_NA` hoặc `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`. | Theo global DoD + acceptance; actual CI PASS bắt buộc. | TODO |
 | `SEC-FND-001` | Secrets/env/config security baseline | CBL | `BE-FND-003` | P0 | SR,QAR | Không secret trong repo/log; `.env` mẫu không chứa giá trị thật; prod config dùng env/secret manager. | Theo global DoD + acceptance. | TODO |
 | `SEC-FND-002` | CORS, security headers, rate-limit foundation | CBL | `BE-FND-005`<br>`SEC-FND-001` | P1 | SR,AR,QAR | CORS allowlist cấu hình; security headers hợp lý; rate-limit hook/config có test cho auth/admin/AI nếu spec yêu cầu. | Theo global DoD + acceptance. | TODO |
 | `ADM-FND-001` | Bootstrap React + TypeScript + Vite Admin | AFL | `GOV-006` | P0 | AR,QAR | SPA build được; structure theo Admin Tech v1.1; không Thymeleaf; Vietnamese message module central. | Theo global DoD + acceptance. | TODO |
@@ -601,7 +607,27 @@ Coverage requirement: **34/34 canonical tables mapped**.
 
 # 6. Global Definition of Done
 
-Mỗi executable task chỉ chuyển `DONE` khi:
+## 6.1. Direct-main admission gate
+
+Mọi task bắt đầu sau GOV-009 effective chỉ được vào PLAN / `TODO → IN_PROGRESS` khi: branch `main`; clean worktree; local `main == origin/main`; không Git operation; không direct-main task khác active; task `TODO`; dependencies `DONE`; repository health không `BLOCKED`; canonical sources/acceptance/scope/reviewer mapping đã xác định; và CI mode hợp lệ cho chính Task ID.
+
+| Thời điểm / loại task | CI mode | Kết quả admission |
+|---|---|---|
+| Trước CI effective — Task ID có trong PRE_CI eligible list | `PRE_CI_BOOTSTRAP_NA` | ALLOWED chỉ khi common + PRE_CI admission gates đều thỏa. |
+| Trước CI effective — `CI-FND-001` | `ACTUAL_CI_BOOTSTRAP` | ALLOWED theo special flow. |
+| Trước CI effective — ordinary task không eligible | `INVALID_BEFORE_CI` | `BLOCKED`; chờ CI-FND-001 effective. |
+| `GOV-009` | `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` | One-time transition only; không phải later-task admission mode. |
+| Sau CI effective — ordinary new task | `ACTUAL_CI_REPOSITORY_HEALTH` | ALLOWED chỉ khi latest `origin/main` repository health = `HEALTHY`. |
+
+Repository health states: `HEALTHY` = latest required remote CI PASS; `CI_PENDING` = required remote CI exists/is expected but incomplete; `BLOCKED` = required remote CI FAIL hoặc published-main failure khác. `CI_PENDING` và repository health `BLOCKED` đều cấm PLAN/`TODO → IN_PROGRESS`. Repository health `BLOCKED` khác với task lifecycle `BLOCKED` của một task `IN_PROGRESS`.
+
+`PUBLISHED_MAIN_RECOVERY` là operational recovery state machine, không phải executable backlog task và không làm thay đổi task count. Đây là ngoại lệ duy nhất cho phép recovery work khi repository health = `BLOCKED` do required CI fail trên published direct-main commit; normal PLAN và mọi unrelated `TODO → IN_PROGRESS` vẫn bị cấm. Originating task giữ `DONE`.
+
+Recovery states: `OPEN → VALIDATING → CI_PENDING → CLOSED`, với optional recovery `BLOCKED`. Evidence bắt buộc gồm originating Task ID, failing `origin/main` SHA, failing check/run khi có, failure summary, `FIX_FORWARD | REVERT`, recovery commit SHA sau publication, affected TEST/reviewer gates, recovery findings và final CI. Chỉ minimal recovery diff được phép; affected TEST/reviewer gates phải PASS và unresolved recovery findings = `NONE` trước recovery commit/push.
+
+Recovery commit dùng originating Task ID: `fix(<TASK-ID>): recover published main after CI failure` hoặc `revert(<TASK-ID>): revert failing published change`; chỉ fast-forward push `main`. Sau push: repository health = `CI_PENDING`, recovery = `CI_PENDING`; CI PASS → `HEALTHY`/`CLOSED`; CI FAIL → `BLOCKED`/`OPEN` và tiếp tục cùng incident, không admit task khác. Không reset/rebase/force-push/history rewrite. Nếu revert loại bỏ capability đã deliver, phải ghi rõ acceptance không còn hiện diện và planning consequence; future normal task chỉ được tạo/admit sau khi repository `HEALTHY`.
+
+Common pre-publish gates cho executable task:
 
 ```text
 [ ] dependency DONE
@@ -615,17 +641,36 @@ Mỗi executable task chỉ chuyển `DONE` khi:
 [ ] Android/Admin model/UI synced where client is affected
 [ ] no V2 scope introduced
 [ ] required reviewer(s) PASS
-[ ] CI PASS
 [ ] baseline_audit PASS
+[ ] git diff --check PASS
+[ ] secret/generated-file audit PASS
+[ ] baseline tag integrity PASS
 ```
+
+CI semantics phụ thuộc workflow:
+
+- **LEGACY / GRANDFATHERED:** giữ nguyên actual CI-before-`DONE` semantics của workflow gốc.
+- **NEW DIRECT-MAIN:** common pre-publish gates, applicable TEST/reviewer gates và applicable repository-level `PRE_CI_BOOTSTRAP_NA` evidence quyết định task `DONE`; sau đó mới final commit/push. Khi `CI-FND-001` effective, actual remote CI sau push là repository-health gate, không phải pre-`DONE` task gate.
+- Remote CI PASS đặt repository/main = `HEALTHY` và không đổi lifecycle của task. Remote CI FAIL đặt repository/main = `BLOCKED`; task đã `DONE` không bị viết lại thành `BLOCKED`; không task mới nào được bắt đầu; phải fix-forward hoặc revert, rerun affected TEST/reviewer gates, push remediation và giữ repository `BLOCKED` đến khi remote CI PASS. Failed CI không bao giờ được waive; không force-push/rewrite published history.
+- Sau mỗi normal direct-main push khi CI effective, repository health lập tức = `CI_PENDING` cho tới khi required CI của commit mới trên `origin/main` kết thúc. Không task kế tiếp nào được admission trong thời gian này.
+- `CI-FND-001` dùng bootstrap special case riêng tại phần dưới, không dùng normal direct-main completion flow.
+- `ONE TASK = ONE FINAL COMMIT` vẫn là normal rule. Chỉ có hai commit-count exception: `CI-FND-001` bootstrap và `PUBLISHED_MAIN_RECOVERY` sau actual published-main CI failure. Recovery không phải ordinary feature iteration hoặc cách bypass pre-publish gates.
+
+One-time closure gate cho `GOV-009`:
+
+- `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` chỉ áp dụng cho `GOV-009`; không phải `PRE_CI_BOOTSTRAP_NA` hoặc `CI PASS`; không thay đổi PRE_CI eligible list; không task nào khác được reuse; hết hiệu lực vĩnh viễn sau khi GOV-009 commit được push `main`; không waive failing CI.
+- `GOV-009` chỉ được `IN_PROGRESS → DONE` khi owner authorization confirmed; AR PASS; QAR PASS; unresolved findings = `NONE`; acceptance/governance consistency, baseline audit, py_compile, `git diff --check`, scope/secret/generated-file và baseline-tag integrity đều PASS; existing failing CI check = `NONE`.
+- Sau `DONE`, GOV-009 commit phải push trực tiếp `main`; workflow chỉ effective sau push thành công.
 
 Ngoại lệ bootstrap có thời hạn cho checklist trên:
 
-- Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ đúng các task `GOV-008`, `BE-FND-001`, `BE-FND-002`, `DB-FND-001`, `DB-FND-002`, `BE-FND-004`, `BE-FND-005`, `BE-FND-007`, `QA-FND-001`, `QA-FND-002` được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`.
-- `PRE_CI_BOOTSTRAP_NA` chỉ hợp lệ khi tất cả dependency đã `DONE`; acceptance criteria đã thỏa mãn; local/unit/integration/task tests bắt buộc đã `PASS` khi áp dụng; reviewer bắt buộc đã `PASS`; `baseline_audit` đã `PASS`; build/static/git/diff validations áp dụng đã `PASS`; PR ghi rõ eligible Task ID, lý do và bằng chứng local; và không có CI check hiện hữu nào đang fail.
+- Trước khi `CI-FND-001` effective, chỉ đúng các task `GOV-008`, `BE-FND-001`, `BE-FND-002`, `DB-FND-001`, `DB-FND-002`, `BE-FND-004`, `BE-FND-005`, `BE-FND-007`, `QA-FND-001`, `QA-FND-002` được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`.
+- `PRE_CI_BOOTSTRAP_NA` chỉ hợp lệ khi tất cả dependency đã `DONE`; acceptance criteria đã thỏa mãn; local/unit/integration/task tests bắt buộc đã `PASS` khi áp dụng; reviewer bắt buộc đã `PASS`; unresolved findings = `NONE`; `baseline_audit` đã `PASS`; build/static/git/diff validations áp dụng đã `PASS`; và không có CI check hiện hữu nào đang fail.
+- Với task grandfathered, PR tiếp tục ghi eligible Task ID, lý do và local validation evidence theo rule lịch sử. Với task direct-main bắt đầu sau effective point của `GOV-009`, repository evidence thay PR-level evidence và phải ghi eligible Task ID, dependency/acceptance/tests/reviewer/finding/audit/build-static-git state, `failed-check waiver = NOT USED`, cùng lý do `CI-FND-001` chưa effective.
 - CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ bootstrap này.
-- `CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Pipeline thực tế phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
-- Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, `PRE_CI_BOOTSTRAP_NA` tự động hết hiệu lực; Global Definition of Done trở lại yêu cầu `CI PASS` thực tế cho mọi executable task tiếp theo trước `DONE`/merge.
+- `CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` hoặc `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`. Đây là ngoại lệ hai commit: sau PLAN/IMPLEMENT/TEST/REVIEW, task giữ `IN_PROGRESS`; bootstrap commit được push lên `main`; actual CI chạy. Nếu CI FAIL, task vẫn `IN_PROGRESS`, repository/main = `BLOCKED`, không task tiếp theo, và phải fix-forward hoặc revert; failed CI không được waive. Chỉ sau actual CI PASS task mới chuyển `DONE` và tạo closure commit nhỏ.
+- CI fail trong bootstrap được remediate bên trong `CI-FND-001` đang `IN_PROGRESS`; additional minimal bootstrap/fix commit được phép cho tới actual CI PASS và không dùng general `PUBLISHED_MAIN_RECOVERY`. Sau khi CI-FND-001 effective, mọi later published-main failure—including closure-commit CI failure—dùng general recovery model.
+- `CI-FND-001` chỉ effective khi bootstrap flow đã có mandatory actual remote CI PASS, task chuyển `IN_PROGRESS → DONE`, và closure commit được push thành công tới `origin/main`. Đúng thời điểm đó `PRE_CI_BOOTSTRAP_NA` hết hiệu lực vĩnh viễn. CI của closure/latest-main commit còn chạy thì PRE_CI vẫn expired, repository health = `CI_PENDING`; CI fail thì PRE_CI vẫn expired, repository health = `BLOCKED`; PRE_CI không bao giờ reactivated. Legacy tasks giữ CI-before-`DONE`; direct-main tasks dùng remote CI sau push làm repository-health gate.
 - Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
 
 # 7. Milestone gate checklist
@@ -652,6 +697,7 @@ P0 tasks:
 
 ```text
 [ ] GOV-008
+[ ] GOV-009
 [ ] BE-FND-001
 [ ] BE-FND-002
 [ ] BE-FND-003
@@ -881,7 +927,7 @@ P0 tasks:
 
 # 9. Backlog integrity
 
-- Unique executable task IDs: **176**
+- Unique executable task IDs: **177**
 - Missing dependency references: **0**
 - Dependency cycles: **0**
 - OpenAPI operation mapping: **76/76**

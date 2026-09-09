@@ -205,7 +205,8 @@ Update this execution log:
 - when a blocker is discovered, changed, or resolved;
 - when a required reviewer returns PASS, FAIL, or findings;
 - before and after each milestone gate;
-- before merging a milestone or task branch into `main`.
+- before merging a milestone or task branch into `main` for a legacy/grandfathered task;
+- for a post-`GOV-009` direct-main task, before finalization/commit and after push/remote-CI verification.
 
 Do not record passwords, API keys, access tokens, refresh tokens,
 private keys, production credentials, or other secrets in this log.
@@ -217,8 +218,8 @@ For each executed task, record:
 ```text
 Task ID:
 Status:
-Branch:
-Commit:
+Branch/worktree mode:
+Commit (after finalization, except the CI-FND-001 bootstrap exception):
 Dependencies:
 Validation:
 Required reviewers:
@@ -250,6 +251,18 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-01 | BE-FND-001 | RESOLVED | `QA-BE-FND-001-001` — README documents build commands and artifact location but omits the executable Spring Boot JAR run command. | README now documents unambiguous build/test/run commands from the repository root; implementation-side validation passed; QA re-review PASS confirmed the finding resolved with no regression and recommendation APPROVE. |
 | 2026-09-08 | DB-FND-002 | OPEN | `QA-DB-FND-002-001` — QA could not independently reproduce the fresh migration/catalog/repeat-run evidence because the prior temporary PostgreSQL runtime had been removed. Severity: MEDIUM; Blocking: YES. | Focused remediation restored a fresh PostgreSQL runtime on `127.0.0.1:55432`, reran Flyway/catalog/constraint/repeat-run validation successfully, and left the runtime available; independent QA re-review remains pending. |
 | 2026-09-08 | DB-FND-002 | RESOLVED | `QA-DB-FND-002-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; original Status: OPEN. | Focused QA re-review PASS after independently accessible PostgreSQL runtime evidence; final finding Status: RESOLVED; unresolved findings: NONE. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. GOV-009 lacked an explicit valid one-time closure mode before its effective-point commit. | Added `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` and its non-reusable validation gates; finding remains OPEN pending focused Architecture re-review. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-002` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Active Global DoD still required CI PASS before DONE while direct-main remote CI can run only after push. | Split legacy task CI completion semantics from direct-main pre-publish task DONE and post-push repository-health semantics; finding remains OPEN pending focused Architecture re-review. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-003` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Active `CI-FND-001` acceptance still said CI failure prevents merge. | Replaced active acceptance with the bootstrap commit/push/actual-CI/two-commit state machine; finding remains OPEN pending focused Architecture re-review. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #2 confirmed the GOV-009-only `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` closure gate; Final Status: RESOLVED. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-002` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #2 confirmed task DONE versus repository-health separation; Final Status: RESOLVED. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-003` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #2 confirmed the CI-FND-001 bootstrap state machine; Final Status: RESOLVED. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-004` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Direct-main admission did not require an exact valid CI mode or latest-main health. | Added common admission, pre-/post-CI decision table, `INVALID_BEFORE_CI`, `HEALTHY`/`CI_PENDING`/repository `BLOCKED`, and after-push transitions; remains OPEN pending focused Architecture re-review #3. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-005` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Active PRE_CI expiry still used legacy merge wording and did not define irreversible expiry after the CI-FND-001 closure push. | Defined the exact CI-FND-001 effective point and irreversible PRE_CI expiry across active governance; remains OPEN pending focused Architecture re-review #3. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-004` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #3 confirmed exact direct-main admission and repository-health gating; Final Status: RESOLVED. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-005` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #3 confirmed the irreversible PRE_CI expiry/effective-point model; Final Status: RESOLVED. |
+| 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-006` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Published-main CI failure blocked all work but had no explicit recovery admission/state machine, creating a recovery deadlock. | Added the separate `PUBLISHED_MAIN_RECOVERY` operational model, narrow BLOCKED-state exception, traceability, FIX_FORWARD/REVERT flow, affected validation/reviewer gates, recovery commit semantics and CI state transitions; remains OPEN pending focused Architecture re-review #4. |
+| 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-006` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #4 confirmed the published-main recovery model; Final Status: RESOLVED; new findings: NONE. |
 
 #### Review result log
 
@@ -285,13 +298,18 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-08 | DB-FND-002 | Architecture Reviewer | PASS | Independent architecture review completed with no findings. |
 | 2026-09-08 | DB-FND-002 | QA Reviewer | FAIL | `QA-DB-FND-002-001` — Severity: MEDIUM; Blocking: YES; Status: OPEN. The prior temporary PostgreSQL runtime was not independently accessible. Focused remediation and QA re-review required. |
 | 2026-09-08 | DB-FND-002 | QA Reviewer | PASS | Focused QA re-review PASS; `QA-DB-FND-002-001` final Status: RESOLVED; unresolved findings: NONE. Historical QA FAIL and original OPEN metadata remain preserved. |
+| 2026-09-09 | GOV-009 | Architecture Reviewer | FAIL | `ARCH-GOV-009-001` HIGH/Blocking, `ARCH-GOV-009-002` HIGH/Blocking, and `ARCH-GOV-009-003` MEDIUM/Blocking. Original Status for all findings: OPEN. Remediation required; no finding is resolved pending focused Architecture re-review. |
+| 2026-09-09 | GOV-009 | Architecture Reviewer | FAIL | Architecture focused re-review #2: `ARCH-GOV-009-001/002/003` Final Status RESOLVED; new `ARCH-GOV-009-004` HIGH/Blocking and `ARCH-GOV-009-005` MEDIUM/Blocking, both Original Status OPEN. Focused remediation and Architecture re-review #3 required. |
+| 2026-09-09 | GOV-009 | Architecture Reviewer | FAIL | Architecture focused re-review #3: `ARCH-GOV-009-004/005` Final Status RESOLVED; new `ARCH-GOV-009-006` HIGH/Blocking, Original Status OPEN. Focused remediation and Architecture re-review #4 required. |
+| 2026-09-09 | GOV-009 | Architecture Reviewer | PASS | Architecture focused re-review #4: `ARCH-GOV-009-006` Final Status RESOLVED; new findings: NONE; final AR gate PASS. Historical review FAIL results remain preserved. |
+| 2026-09-09 | GOV-009 | QA Reviewer | PASS | Independent QA review: findings NONE; final QAR gate PASS. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  5 |    28 |              17.9% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  6 |    29 |              20.7% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -1090,3 +1108,162 @@ failing CI check: NONE. GOV-008 is closed as DONE.
 | Milestone | Execution complete | Total | Execution progress | DoD status |
 | --- | ---: | ---: | ---: | --- |
 | M1 — Foundation Ready | 1 | 28 | 3.6% | IN_PROGRESS |
+
+#### GOV-009 — Simplified Main-Branch Task Workflow
+
+- Owner authorization: APPROVED — repository owner explicitly authorized this one-time governance transition on 2026-09-09
+- Status: DONE
+- Status history: TODO → IN_PROGRESS → DONE
+- Execution location: direct uncommitted worktree on current `main`, as an explicit one-time exception
+- Dependencies: `GOV-008` DONE
+- Milestone placement: M1 — Governance Amendment / Pre-Foundation
+- Current executable task total: 177
+- Current M1 task total: 29
+- M1 execution before GOV-009 closure: 5 / 29 (17.2%)
+- Current M1 execution complete after GOV-009 closure: 6 / 29 (20.7%)
+- Historical milestone snapshots/totals: PRESERVED — including the GOV-008 closure snapshot of 1 / 28 (3.6%)
+- Required reviewers: AR,QAR
+- Historical Architecture review #1: FAIL
+- Architecture focused re-review #2: FAIL
+- Architecture focused re-review #3: FAIL
+- Architecture focused re-review #4: PASS
+- Architecture Reviewer current gate: PASS
+- QA Reviewer: PASS — findings NONE
+- Resolved Architecture findings: `ARCH-GOV-009-001`, `ARCH-GOV-009-002`, `ARCH-GOV-009-003`, `ARCH-GOV-009-004`, `ARCH-GOV-009-005`, `ARCH-GOV-009-006` — reviewer-confirmed Final Status RESOLVED; not reopened
+- Unresolved reviewer findings: NONE
+- DONE: YES
+- Closure mode: `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` — applies only to GOV-009; not `PRE_CI_BOOTSTRAP_NA`; not `CI PASS`; eligible list unchanged; non-reusable; expires permanently after GOV-009 push; cannot waive failing CI
+- Transition gate: `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`
+- Applicable Task: `GOV-009` only
+- Repository-owner authorization: CONFIRMED
+- Reusable: NO
+- `PRE_CI_BOOTSTRAP_NA`: NOT USED
+- CI PASS substitution: NO
+- Failed-check waiver: NOT USED
+- Closure gates: PASS — `GOV-008` DONE; owner CONFIRMED; AR PASS; QAR PASS; unresolved findings NONE; governance acceptance PASS; baseline audit PASS; py_compile PASS; `git diff --check` PASS; scope audit PASS; secret/generated-file audit PASS; baseline tag integrity PASS; existing failing CI check NONE
+- Existing failing CI check: NONE — current `main` HEAD has 0 check runs and 0 status contexts; no failed-check waiver used
+- Effective point: only after AR PASS, QAR PASS, unresolved findings = `NONE`, `GOV-009` finalization to `DONE`, and successful push of the `GOV-009` commit to `main`
+- Governance commit: PENDING
+- Push to `origin/main`: PENDING
+- Simplified workflow effective: NO — uncommitted GOV-009 changes do not activate it
+- New default after effective point: PLAN → IMPLEMENT → TEST → REVIEW → DONE → one final commit on `main` → push `main`
+- New lifecycle after effective point: TODO → IN_PROGRESS → DONE; `BLOCKED` from `IN_PROGRESS` for an actual blocker; `READY` and `IN_REVIEW` preserved for historical/legacy use
+- Active-task limit: one direct-main task; a parked grandfathered task does not count
+- Admission before CI effective: only an explicitly PRE_CI-eligible task with all admission gates, or `CI-FND-001` under `ACTUAL_CI_BOOTSTRAP`; non-eligible ordinary task = `INVALID_BEFORE_CI` / admission `BLOCKED`
+- Admission after CI effective: CI mode `ACTUAL_CI_REPOSITORY_HEALTH`; latest `origin/main` must be `HEALTHY`; `CI_PENDING` and repository health `BLOCKED` both prohibit PLAN / `TODO → IN_PROGRESS`
+- After each post-CI direct-main push: repository health immediately `CI_PENDING`; PASS → `HEALTHY`; FAIL → repository health `BLOCKED`; task lifecycle remains separate
+- Published-main recovery: `PUBLISHED_MAIN_RECOVERY` is not a backlog task or PLAN admission; a required CI failure keeps the originating task `DONE`, sets repository health `BLOCKED`, and opens recovery under the same originating Task ID
+- Recovery admission exception: only minimal incident-bound `FIX_FORWARD` or `REVERT` work may proceed while repository health is `BLOCKED`; no unrelated task or `TODO → IN_PROGRESS`; `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` and `PRE_CI_BOOTSTRAP_NA` are prohibited as recovery mechanisms
+- Recovery states/evidence: `OPEN → VALIDATING → CI_PENDING → CLOSED` (optional recovery `BLOCKED`), traced by originating Task ID, failing `origin/main` SHA/check, strategy, recovery SHA, affected tests/reviewers/findings and final CI
+- Recovery publication: affected TEST/reviewer gates PASS + unresolved recovery findings `NONE` → traceable recovery commit/fast-forward push → repository/recovery `CI_PENDING`; PASS → `HEALTHY`/`CLOSED`; repeated FAIL → `BLOCKED`/`OPEN` under the same incident
+- Commit-count rule: `ONE TASK = ONE FINAL COMMIT` remains normal; only CI-FND-001 bootstrap and actual-failure `PUBLISHED_MAIN_RECOVERY` are exceptions
+- Grandfathered task: `BE-FND-003` / PR #5 remains on `feat/BE-FND-003-application-profiles-config`; PR remains OPEN; lifecycle/status and AR/SR/QAR evidence unchanged; actual CI required; `PRE_CI_BOOTSTRAP_NA` not eligible; no GOV-009-only cherry-pick
+- PRE_CI rule: eligible list unchanged; new direct-main eligible tasks use repository-level evidence, while grandfathered tasks retain PR-level evidence; failing CI is never waived
+- PRE_CI expiry: irreversible when CI-FND-001 bootstrap actual CI PASS + task `DONE` + closure commit successfully pushed `origin/main`; closure/latest-main `CI_PENDING` or `BLOCKED` never reactivates PRE_CI
+- `CI-FND-001`: cannot use `PRE_CI_BOOTSTRAP_NA` or `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`; documented two-commit bootstrap/push/actual-CI/closure-push exception
+- Post-CI rule: remote CI runs after direct-main push as repository-health gate; PASS leaves task lifecycle unchanged and repository/main `HEALTHY`; FAIL blocks repository/main without rewriting the already-`DONE` task until fix-forward or revert, affected retest/re-review, remediation push and remote CI PASS
+- Direct-main safety: task `DONE`, dependency/scope/tests/reviewers/findings/audit/diff/secret/generated/tag gates PASS before commit; no force-push, published-main rebase, destructive reset/clean, history rewrite, tag mutation, known failure, or mixed-task commit
+- Skill migration: PENDING — installed Codex skills remain unchanged and are explicitly excluded from this finalization
+- Product/technical contract impact: None
+- API/OpenAPI impact: None
+- Database/Flyway impact: None
+- Client behavior impact: None
+- Baseline tags: PASS — both immutable tag objects and peeled targets are unchanged (`baseline-v1-implementation-ready` → tag `5ccf0650d81ffbbd3d96eb523d097e0b9b022308`, commit `ff6e13f4fe1444879b28d846801d0caa555bf4a7`; `baseline-v1-implementation-ready-r1` → tag `e3884521c3d497094961d015b7b32d12a8e55650`, commit `34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Finalization validation: PASS — `python tools/baseline_audit.py`; `python -m py_compile tools/baseline_audit.py`; `git diff --check`; planning integrity 177 unique tasks / 0 missing dependencies / 0 cycles / M1 29 with 6 DONE (20.7%); governance/reviewer/effective-point consistency searches and full diff inspected; scope/secret/generated-file audits PASS; baseline tags and installed skill unchanged; no existing failing CI check
+- Commit/push/branch/tag mutation: NONE
+
+Architecture finding chronology and remediation:
+
+```text
+Historical Architecture review #1: FAIL
+
+ARCH-GOV-009-001
+Severity: HIGH
+Blocking: YES
+Original Status: OPEN
+Remediation: Added the explicit OWNER_AUTHORIZED_GOVERNANCE_TRANSITION closure
+gate for GOV-009 only, including owner, reviewer, finding, validation, secret/
+generated-file, baseline-tag and no-failing-CI conditions. It is explicitly
+separate from PRE_CI_BOOTSTRAP_NA and CI PASS, is non-reusable, and expires
+permanently after the GOV-009 push.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #2.
+
+ARCH-GOV-009-002
+Severity: HIGH
+Blocking: YES
+Original Status: OPEN
+Remediation: Split Global DoD semantics. Legacy/grandfathered tasks retain
+CI-before-DONE. New direct-main tasks reach DONE through pre-publish local/test/
+reviewer/applicable PRE_CI gates; post-push remote CI is repository health.
+Remote failure blocks repository/main without rewriting the completed task.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #2.
+
+ARCH-GOV-009-003
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Remediation: Replaced the active CI-FND-001 "fail thì không merge" acceptance
+with IN_PROGRESS → bootstrap commit/push → actual CI PASS → DONE → closure
+commit. CI-FND-001 cannot use PRE_CI_BOOTSTRAP_NA or
+OWNER_AUTHORIZED_GOVERNANCE_TRANSITION.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #2.
+
+Architecture focused re-review #2: FAIL
+
+ARCH-GOV-009-004
+Severity: HIGH
+Blocking: YES
+Original Status: OPEN
+Remediation: Added one mandatory admission gate for every post-GOV-009 task.
+Before CI-FND-001 effective, only a positively listed PRE_CI-eligible task with
+all PRE_CI admission gates or CI-FND-001 under ACTUAL_CI_BOOTSTRAP may enter
+PLAN; ordinary non-eligible tasks use INVALID_BEFORE_CI and are blocked. After
+CI effective, ACTUAL_CI_REPOSITORY_HEALTH requires latest origin/main HEALTHY;
+CI_PENDING and repository health BLOCKED both prohibit TODO → IN_PROGRESS.
+Every direct-main push sets CI_PENDING until PASS or FAIL. Task BLOCKED and
+REPOSITORY HEALTH = BLOCKED are explicitly distinct.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #3.
+
+ARCH-GOV-009-005
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Remediation: Replaced active merge-based PRE_CI expiry with the exact
+CI-FND-001 effective point: mandatory bootstrap actual CI PASS, task DONE, and
+successful closure-commit push to origin/main. PRE_CI then expires permanently;
+closure/latest-main CI_PENDING or BLOCKED never reactivates it and blocks new
+task admission until repository health returns HEALTHY.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #3.
+
+Architecture focused re-review #3: FAIL
+
+ARCH-GOV-009-006
+Severity: HIGH
+Blocking: YES
+Original Status: OPEN
+Remediation: Added PUBLISHED_MAIN_RECOVERY as a non-backlog operational state
+machine for actual CI failure on an already-published direct-main commit. The
+originating task remains DONE while repository health is BLOCKED and recovery
+is OPEN. Only incident-bound FIX_FORWARD or REVERT may proceed; unrelated PLAN
+and TODO → IN_PROGRESS remain prohibited. Recovery records the originating Task
+ID, failing origin/main SHA/check, strategy, affected tests/reviewers, recovery
+SHA/findings and final CI. Affected gates must pass before a fast-forward
+recovery push sets repository/recovery CI_PENDING. PASS closes recovery and
+restores HEALTHY; repeated FAIL returns to BLOCKED/OPEN under the same incident.
+The recovery commit and CI-FND-001 bootstrap are the only narrow exceptions to
+ONE TASK = ONE FINAL COMMIT; PRE_CI remains permanently expired.
+Final Status: RESOLVED — confirmed by Architecture focused re-review #4.
+New findings: NONE.
+
+Architecture focused re-review #4: PASS
+Final Architecture Reviewer gate: PASS
+
+QA Review: PASS
+Findings: NONE
+Final QA Reviewer gate: PASS
+
+Final reviewer state:
+AR = PASS
+QAR = PASS
+Unresolved findings = NONE
+```
