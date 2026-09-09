@@ -309,7 +309,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  6 |    29 |              20.7% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  7 |    29 |              24.1% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -1266,4 +1266,170 @@ Final reviewer state:
 AR = PASS
 QAR = PASS
 Unresolved findings = NONE
+```
+
+### BE-FND-004 — JPA base conventions: UUID, audit timestamps, enum, @Version
+
+- Status: DONE
+- Status history: TODO → IN_PROGRESS → DONE
+- Branch/worktree mode: `GOV009_DIRECT_MAIN` — uncommitted `main` worktree
+- HEAD at admission: `db574d34f15f8d66f9b8733ac18ac1f6a4ecdc10`
+- `origin/main` at admission: `db574d34f15f8d66f9b8733ac18ac1f6a4ecdc10`
+- Dependencies: `DB-FND-002` DONE; `BE-FND-002` DONE
+- Priority: P0
+- Required reviewers: Database Reviewer, Architecture Reviewer, QA Reviewer
+- Acceptance: Entity mapping theo schema; UUID/timezone conventions thống nhất; `@Version` cho `user_vocabulary_progress` và `streaks`.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Started at: 2026-09-09
+- Closed at: 2026-09-09
+- CI admission mode: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-004`
+- CI status reason: `CI-FND-001` chưa effective và `BE-FND-004` nằm tường minh trong eligible prerequisite list
+- Remote admission evidence: sau `git fetch`, `main == origin/main`; GitHub commit có 0 check runs và 0 status contexts
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED
+- Unresolved blockers: NONE
+- Contract changes: None — triển khai persistence conventions theo approved baseline
+
+Implementation plan:
+
+```text
+Add only the Spring Data JPA dependency required by this task. Establish reusable UUID
+and audit timestamp mapping conventions, using TIMESTAMPTZ-compatible Java time types
+and string-backed enum mapping. Add schema-aligned mappings for the two explicitly
+optimistic-locked states, user_vocabulary_progress and streaks, with @Version.
+
+Add focused convention/mapping tests and validate the mappings against the existing
+Flyway baseline where the local PostgreSQL runtime is available. Do not add repositories,
+controllers, APIs, exception mapping, business algorithms, seed data, indexes, auth,
+idempotency service, clock abstraction, or mappings owned by later backlog tasks.
+```
+
+Implementation evidence:
+
+```text
+Added spring-boot-starter-data-jpa through Spring Boot dependency management.
+Added UuidEntity with application-generated GenerationType.UUID identifiers.
+Added AuditableEntity with Instant-backed created_at/updated_at mappings for TIMESTAMPTZ.
+Added LearningStatus with the canonical NEW/LEARNING/REVIEWING/MASTERED values and
+EnumType.STRING mapping on UserVocabularyProgress.status.
+Added schema-aligned UserVocabularyProgress and Streak mappings for every column in
+the two optimistic-lock tables; both version fields use jakarta.persistence.Version.
+Added focused reflection-based convention/mapping tests and README guidance.
+No existing Flyway migration was modified; no repository, API or business service added.
+```
+
+Validation evidence:
+
+```text
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+→ JpaEntityConventionTests: 5 PASS
+
+PostgreSQL runtime validation on 127.0.0.1:55432 / PostgreSQL 18.6
+→ pg_isready: accepting connections
+→ Flyway validated V1 and reported schema up to date
+→ Hibernate 7.4.5.Final initialized the persistence unit
+→ spring.jpa.hibernate.ddl-auto=validate: PASS
+→ validation runtime left available for independent reviewers
+
+Maven dependency tree
+→ spring-boot-starter-data-jpa 4.1.1
+→ spring-data-jpa 4.1.1
+→ hibernate-core 7.4.5.Final
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+Scope audit, untracked whitespace audit, secret audit, generated-file audit,
+Flyway immutability and baseline-tag integrity
+→ PASS
+
+Full tracked diff and every untracked current-task file
+→ INSPECTED
+```
+
+Change impact:
+
+```text
+Change: Add BE-FND-004 JPA base conventions and the two optimistic-lock mappings.
+Why: Satisfy the approved JPA/UUID/timestamp/enum/@Version foundation acceptance.
+Affected documents: README.md plus backlog/execution lifecycle evidence.
+Affected API/OpenAPI: None.
+Affected database/Flyway: No schema change; mappings validate against existing V1.
+Affected security: None.
+Affected business rules: None.
+Affected clients: None.
+Migration: None.
+Backward compatibility: Preserved.
+```
+
+TEST stop state:
+
+```text
+Task status: IN_PROGRESS
+Implementation and applicable TEST gates: PASS
+Self-review/reviewer PASS claimed: NO
+Unresolved implementation blockers: NONE
+Required independent reviewers next: Database Reviewer, Architecture Reviewer,
+QA Reviewer
+Commit/push/merge/tag mutation: NONE
+```
+
+Independent reviewer evidence:
+
+```text
+Database Reviewer task: Review BE-FND-004 database
+Task ID: 01a08624-a453-7de0-9357-8e1b742bd88e
+Result: PASS
+Findings: NONE
+Recommendation: APPROVE
+
+Architecture Reviewer task: Rà soát kiến trúc BE-FND-004
+Task ID: 01a0862b-ec5a-7191-a3ab-91adbd69ef4b
+Result: PASS
+Findings: NONE
+Recommendation: APPROVE
+
+QA Reviewer task: Review BE-FND-004 QA
+Task ID: 01a0863c-25fe-72c0-94bc-bf1921446833
+Result: PASS
+Findings: NONE
+Recommendation: APPROVE
+
+Final reviewer gates: DBR=PASS; AR=PASS; QAR=PASS
+Unresolved reviewer findings: NONE
+```
+
+Final closure evidence:
+
+```text
+Dependencies: DB-FND-002=DONE; BE-FND-002=DONE
+Acceptance criteria: PASS
+Required tests: PASS — Maven clean verify, 9 tests, 0 failures/errors/skips
+PostgreSQL/Flyway/Hibernate schema validation: PASS
+Required reviewers: DBR=PASS; AR=PASS; QAR=PASS
+Unresolved findings: NONE
+CI status: PRE_CI_BOOTSTRAP_NA
+PRE_CI eligible Task ID: BE-FND-004
+CI status reason: CI-FND-001 chưa effective và BE-FND-004 thuộc eligible list
+Repository-level PRE_CI evidence: SATISFIED
+Existing failing CI check: NONE — origin/main có 0 check runs và 0 status contexts
+Failed CI check waiver: NOT USED
+Baseline audit, build/static/git/diff, scope, secret, generated-file,
+Flyway immutability và baseline-tag integrity: PASS
+Contract drift: NONE
+Unresolved blockers: NONE
+Final closure gate: PASS
+Task status: DONE
+M1 execution progress: 7 / 29 (24.1%); M1 vẫn IN_PROGRESS
+Commit/push/merge/tag mutation: NONE
 ```

@@ -123,4 +123,24 @@ export SPRING_DATASOURCE_PASSWORD="<same-local-password-as-.env>"
 java -jar backend/target/english-ai-coach-backend-0.0.1-SNAPSHOT.jar
 ```
 
-Flyway ghi version đã apply vào `flyway_schema_history`. Việc seed reference data, bổ sung performance/partial indexes, JPA entity/repository và Testcontainers harness thuộc các backlog task kế tiếp.
+Flyway ghi version đã apply vào `flyway_schema_history`. Việc seed reference data, bổ sung performance/partial indexes, repository và Testcontainers harness thuộc các backlog task kế tiếp.
+
+## JPA base conventions
+
+BE-FND-004 bổ sung Spring Data JPA/Hibernate và các convention nền tảng sau:
+
+- ID nghiệp vụ do application sinh bằng UUID;
+- cột `TIMESTAMPTZ` được map bằng `Instant` để giữ một instant UTC rõ ràng;
+- cột ngày không kèm timezone như `last_active_date` được map bằng `LocalDate`;
+- enum nghiệp vụ được lưu bằng `EnumType.STRING`, không dùng ordinal;
+- `user_vocabulary_progress.version` và `streaks.version` dùng JPA `@Version`.
+
+`UserVocabularyProgress` và `Streak` là hai mapping nền tảng được thêm trong task này vì Database Schema v1.6 yêu cầu optimistic locking cho đúng hai bảng đó. Repository, transaction service, HTTP 409 `CONCURRENT_UPDATE`, business mutation và Testcontainers harness vẫn thuộc các task phụ thuộc tiếp theo.
+
+Có thể kiểm tra Flyway và mapping Hibernate trên PostgreSQL đang chạy bằng cách thêm tùy chọn sau khi khởi động JAR:
+
+```text
+--spring.jpa.hibernate.ddl-auto=validate
+```
+
+Tùy chọn này chỉ validate mapping với schema hiện hữu; Flyway vẫn là cơ chế duy nhất quản lý thay đổi schema.
