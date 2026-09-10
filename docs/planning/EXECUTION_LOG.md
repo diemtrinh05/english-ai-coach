@@ -263,6 +263,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-005` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #3 confirmed the irreversible PRE_CI expiry/effective-point model; Final Status: RESOLVED. |
 | 2026-09-09 | GOV-009 | OPEN | `ARCH-GOV-009-006` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Published-main CI failure blocked all work but had no explicit recovery admission/state machine, creating a recovery deadlock. | Added the separate `PUBLISHED_MAIN_RECOVERY` operational model, narrow BLOCKED-state exception, traceability, FIX_FORWARD/REVERT flow, affected validation/reviewer gates, recovery commit semantics and CI state transitions; remains OPEN pending focused Architecture re-review #4. |
 | 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-006` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #4 confirmed the published-main recovery model; Final Status: RESOLVED; new findings: NONE. |
+| 2026-09-10 | QA-FND-001 | OPEN | `DB-QA-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `PostgreSqlHarnessIntegrationTests` asserted exactly one applied Flyway migration, so the harness would reject a valid append-only V2+ history. | Replaced the total-count assertion with canonical V1 presence/script/`SUCCESS` verification and a no-maximum check that every currently resolved/applied migration is `SUCCESS`; finding remains OPEN pending focused Database Reviewer re-review. |
+| 2026-09-10 | QA-FND-001 | RESOLVED | `DB-QA-FND-001-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Focused Database re-review PASS confirmed the append-only-compatible Flyway assertion remediation; final finding Status: RESOLVED; new findings: NONE. Historical Database Reviewer FAIL remains preserved. |
 
 #### Review result log
 
@@ -303,13 +305,16 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-09 | GOV-009 | Architecture Reviewer | FAIL | Architecture focused re-review #3: `ARCH-GOV-009-004/005` Final Status RESOLVED; new `ARCH-GOV-009-006` HIGH/Blocking, Original Status OPEN. Focused remediation and Architecture re-review #4 required. |
 | 2026-09-09 | GOV-009 | Architecture Reviewer | PASS | Architecture focused re-review #4: `ARCH-GOV-009-006` Final Status RESOLVED; new findings: NONE; final AR gate PASS. Historical review FAIL results remain preserved. |
 | 2026-09-09 | GOV-009 | QA Reviewer | PASS | Independent QA review: findings NONE; final QAR gate PASS. |
+| 2026-09-10 | QA-FND-001 | Database Reviewer | FAIL | `DB-QA-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The harness asserted total applied Flyway migration count equals one and was not append-only V2+ compatible. Focused remediation and Database Reviewer re-review required; finding remains OPEN. |
+| 2026-09-10 | QA-FND-001 | QA Reviewer | PASS | Independent QA review verified the `DB-QA-FND-001-001` remediation and 12/12 tests PASS; findings: NONE; QAR=PASS. At this review point the Database finding remained OPEN pending focused Database Reviewer re-review. |
+| 2026-09-10 | QA-FND-001 | Database Reviewer | PASS | Focused Database re-review confirmed `DB-QA-FND-001-001` RESOLVED; append-only Flyway compatibility preserved; product code and Flyway migration unchanged; new findings: NONE; DBR=PASS. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  7 |    29 |              24.1% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  8 |    29 |              27.6% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -1432,4 +1437,331 @@ Final closure gate: PASS
 Task status: DONE
 M1 execution progress: 7 / 29 (24.1%); M1 vẫn IN_PROGRESS
 Commit/push/merge/tag mutation: NONE
+```
+
+### QA-FND-001 — Testcontainers PostgreSQL integration harness
+
+- Status: DONE
+- Status history: TODO → IN_PROGRESS → DONE
+- Branch/worktree mode: `GOV009_DIRECT_MAIN` — uncommitted `main` worktree
+- HEAD at admission: `aa3e9704a1239733959aec24408df3b4d957d929`
+- `origin/main` at admission: `aa3e9704a1239733959aec24408df3b4d957d929`
+- Dependencies: `DB-FND-002` DONE; `BE-FND-004` DONE
+- Priority: P0
+- Required reviewers: Database Reviewer, QA Reviewer
+- Acceptance: Integration tests chạy trên PostgreSQL thật; Flyway tự chạy; không dùng H2 thay thế cho constraint/JSONB/timestamp behavior.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: Database Schema v1.6; System Architecture v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Started at: 2026-09-10
+- Closed at: 2026-09-10
+- CI admission mode: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `QA-FND-001`
+- CI status reason: `CI-FND-001` chưa effective và `QA-FND-001` nằm tường minh trong eligible prerequisite list
+- Remote admission evidence: sau `git fetch`, `main == origin/main`; GitHub commit có 0 check runs và 0 status contexts
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED
+- Contract changes: None — task chỉ tạo integration-test harness cho approved PostgreSQL/Flyway/JPA baseline
+- Historical environment blocker: Docker Desktop 4.88.1 ban đầu không khởi động được do stale runtime reparse-point `sailor-ingest.sock`; runtime đã được khôi phục bên ngoài implementation session và focused retest đã PASS
+- Unresolved blockers: NONE
+- Self-review status: PROHIBITED — implementation session không được tự thỏa QAR gate
+
+Implementation plan:
+
+```text
+Add only the Spring Boot Testcontainers integration and PostgreSQL Testcontainers
+module needed by QA-FND-001. Provide reusable Spring test configuration and a base
+class that starts an isolated PostgreSQL container through a service connection, lets
+Flyway migrate from zero, and enables Hibernate schema validation.
+
+Add a focused integration suite proving the runtime is PostgreSQL, Flyway creates the
+34 canonical tables, and native JSONB, TIMESTAMPTZ and CHECK-constraint behavior is
+exercised. Do not add H2, repositories, product API, schema migration, business logic,
+seed data, indexes, profiles, security, idempotency service or later-task behavior.
+```
+
+Implementation evidence:
+
+```text
+Added test-scoped spring-boot-testcontainers and testcontainers-postgresql dependencies;
+Spring Boot dependency management resolves Testcontainers 2.0.5.
+Added PostgreSqlTestContainerConfiguration with the exact local PostgreSQL image
+postgres:16.15-alpine3.24 and isolated test database credentials.
+Added reusable PostgreSqlIntegrationTestSupport for Spring Boot integration tests.
+Added PostgreSqlHarnessIntegrationTests covering real PostgreSQL identity, automatic
+Flyway V1 application, exactly 34 canonical tables, Hibernate ddl-auto=validate,
+native JSONB extraction, equivalent TIMESTAMPTZ instants, and the canonical
+idempotency response_status CHECK constraint.
+Updated README.md with Docker prerequisite, execution command and explicit no-H2 rule.
+No product code, Flyway migration, API/OpenAPI, database schema or client was changed.
+```
+
+TEST evidence and blocker:
+
+```text
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml -DskipTests test-compile
+→ BUILD SUCCESS; all 7 test source files compile.
+
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD FAILURE caused only by unavailable Docker runtime.
+→ Existing 9 non-container tests PASS, 0 failures/errors/skips.
+→ PostgreSqlHarnessIntegrationTests: 3 errors before ApplicationContext startup.
+→ Root cause: Testcontainers 2.0.5 could not find a valid Docker environment.
+
+Docker Desktop startup remediation attempt
+→ Docker Desktop 4.88.1 backend log identifies a stale 0-byte ReparsePoint at
+  C:\Users\Hi\AppData\Local\Docker\run\sailor-ingest.sock.
+→ Backend crashes while trying to remove that socket; Docker API never becomes ready.
+→ Exact stale socket and parent were verified read-only.
+→ Host policy rejected removal of the out-of-workspace runtime socket; no Docker
+  volume, repository file or unrelated user data was removed.
+
+Focused non-container test command
+→ BUILD SUCCESS; 9 tests, 0 failures, 0 errors, 0 skipped.
+
+Maven dependency tree
+→ spring-boot-testcontainers 4.1.1, testcontainers-postgresql 2.0.5.
+→ H2 dependency: NONE.
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS.
+
+python -m py_compile tools/baseline_audit.py
+→ PASS.
+
+git diff --check
+→ PASS.
+
+Scope, untracked-whitespace, secret, generated-file, Flyway immutability and
+baseline-tag integrity audits
+→ PASS.
+→ Changed scope contains only README, backend test dependencies, QA-FND-001 test
+  harness/tests, and lifecycle/evidence planning updates.
+→ Product main-code diff: NONE; Flyway diff: NONE; tracked target files: NONE.
+→ Secret-pattern hits: NONE; container username/password are isolated test-only
+  fixture values and are not production/shared credentials.
+→ Baseline tag objects and peeled commits remain unchanged.
+```
+
+TEST stop state:
+
+```text
+Task status: IN_PROGRESS
+Compile and non-container regression tests: PASS
+Required PostgreSQL Testcontainers runtime acceptance: BLOCKED by Docker host state
+Implementation-side product-code blocker: NONE
+Self-review/reviewer PASS claimed: NO
+Required independent reviewers after runtime TEST PASS: Database Reviewer, QA Reviewer
+SELF_REVIEW_CONFLICT: independent QAR is mandatory because Owner and reviewer are QAR
+Commit/push/merge/tag mutation: NONE
+```
+
+Focused runtime retest after Docker recovery — 2026-09-10:
+
+```text
+Docker runtime
+→ Docker Desktop engine 29.7.2 available through local Npipe socket.
+
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD SUCCESS.
+→ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0.
+→ PostgreSqlHarnessIntegrationTests: 3 PASS.
+→ Testcontainers 2.0.5 started postgres:16.15-alpine3.24.
+→ Flyway detected an empty public schema, validated and applied V1 successfully.
+→ PostgreSQL product/version, exactly 34 canonical tables, Hibernate schema
+  validation, JSONB, TIMESTAMPTZ and CHECK-constraint behavior: PASS.
+
+Repeat clean verify from a new JVM/container
+→ BUILD SUCCESS.
+→ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0.
+→ New isolated JDBC port and fresh empty schema observed; Flyway reapplied V1 once.
+→ Testcontainers present before repeat: NONE.
+→ Testcontainers present after cleanup: NONE.
+→ Repeatability and isolation: PASS.
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS.
+
+python -m py_compile tools/baseline_audit.py
+→ PASS.
+
+git diff --check and untracked whitespace audit
+→ PASS.
+
+Dependency/scope/secret/generated/Flyway/tag audits
+→ H2 dependency: NONE.
+→ Product main-code diff: NONE; Flyway diff: NONE; tracked target files: NONE.
+→ Secret-pattern hits: NONE; test-only isolated fixture credential classification PASS.
+→ Baseline tag objects and peeled commits: UNCHANGED.
+→ Full tracked diff and every untracked current-task file: INSPECTED.
+```
+
+Current TEST stop state:
+
+```text
+Task status: IN_PROGRESS
+Acceptance and applicable TEST gates: PASS
+Unresolved implementation/test blockers: NONE
+Self-review/reviewer PASS claimed: NO
+Required independent reviewers next: Database Reviewer, QA Reviewer
+SELF_REVIEW_CONFLICT: independent QAR is mandatory because Owner and reviewer are QAR
+PRE_CI status: PRE_CI_BOOTSTRAP_NA eligible; final evidence still requires reviewer PASS
+Commit/push/merge/tag mutation: NONE
+```
+
+Database Reviewer FAIL and focused remediation — 2026-09-10:
+
+```text
+Historical Database Reviewer result: FAIL
+Finding ID: DB-QA-FND-001-001
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Current finding status: OPEN — only Database Reviewer may mark RESOLVED
+
+Finding:
+PostgreSqlHarnessIntegrationTests asserted exactly one applied Flyway migration,
+which would reject a valid append-only Flyway history after V2+ is introduced.
+
+Focused remediation:
+Removed the total migration-count assertion and any implicit future maximum.
+The harness now requires canonical V1__create_schema_baseline.sql to be present
+and SUCCESS, and requires every currently resolved/applied migration to be SUCCESS.
+Fresh-database migration, canonical 34-table validation, PostgreSQL identity,
+JSONB, TIMESTAMPTZ, CHECK-constraint, repeatability and isolation coverage remain.
+V1__create_schema_baseline.sql: UNCHANGED.
+Product code: UNCHANGED.
+DB-FND-003 / DB-FND-004 implementation: NOT ADDED.
+Task status: IN_PROGRESS.
+Finding remains OPEN pending focused Database Reviewer re-review.
+```
+
+Focused remediation validation — 2026-09-10:
+
+```text
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD SUCCESS.
+→ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0.
+→ PostgreSqlHarnessIntegrationTests: 3 PASS.
+→ Testcontainers started postgres:16.15-alpine3.24 on isolated port 52668.
+→ Flyway detected an empty public schema, validated canonical V1 and applied it
+  successfully; Hibernate schema validation and 34-table assertion PASS.
+
+Repeat clean verify from a new JVM/container
+→ BUILD SUCCESS.
+→ Tests run: 12, Failures: 0, Errors: 0, Skipped: 0.
+→ New isolated PostgreSQL port 51376 and fresh empty schema observed.
+→ Flyway reapplied canonical V1 successfully; repeatability/isolation PASS.
+→ Testcontainers present before repeat: NONE.
+→ Testcontainers present after cleanup: NONE.
+
+Append-only migration assertion
+→ Canonical V1 is selected by version and exact script name and must be SUCCESS.
+→ Every currently resolved/applied migration must be SUCCESS.
+→ No assertion of total migration count and no future maximum are present.
+
+python tools\baseline_audit.py
+→ BASELINE AUDIT: PASS.
+
+python -m py_compile tools\baseline_audit.py
+→ PASS.
+
+git diff --check and untracked whitespace audit
+→ PASS; untracked whitespace hits: 0.
+
+Scope/secret/generated/Flyway/tag audits
+→ Product main-code diff: NONE; Flyway diff: NONE.
+→ V1__create_schema_baseline.sql hash remains
+  90cea2345563c50176015637050ca73479e72d03.
+→ DB-FND-003 / DB-FND-004 markers in diff: NONE; H2 dependency: NONE.
+→ Secret scan findings are non-secret documentation terms and an explicit README
+  placeholder; isolated Testcontainers credentials remain test-only fixtures.
+→ Generated-file hits: NONE.
+→ Baseline tag objects and peeled commits: UNCHANGED.
+→ Full tracked diff and every untracked current-task file: INSPECTED.
+
+Remediation stop state
+→ QA-FND-001: IN_PROGRESS.
+→ DB-QA-FND-001-001: OPEN; not marked RESOLVED.
+→ Historical Database Reviewer FAIL and original metadata: PRESERVED.
+→ Next step: focused Database Reviewer re-review.
+→ Commit/push/merge/tag mutation: NONE.
+```
+
+Independent reviewer evidence synchronization — 2026-09-10:
+
+```text
+Chronology preserved:
+1. Initial Database Review: FAIL.
+   DB-QA-FND-001-001; Severity MEDIUM; Blocking YES; Original Status OPEN.
+2. Remediation removed the hard-coded applied-migration count of 1, preserved
+   append-only compatibility, and changed neither product code nor Flyway migration.
+3. Independent QA Review: PASS; findings NONE; QAR=PASS.
+   QA verified the remediation and 12/12 tests PASS. At that review point,
+   DB-QA-FND-001-001 remained OPEN pending Database Reviewer resolution.
+4. Focused Database Re-review: PASS.
+   DB-QA-FND-001-001 final Status RESOLVED; new findings NONE; DBR=PASS.
+
+Final reviewer state:
+DBR = PASS
+QAR = PASS
+DB-QA-FND-001-001 final status = RESOLVED
+Unresolved findings = NONE
+
+Evidence classification: synchronization of independently produced reviewer results;
+this QA implementation session did not perform or claim a self-review.
+QA-FND-001 status: IN_PROGRESS.
+PRE_CI_BOOTSTRAP_NA: pending finalization.
+Commit/push/merge/tag mutation: NONE.
+```
+
+Final closure evidence — 2026-09-10:
+
+```text
+Mode: GOV009_DIRECT_MAIN
+Task / Owner / priority: QA-FND-001 / QAR / P0
+Dependencies: DB-FND-002=DONE; BE-FND-004=DONE
+Acceptance criteria: PASS
+
+Required tests:
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD SUCCESS; 12 tests, 0 failures, 0 errors, 0 skipped.
+→ PostgreSqlHarnessIntegrationTests: 3 PASS on PostgreSQL 16.15.
+→ Fresh Flyway V1 migration, Hibernate validation, JSONB, TIMESTAMPTZ,
+  CHECK constraint and canonical 34-table verification: PASS.
+→ Prior independent repeat-run/isolation validation: PASS.
+
+Required independent reviewers:
+Database Reviewer = PASS after focused re-review.
+QA Reviewer = PASS; independently verified remediation and 12/12 tests.
+DB-QA-FND-001-001 final Status = RESOLVED.
+Historical Database Reviewer FAIL, Severity MEDIUM, Blocking YES and Original
+Status OPEN remain preserved.
+Unresolved findings = NONE.
+Self-review used = NO.
+
+CI status: PRE_CI_BOOTSTRAP_NA
+PRE_CI eligible Task ID: QA-FND-001
+CI status reason: CI-FND-001 chưa effective và QA-FND-001 thuộc exact eligible list.
+Repository-level PRE_CI evidence: SATISFIED.
+Existing failing CI check: NONE observed for origin/main
+aa3e9704a1239733959aec24408df3b4d957d929; check page contains no check run.
+Failed-check waiver: NOT USED.
+
+Final validation:
+python tools\baseline_audit.py → PASS.
+python -m py_compile tools\baseline_audit.py → PASS.
+git diff --check → PASS.
+Untracked whitespace, scope, secret, generated-file, H2 dependency,
+Flyway immutability and baseline-tag integrity audits → PASS.
+Product main-code diff: NONE; Flyway diff: NONE.
+V1__create_schema_baseline.sql hash remains
+90cea2345563c50176015637050ca73479e72d03.
+Full tracked diff and every untracked current-task file: INSPECTED.
+
+Contract impact: no API/OpenAPI, database schema, migration, product behavior,
+security or client contract change; backward compatibility preserved.
+Final closure gate: PASS.
+Task status: DONE.
+M1 execution progress: 8 / 29 (27.6%); M1 remains IN_PROGRESS.
+Commit/push/merge/tag mutation: NONE.
 ```

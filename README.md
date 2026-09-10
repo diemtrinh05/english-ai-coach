@@ -144,3 +144,15 @@ Có thể kiểm tra Flyway và mapping Hibernate trên PostgreSQL đang chạy 
 ```
 
 Tùy chọn này chỉ validate mapping với schema hiện hữu; Flyway vẫn là cơ chế duy nhất quản lý thay đổi schema.
+
+## PostgreSQL integration tests
+
+QA-FND-001 cung cấp test harness dùng Testcontainers với đúng PostgreSQL image của môi trường local. Mỗi Spring Boot integration-test context có thể kế thừa `PostgreSqlIntegrationTestSupport` để nhận datasource cô lập; Flyway tự migrate database mới và Hibernate validate các JPA mapping hiện có.
+
+Máy chạy test cần Docker Engine tương thích với Testcontainers. Chạy toàn bộ unit và integration tests từ thư mục gốc repository:
+
+```powershell
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+```
+
+Suite nền tảng xác minh database thực sự là PostgreSQL, Flyway tạo đủ 34 bảng canonical, và PostgreSQL xử lý trực tiếp `JSONB`, `TIMESTAMPTZ` cùng `CHECK` constraint. H2 không được cấu hình hoặc dùng làm bằng chứng thay thế cho các behavior này.
