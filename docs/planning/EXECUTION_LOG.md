@@ -267,6 +267,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-10 | QA-FND-001 | RESOLVED | `DB-QA-FND-001-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Focused Database re-review PASS confirmed the append-only-compatible Flyway assertion remediation; final finding Status: RESOLVED; new findings: NONE. Historical Database Reviewer FAIL remains preserved. |
 | 2026-09-11 | BE-FND-005 | OPEN | `QA-BE-FND-005-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Missing required parameters, request parameter/path-variable type mismatches, unsupported HTTP methods, and unsupported media types could fall through to `500 INTERNAL_ERROR`. | Added focused canonical Spring MVC exception mappings and real MockMvc dispatcher regression coverage. Remediation is complete, but the finding remains OPEN pending independent focused QA re-review. |
 | 2026-09-11 | BE-FND-005 | RESOLVED | `QA-BE-FND-005-001` — historical metadata preserved as Severity: HIGH; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed all four Spring MVC request-failure mappings and regression coverage; final finding Status: RESOLVED; new findings: NONE. Historical QA Reviewer FAIL remains preserved. |
+| 2026-09-11 | BE-FND-007 | OPEN | `QA-BE-FND-007-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `PaginatedResponse.from(Page.empty())` truyền `size=0` vào constructor canonical và ném `IllegalArgumentException`. | Normalized only the Spring Page conversion boundary, centralized pagination constants and added empty/unpaged/Pageable/mapper regressions; finding remains OPEN pending independent focused QA re-review. |
+| 2026-09-11 | BE-FND-007 | RESOLVED | `QA-BE-FND-007-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed the `Page.empty()` conversion remediation, shared `PaginationConvention` constants and focused regression coverage; final finding Status: RESOLVED; new findings: NONE. Historical QA Reviewer FAIL remains preserved. |
 
 #### Review result log
 
@@ -313,13 +315,16 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-11 | BE-FND-005 | QA Reviewer | FAIL | `QA-BE-FND-005-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Several Spring MVC request failures fell through to the generic `500 INTERNAL_ERROR` handler. Focused remediation and independent QA re-review are required; finding remains OPEN. |
 | 2026-09-11 | BE-FND-005 | Architecture Reviewer | PASS | Independent architecture review found no findings; common exception boundary, dependency direction, canonical envelope, scope and later-task boundaries are compliant; recommendation APPROVE. |
 | 2026-09-11 | BE-FND-005 | QA Reviewer | PASS | Focused QA re-review confirmed `QA-BE-FND-005-001` RESOLVED; 10 focused MockMvc tests and 22 full backend tests PASS; new findings/regressions: NONE; recommendation APPROVE. Historical QA FAIL remains preserved. |
+| 2026-09-11 | BE-FND-007 | QA Reviewer | FAIL | `QA-BE-FND-007-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `Page.empty()` produced invalid canonical pagination metadata and caused `PaginatedResponse.from(...)` to throw; focused remediation and independent QA re-review are required; finding remains OPEN. |
+| 2026-09-11 | BE-FND-007 | QA Reviewer | PASS | Independent focused QA re-review confirmed `QA-BE-FND-007-001` RESOLVED; remediation and regression coverage for `Page.empty()`, `Page.empty(Pageable)`, constructor invariants and mapper behavior are sufficient; new findings: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
+| 2026-09-11 | BE-FND-007 | Architecture Reviewer | PASS | Independent Architecture re-review found no architecture findings or regressions after remediation; architecture boundaries, dependency direction, contract consistency and scope remain compliant; AR=PASS. This result does not independently resolve the QA finding and does not override the completed QA re-review that resolved it. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  9 |    29 |              31.0% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 10 |    29 |              34.5% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -1981,4 +1986,294 @@ integrity: PASS
 API/OpenAPI/database/Flyway/client contract changes: NONE
 M1 execution progress: 9 / 29 (31.0%); M1 remains IN_PROGRESS
 Commit/push/merge/tag mutation: NONE
+```
+
+### BE-FND-007 — Validation + pagination + mapper conventions
+
+- Status: IN_PROGRESS
+- Status history: TODO → IN_PROGRESS
+- Branch/worktree mode: `GOV009_DIRECT_MAIN` — uncommitted `main` worktree
+- HEAD/origin/main at admission: `cb8b044eef24abfa1275d4555eeb9b9d575e98a2`
+- Dependencies: `BE-FND-002` DONE; `BE-FND-005` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: DTO không expose entity trực tiếp; validation canonical; pagination response thống nhất; client không gửi `isCorrect`.
+- Required tests: Theo global DoD + acceptance
+- CI admission mode: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-007`
+- Remote admission evidence: 0 check runs; 0 status contexts; failing checks/statuses 0
+- Existing failing CI check: NONE
+- Failed-check waiver: NOT USED
+
+Implementation plan:
+
+```text
+Thêm response phân trang dùng chung đúng API/OpenAPI v1.4 và request phân trang có
+validation với mặc định page=0, size=20, page >= 0 và size trong khoảng 1..100.
+Thiết lập mapper DTO stateless để entity được chuyển thành response DTO thay vì bị
+expose trực tiếp. Thêm SubmitLearningAttemptRequest canonical với các trường bắt buộc
+và Bean Validation, chủ động không có isCorrect vì backend suy ra từ answerQuality.
+
+Thêm test tập trung cho shape/defaults/bounds của pagination, mapper, ranh giới field
+của DTO và validation answerQuality/responseTime. Không triển khai controller,
+service, repository, SRS derivation, idempotency, optimistic-lock translation,
+correlation ID, database/Flyway, client hoặc hành vi thuộc task tương lai.
+```
+
+Implementation and TEST evidence — 2026-09-11:
+
+```text
+Implemented:
+- PaginatedResponse<T> giữ đúng sáu field canonical, tạo immutable content và hỗ trợ
+  chuyển trực tiếp từ Spring Data Page<T>.
+- PaginationRequest áp dụng page=0, size=20 và Bean Validation cho page >= 0,
+  size trong khoảng 1..100.
+- EntityResponseMapper<E,R> thiết lập đường chuyển entity → response DTO cho list/page.
+- SubmitLearningAttemptRequest dùng đúng sáu field OpenAPI v1.4, AttemptType canonical,
+  required/range validation tiếng Việt và từ chối unknown property như isCorrect.
+- ApiConventionTests dùng MockMvc cho serialization/deserialization và canonical error
+  envelope; đồng thời kiểm tra mapper boundary và pagination validation.
+
+Test chronology:
+- Lệnh mvn đầu tiên không chạy test vì mvn không có trên PATH; chuyển sang Maven Wrapper
+  đã pin của repository.
+- Focused run đầu tiên: 6 PASS, 1 FAIL do test fixture kỳ vọng 204 trong khi test-only
+  void controller trả 200; sửa kỳ vọng fixture, không đổi production contract.
+- Focused rerun: 7/7 PASS.
+- Final Maven clean verify sau bổ sung required-field coverage: BUILD SUCCESS;
+  30 tests PASS, 0 failures, 0 errors, 0 skipped.
+- ApiConventionTests final: 8/8 PASS.
+- PostgreSQL 16.15 Testcontainers, fresh Flyway V1 và Hibernate schema validation: PASS.
+- Existing GlobalExceptionHandlerTests: 10/10 PASS.
+- baseline_audit, py_compile, git diff --check, untracked whitespace, scope,
+  secret/private-key, generated-file và baseline-tag integrity: PASS.
+
+Scope/contract impact:
+- API runtime foundation: thêm DTO/validation/pagination/mapper conventions đúng baseline.
+- API/OpenAPI documents: không đổi; implementation tuân theo contract hiện hành.
+- Database/Flyway/client/correlation ID/security/business algorithm: không đổi.
+- Dependency mới: NONE.
+
+Stop state:
+- Task status: IN_PROGRESS.
+- Independent reviewer PASS claimed: NO.
+- Required independent reviewers next: Architecture Reviewer, QA Reviewer.
+- Unresolved implementation blockers: NONE.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+Independent QA Reviewer evidence — 2026-09-11:
+
+```text
+Reviewer: QA Reviewer
+Result: FAIL
+Finding ID: QA-BE-FND-007-001
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Current Status: OPEN
+
+Finding:
+PaginatedResponse.from(Page<T>) truyền Page.getSize() trực tiếp vào constructor.
+Page.empty().getSize() trả 0, xung đột với invariant canonical size >= 1 và làm
+conversion của trang rỗng không có Pageable ném IllegalArgumentException.
+
+Required remediation:
+Chỉ normalize tại Spring Page conversion boundary; Page.empty() dùng page=0,size=20;
+Page.empty(Pageable) giữ metadata Pageable; non-empty Page không đổi; mapper phải xử lý
+được cả ba trường hợp. Không nới constructor invariant và không nhân đôi magic value 20.
+
+Remediation owner: CBL
+Resolution authority: independent QA Reviewer only
+Finding remains OPEN pending focused QA re-review: YES
+```
+
+Remediation and TEST evidence for `QA-BE-FND-007-001` — 2026-09-11:
+
+```text
+Historical QA Reviewer result: FAIL (preserved)
+Finding ID: QA-BE-FND-007-001
+Severity: MEDIUM (preserved)
+Blocking: YES (preserved)
+Original Status: OPEN (preserved)
+Current Status: OPEN
+
+Remediation:
+- Thêm PaginationConvention làm nguồn chung cho page/size defaults và size bounds;
+  không nhân đôi magic value 20 và không tạo dependency response → validation.
+- PaginatedResponse constructor vẫn từ chối size=0.
+- PaginatedResponse.from(Page<T>) chỉ normalize trường hợp unpaged-empty thành
+  page=0, size=20, totalPages=0; content/totalElements rỗng và hasNext=false.
+- Page.empty(PageRequest.of(2,50)) giữ page=2,size=50 và zero totals.
+- Non-empty Page tiếp tục giữ nguyên metadata Spring Data.
+- EntityResponseMapper.toResponsePage(...) xử lý non-empty, unpaged-empty và
+  explicit-pageable-empty; mapper không được invoke khi không có entity.
+
+Regression chronology:
+- Focused run đầu tiên sau remediation: 9 PASS, 2 FAIL; test phát hiện Spring Data
+  Page.empty().getTotalPages() trả 1. Boundary normalization được bổ sung cho đúng
+  canonical totalPages=0.
+- Focused ApiConventionTests cuối: 12/12 PASS.
+- Maven clean verify cuối: BUILD SUCCESS; 34 tests PASS; 0 failures/errors/skips.
+- PostgreSQL 16.15 Testcontainers, fresh Flyway V1 và Hibernate validation: PASS.
+- baseline_audit, py_compile, git diff --check, scope, secret/private-key,
+  generated-file, untracked whitespace và baseline-tag integrity: PASS.
+
+Scope:
+- API/OpenAPI documents, production endpoints, database/Flyway/client code,
+  BE-FND-006 và answerQuality/isCorrect contract: không đổi.
+- Dependency mới: NONE.
+
+Stop state:
+- BE-FND-007: IN_PROGRESS.
+- QA-BE-FND-007-001: OPEN pending independent focused QA re-review.
+- Finding marked RESOLVED by CBL: NO.
+- Reviewer PASS claimed by CBL: NO.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+TEST rerun evidence for `BE-FND-007` — 2026-09-11:
+
+```text
+Command boundary: test
+Focused ApiConventionTests: BUILD SUCCESS; 12 tests PASS; 0 failures/errors/skips
+Full Maven clean verify: BUILD SUCCESS; 34 tests PASS; 0 failures/errors/skips
+PostgreSQL 16.15 Testcontainers + fresh Flyway V1 + Hibernate validation: PASS
+Acceptance regression coverage: PASS for pagination defaults/bounds, canonical page
+shape, non-empty mapper, Page.empty(), Page.empty(PageRequest.of(2,50)), empty mapper,
+constructor size invariant, DTO boundary, validation envelope and isCorrect rejection
+QA-BE-FND-007-001 historical QA FAIL and Original Status OPEN: PRESERVED
+QA-BE-FND-007-001 Current Status: OPEN pending independent focused QA re-review
+BE-FND-007 status: IN_PROGRESS
+Reviewer PASS claimed: NO
+Commit/push/merge/tag mutation: NONE
+```
+
+Finalization attempt for `BE-FND-007` — 2026-09-11:
+
+```text
+Command boundary: finalize
+Result: FINALIZATION_BLOCKED
+Lifecycle transition: NONE; BE-FND-007 remains IN_PROGRESS
+Required Architecture Reviewer PASS: NOT PRESENT
+Historical QA Reviewer result: FAIL (preserved)
+QA-BE-FND-007-001 Severity MEDIUM / Blocking YES / Original Status OPEN: PRESERVED
+QA-BE-FND-007-001 Current Status: OPEN
+Required focused QA re-review PASS and reviewer-owned RESOLVED disposition: NOT PRESENT
+Unresolved findings: QA-BE-FND-007-001
+Remote origin/main cb8b044eef24abfa1275d4555eeb9b9d575e98a2:
+0 check runs; 0 status contexts; failing checks/statuses 0
+Existing failing CI check: NONE
+TEST gates: PASS from the immediately preceding unchanged-code test run
+Self-review/reviewer PASS fabricated: NO
+Commit/push/merge/tag mutation: NONE
+Required next action: independent QA Reviewer focused re-review; Architecture Reviewer
+PASS must also be present before finalization can be retried.
+```
+
+Independent reviewer evidence synchronization for `BE-FND-007` — 2026-09-11:
+
+```text
+Synchronization scope: completed independent reviewer reports only
+Lifecycle transition: NONE; BE-FND-007 remains IN_PROGRESS
+
+Chronology preserved:
+1. Initial independent QA Review: FAIL
+   - Finding: QA-BE-FND-007-001
+   - Severity: MEDIUM
+   - Blocking: YES
+   - Original Status: OPEN
+2. Remediation:
+   - Fixed Page.empty() conversion.
+   - Added shared PaginationConvention constants.
+   - Added regression tests for Page.empty(), Page.empty(Pageable), constructor
+     invariants and mapper behavior.
+3. Independent focused QA re-review: PASS
+   - QA-BE-FND-007-001 Final Status: RESOLVED
+   - New findings: NONE
+   - QAR: PASS
+4. Independent Architecture re-review: PASS
+   - Architecture findings: NONE
+   - AR: PASS
+
+Evidence precedence clarification:
+- Historical QA FAIL and Original Status OPEN remain immutable and preserved above.
+- The Architecture Reviewer statement that Architecture review does not itself resolve
+  QA-BE-FND-007-001 remains true for Architecture Reviewer authority.
+- The completed independent focused QA re-review is the authoritative resolution event
+  for QA-BE-FND-007-001 and is not overridden by the Architecture Reviewer statement.
+
+Final reviewer state:
+- AR = PASS
+- QAR = PASS
+- QA-BE-FND-007-001 = RESOLVED
+- Unresolved findings = NONE
+
+Evidence sync boundaries:
+- Product code/tests/API/OpenAPI/Flyway/clients/baseline tags: NOT MODIFIED
+- Self-review or fabricated reviewer PASS: NO
+- Commit/push/merge/tag mutation: NONE
+- BE-FND-007 status: IN_PROGRESS
+```
+
+Finalization evidence for `BE-FND-007` — 2026-09-11:
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+Lifecycle transition: IN_PROGRESS → DONE
+Dependency BE-FND-002: DONE
+Dependency BE-FND-005: DONE
+Acceptance: PASS
+
+Independent reviewer gates:
+- Architecture Reviewer: PASS; architecture findings NONE; AR=PASS
+- QA Reviewer chronology: historical FAIL preserved; focused QA re-review PASS
+- QA-BE-FND-007-001: Severity MEDIUM / Blocking YES / Original Status OPEN preserved
+- QA-BE-FND-007-001 Final Status: RESOLVED by independent focused QA re-review
+- New findings: NONE
+- Unresolved findings: NONE
+
+Required TEST gates:
+- Initial finalization rerun: BUILD FAILURE caused only by unavailable Docker daemon;
+  31 non-container tests passed and 3 PostgreSQL Testcontainers tests had environment
+  setup errors; no assertion failure. This failed attempt is preserved in chronology.
+- Docker Desktop availability restored; no repository file was changed for recovery.
+- Final Maven clean verify rerun: BUILD SUCCESS; 34 tests PASS;
+  0 failures/errors/skips.
+- ApiConventionTests: 12/12 PASS.
+- PostgreSQL 16.15 Testcontainers + fresh Flyway V1 + Hibernate validation: PASS.
+
+CI / PRE_CI evidence:
+- CI mode: PRE_CI_BOOTSTRAP_NA
+- PRE_CI eligible Task ID: BE-FND-007
+- CI-FND-001 effective: NO; task status TODO
+- HEAD/origin/main: cb8b044eef24abfa1275d4555eeb9b9d575e98a2
+- Repository workflow directory: NONE
+- Recorded remote evidence for unchanged origin/main: 0 check runs; 0 status contexts;
+  failing checks/statuses 0
+- Existing failing CI check: NONE
+- Failed-check waiver: NOT USED
+
+Final guards:
+- baseline_audit: PASS
+- py_compile: PASS
+- git diff --check and cached diff check: PASS
+- Scope and untracked-whitespace checks: PASS; whitespace findings 0
+- Secret/private-key/credential scan: PASS; findings 0
+- Generated-file guard: PASS; backend/target is ignored and not tracked
+- API/OpenAPI/database/Flyway/client diff: NONE
+- Baseline-tag integrity: PASS; tag objects and peeled commits unchanged
+- Git operation in progress: NONE
+
+Milestone state:
+- M1 execution progress: 10 / 29 (34.5%)
+- M1 status: IN_PROGRESS
+
+Stop state:
+- BE-FND-007: DONE
+- Self-review or fabricated reviewer PASS: NO
+- Commit/push/merge/tag mutation: NONE
+- Required next step: one final task-scoped commit on main, then push main via the
+  English AI Coach Git workflow.
 ```
