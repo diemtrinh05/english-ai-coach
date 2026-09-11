@@ -265,6 +265,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-09 | GOV-009 | RESOLVED | `ARCH-GOV-009-006` — Severity: HIGH; Blocking: YES; Original Status: OPEN. | Architecture focused re-review #4 confirmed the published-main recovery model; Final Status: RESOLVED; new findings: NONE. |
 | 2026-09-10 | QA-FND-001 | OPEN | `DB-QA-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `PostgreSqlHarnessIntegrationTests` asserted exactly one applied Flyway migration, so the harness would reject a valid append-only V2+ history. | Replaced the total-count assertion with canonical V1 presence/script/`SUCCESS` verification and a no-maximum check that every currently resolved/applied migration is `SUCCESS`; finding remains OPEN pending focused Database Reviewer re-review. |
 | 2026-09-10 | QA-FND-001 | RESOLVED | `DB-QA-FND-001-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Focused Database re-review PASS confirmed the append-only-compatible Flyway assertion remediation; final finding Status: RESOLVED; new findings: NONE. Historical Database Reviewer FAIL remains preserved. |
+| 2026-09-11 | BE-FND-005 | OPEN | `QA-BE-FND-005-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Missing required parameters, request parameter/path-variable type mismatches, unsupported HTTP methods, and unsupported media types could fall through to `500 INTERNAL_ERROR`. | Added focused canonical Spring MVC exception mappings and real MockMvc dispatcher regression coverage. Remediation is complete, but the finding remains OPEN pending independent focused QA re-review. |
+| 2026-09-11 | BE-FND-005 | RESOLVED | `QA-BE-FND-005-001` — historical metadata preserved as Severity: HIGH; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed all four Spring MVC request-failure mappings and regression coverage; final finding Status: RESOLVED; new findings: NONE. Historical QA Reviewer FAIL remains preserved. |
 
 #### Review result log
 
@@ -308,13 +310,16 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-10 | QA-FND-001 | Database Reviewer | FAIL | `DB-QA-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The harness asserted total applied Flyway migration count equals one and was not append-only V2+ compatible. Focused remediation and Database Reviewer re-review required; finding remains OPEN. |
 | 2026-09-10 | QA-FND-001 | QA Reviewer | PASS | Independent QA review verified the `DB-QA-FND-001-001` remediation and 12/12 tests PASS; findings: NONE; QAR=PASS. At this review point the Database finding remained OPEN pending focused Database Reviewer re-review. |
 | 2026-09-10 | QA-FND-001 | Database Reviewer | PASS | Focused Database re-review confirmed `DB-QA-FND-001-001` RESOLVED; append-only Flyway compatibility preserved; product code and Flyway migration unchanged; new findings: NONE; DBR=PASS. |
+| 2026-09-11 | BE-FND-005 | QA Reviewer | FAIL | `QA-BE-FND-005-001` — Severity: HIGH; Blocking: YES; Original Status: OPEN. Several Spring MVC request failures fell through to the generic `500 INTERNAL_ERROR` handler. Focused remediation and independent QA re-review are required; finding remains OPEN. |
+| 2026-09-11 | BE-FND-005 | Architecture Reviewer | PASS | Independent architecture review found no findings; common exception boundary, dependency direction, canonical envelope, scope and later-task boundaries are compliant; recommendation APPROVE. |
+| 2026-09-11 | BE-FND-005 | QA Reviewer | PASS | Focused QA re-review confirmed `QA-BE-FND-005-001` RESOLVED; 10 focused MockMvc tests and 22 full backend tests PASS; new findings/regressions: NONE; recommendation APPROVE. Historical QA FAIL remains preserved. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                  8 |    29 |              27.6% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                  9 |    29 |              31.0% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -1764,4 +1769,216 @@ Final closure gate: PASS.
 Task status: DONE.
 M1 execution progress: 8 / 29 (27.6%); M1 remains IN_PROGRESS.
 Commit/push/merge/tag mutation: NONE.
+```
+
+### BE-FND-005 — Common error envelope + HTTP status mapping
+
+- Status: DONE
+- Status history: TODO → IN_PROGRESS → DONE
+- Branch/worktree mode: `GOV009_DIRECT_MAIN` — uncommitted `main` worktree
+- HEAD at admission: `07889d0a682cd8d0b7d784486f2776a2be4d0b6d`
+- `origin/main` at admission: `07889d0a682cd8d0b7d784486f2776a2be4d0b6d`
+- Dependencies: `BE-FND-002` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: Global exception handler trả shape canonical; hỗ trợ `CONCURRENT_UPDATE`, `IDEMPOTENCY_KEY_REUSE` và validation codes đúng API.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: SRS v1.2; System Architecture v1.3; API Specification v1.4; OpenAPI v1.4; Technical Specification v1.2; Backend Technical Specification v1.3
+- Started at: 2026-09-11
+- CI admission mode: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `BE-FND-005`
+- CI status reason: `CI-FND-001` chưa effective và `BE-FND-005` nằm tường minh trong eligible prerequisite list
+- Remote admission evidence: `main == origin/main`; GitHub commit có 0 check runs và 0 status contexts
+- Existing failing CI check: NONE
+- Failed CI check waiver: NOT USED
+- Unresolved blockers: NONE
+
+Implementation plan:
+
+```text
+Implement the API/OpenAPI canonical error response fields timestamp, status, code,
+message, path and details. Add a reusable typed API exception boundary plus a
+RestControllerAdvice that maps validation/input errors, explicit application errors,
+the exact CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE codes, and unexpected failures
+without exposing internal details.
+
+Add only the Bean Validation runtime needed to exercise validation error mapping and
+focused MockMvc tests for response shape, HTTP status/code pairs, details, malformed
+input and safe 500 behavior. Do not add business controllers, domain validation rules,
+pagination/mappers, correlation/trace ID, persistence conflict translation,
+idempotency service, authentication/security or API/OpenAPI contract changes.
+```
+
+Implementation evidence:
+
+```text
+Added spring-boot-starter-validation through Spring Boot dependency management.
+Added ApiErrorResponse with the API/OpenAPI v1.4 fields timestamp, status, code,
+message, path and details; details is always a non-null immutable list.
+Added ApiErrorCodes and ApiException as the reusable common error boundary.
+Added ConcurrentUpdateException and IdempotencyKeyReuseException with exact
+HTTP 409/code pairs for later business services to raise.
+Added GlobalExceptionHandler using RestControllerAdvice for request-body validation,
+method validation, malformed JSON, framework HTTP errors, explicit application errors
+and safe unexpected-error responses.
+Validation details expose only field/message and never rejected values, credentials,
+stack traces, SQL, class names or vendor payloads.
+Added focused MockMvc coverage and README usage/ownership guidance.
+No product controller, repository, migration, API/OpenAPI or client file changed.
+```
+
+Validation evidence:
+
+```text
+Focused GlobalExceptionHandlerTests
+→ PASS; 10 tests, 0 failures, 0 errors, 0 skipped.
+→ Canonical envelope, 400 VALIDATION_ERROR, malformed JSON, generic application
+  status/code, exact 409 CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE, and safe
+  500 INTERNAL_ERROR behavior verified.
+→ Real Spring MVC dispatch also verifies missing required parameters and invalid
+  parameter types as 400 VALIDATION_ERROR, unsupported methods as
+  405 VALIDATION_ERROR, and unsupported media types as 415 VALIDATION_ERROR.
+
+.\backend\mvnw.cmd --no-transfer-progress -f backend\pom.xml clean verify
+→ BUILD SUCCESS.
+→ Tests run: 22, Failures: 0, Errors: 0, Skipped: 0.
+→ PostgreSqlHarnessIntegrationTests: 3 PASS on PostgreSQL 16.15 Testcontainers.
+→ Fresh Flyway V1 migration, Hibernate schema validation, canonical 34 tables,
+  JSONB, TIMESTAMPTZ and CHECK-constraint regression coverage: PASS.
+
+Development-test chronology
+→ Initial focused compile exposed a Spring Framework 7 exception hierarchy mismatch;
+  remediated by status-based handling without product-contract change.
+→ A malformed-JSON mapping gap and one standalone-MockMvc-only missing-route
+  assertion were identified and corrected/removed before the final PASS suite.
+→ No known failing test remains.
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS.
+
+python -m py_compile tools/baseline_audit.py
+→ PASS.
+
+git diff --check and git diff --cached --check
+→ PASS.
+
+Scope, untracked-whitespace, secret, generated-file, Flyway immutability and
+baseline-tag integrity audits
+→ PASS.
+→ Untracked whitespace findings: 0; tracked backend/target files: 0;
+  secret/private-key pattern findings: 0; unmerged paths: 0.
+→ Product database/Flyway diff: NONE.
+→ Baseline tag objects and peeled commits: UNCHANGED.
+→ Full tracked diff and every untracked current-task file: INSPECTED.
+```
+
+Change impact:
+
+```text
+Change: Add the common REST error envelope and HTTP/code mapping foundation.
+Why: Satisfy BE-FND-005 using the approved API/OpenAPI v1.4 contract.
+Affected documents: README.md plus backlog/execution lifecycle evidence.
+Affected API/OpenAPI: Runtime implementation only; contract files unchanged.
+Affected database/Flyway: None.
+Affected security: Unexpected/internal details are not exposed; no auth behavior changed.
+Affected business rules: None.
+Affected clients: None; existing error contract is now implemented by the backend.
+Migration: None.
+Backward compatibility: Preserved.
+```
+
+TEST stop state:
+
+```text
+Task status: IN_PROGRESS
+Implementation and applicable TEST gates: PASS
+Unresolved implementation/test blockers: NONE
+Self-review/reviewer PASS claimed: NO
+Independent reviewer gates: Architecture Reviewer PASS; QA Reviewer PASS after
+historical FAIL and focused re-review
+Unresolved findings: NONE
+Required next step: finalization
+PRE_CI status: PRE_CI_BOOTSTRAP_NA eligible; reviewer evidence PASS
+Commit/push/merge/tag mutation: NONE
+```
+
+QA Reviewer FAIL and focused remediation chronology:
+
+```text
+Reviewer: QA Reviewer
+Review result: FAIL (historical; preserved)
+Finding ID: QA-BE-FND-005-001
+Severity: HIGH
+Blocking: YES
+Original Status: OPEN
+Current Status: RESOLVED — confirmed by independent focused QA re-review
+
+Finding:
+MissingServletRequestParameterException, MethodArgumentTypeMismatchException,
+HttpRequestMethodNotSupportedException and HttpMediaTypeNotSupportedException could
+bypass the existing Spring ErrorResponseException mapping and fall through to the
+generic 500 INTERNAL_ERROR response.
+
+Focused remediation:
+Added explicit Spring MVC exception handlers that all use the canonical envelope.
+Missing required request parameters and request parameter/path-variable type
+mismatches return HTTP 400 + VALIDATION_ERROR. Unsupported HTTP methods return
+HTTP 405 + VALIDATION_ERROR. Unsupported media types return HTTP 415 +
+VALIDATION_ERROR. The existing API/OpenAPI v1.4 public code set and the BE-FND-005
+fallback mapping define VALIDATION_ERROR for these otherwise-unspecialized 4xx
+request failures, so no new public error code or contract change was introduced.
+The genuine unexpected-error fallback remains HTTP 500 + INTERNAL_ERROR.
+
+Regression evidence:
+GlobalExceptionHandlerTests exercises real MockMvc request dispatch for missing
+required parameters, invalid parameter types, unsupported HTTP methods and
+unsupported media types, while retaining body-validation, malformed-JSON,
+CONCURRENT_UPDATE, IDEMPOTENCY_KEY_REUSE, canonical-envelope and safe-500 coverage.
+Focused suite: 10 tests PASS.
+Full Maven clean verify: 22 tests PASS, including PostgreSQL/Testcontainers tests.
+
+Finding disposition:
+RESOLVED by independent focused QA re-review. Historical Severity HIGH,
+Blocking YES, Original Status OPEN and QA Reviewer FAIL remain preserved.
+
+Independent reviewer evidence:
+Architecture Reviewer task: 01a0862b-ec5a-7191-a3ab-91adbd69ef4b
+Architecture result: PASS; findings: NONE; recommendation: APPROVE.
+QA Reviewer task: 01a0863c-25fe-72c0-94bc-bf1921446833
+Focused QA re-review result: PASS.
+QA-BE-FND-005-001 final Status: RESOLVED.
+New QA findings/regressions: NONE; recommendation: APPROVE.
+Unresolved findings: NONE.
+
+Task status: IN_PROGRESS
+Commit/push/merge/tag mutation: NONE
+```
+
+Finalization evidence — 2026-09-11:
+
+```text
+Workflow mode: GOV009_DIRECT_MAIN
+Lifecycle transition: IN_PROGRESS → DONE
+Dependency BE-FND-002: DONE
+Acceptance: PASS
+Required TEST gates: PASS
+Final Maven clean verify: BUILD SUCCESS; 22 tests PASS; 0 failures/errors/skips
+PostgreSQL 16.15 Testcontainers + fresh Flyway V1 + Hibernate validation: PASS
+Architecture Reviewer: PASS; findings NONE; recommendation APPROVE
+QA Reviewer chronology: historical FAIL preserved; focused re-review PASS
+QA-BE-FND-005-001: final Status RESOLVED by independent QA Reviewer
+New QA findings/regressions: NONE
+Unresolved findings: NONE
+CI mode: PRE_CI_BOOTSTRAP_NA
+PRE_CI eligible Task ID: BE-FND-005
+Existing failing CI check: NONE
+Remote origin/main SHA 07889d0a682cd8d0b7d784486f2776a2be4d0b6d:
+0 check runs; 0 status contexts; failing checks/statuses 0
+Failed-check waiver: NOT USED
+baseline_audit, py_compile, git diff checks, scope, untracked whitespace,
+secret/private-key, generated-file, Flyway immutability and baseline-tag
+integrity: PASS
+API/OpenAPI/database/Flyway/client contract changes: NONE
+M1 execution progress: 9 / 29 (31.0%); M1 remains IN_PROGRESS
+Commit/push/merge/tag mutation: NONE
 ```

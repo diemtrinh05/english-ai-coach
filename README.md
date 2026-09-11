@@ -156,3 +156,22 @@ Máy chạy test cần Docker Engine tương thích với Testcontainers. Chạy
 ```
 
 Suite nền tảng xác minh database thực sự là PostgreSQL, Flyway tạo đủ 34 bảng canonical, và PostgreSQL xử lý trực tiếp `JSONB`, `TIMESTAMPTZ` cùng `CHECK` constraint. H2 không được cấu hình hoặc dùng làm bằng chứng thay thế cho các behavior này.
+
+## Common API error handling
+
+BE-FND-005 cung cấp `RestControllerAdvice` dùng chung và error envelope theo API/OpenAPI v1.4:
+
+```json
+{
+  "timestamp": "2026-09-11T07:00:00Z",
+  "status": 400,
+  "code": "VALIDATION_ERROR",
+  "message": "Yêu cầu không hợp lệ.",
+  "path": "/api/v1/example",
+  "details": []
+}
+```
+
+Validation và malformed JSON trả `400 VALIDATION_ERROR`. Hai conflict code nền tảng `CONCURRENT_UPDATE` và `IDEMPOTENCY_KEY_REUSE` trả HTTP 409. Unexpected exception trả thông báo an toàn với `500 INTERNAL_ERROR`, không lộ stack trace hoặc chi tiết nội bộ.
+
+Task này chỉ cung cấp exception boundary và mapping. Correlation/trace ID thuộc BE-FND-006; validation, pagination và mapper conventions thuộc BE-FND-007; idempotency service và optimistic-lock translation thực tế thuộc các task phụ thuộc tương ứng.
