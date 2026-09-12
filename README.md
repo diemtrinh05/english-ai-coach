@@ -175,3 +175,9 @@ BE-FND-005 cung cấp `RestControllerAdvice` dùng chung và error envelope theo
 Validation và malformed JSON trả `400 VALIDATION_ERROR`. Hai conflict code nền tảng `CONCURRENT_UPDATE` và `IDEMPOTENCY_KEY_REUSE` trả HTTP 409. Unexpected exception trả thông báo an toàn với `500 INTERNAL_ERROR`, không lộ stack trace hoặc chi tiết nội bộ.
 
 Task này chỉ cung cấp exception boundary và mapping. Correlation/trace ID thuộc BE-FND-006; validation, pagination và mapper conventions thuộc BE-FND-007; idempotency service và optimistic-lock translation thực tế thuộc các task phụ thuộc tương ứng.
+
+## OpenAPI contract tests
+
+QA-FND-002 bổ sung Maven test harness đọc trực tiếp YAML block từ canonical OpenAPI v1.4 Markdown, parse/validate bằng Swagger Parser hỗ trợ OpenAPI 3.1, rồi kiểm tra inventory 72 paths/76 operations và `operationId` duy nhất.
+
+`OpenApiContractTestSupport` cung cấp khung dùng lại để lấy operation/schema, so sánh Java record với OpenAPI properties, và đối chiếu `RequestMappingInfo`/`HandlerMethod` của Spring MVC với path, HTTP method, request-body type, success status và response-body type canonical. Suite nền tảng dùng một `@RestController` fixture test-only cho `POST /api/v1/learning/attempts`, unwrap `ResponseEntity<LearningAttemptResponse>`, xác nhận runtime status `200`, resolve chuỗi response/component/schema của operation `400/409/429` và toàn bộ reusable error responses (`ValidationError`, `Unauthorized`, `Forbidden`, `NotFound`, `Conflict`, `RateLimited`) tới `ErrorResponse`, đồng thời kiểm tra method/request/response/operation-error/reusable-error drift bằng metadata cô lập. Harness tự chạy trong Maven `test`/`verify`; không cần production controller hoặc bản sao OpenAPI YAML.

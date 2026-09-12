@@ -2277,3 +2277,469 @@ Stop state:
 - Required next step: one final task-scoped commit on main, then push main via the
   English AI Coach Git workflow.
 ```
+
+### QA-FND-002 — OpenAPI/runtime contract-test harness
+
+- Status: IN_PROGRESS
+- Status history: TODO → IN_PROGRESS
+- Branch/worktree mode: `GOV009_DIRECT_MAIN` — uncommitted `main` worktree
+- HEAD/origin/main at admission: `a62740e490aa5321a79b6be87fa05c23bb0e3643`
+- Dependencies: `BE-FND-007` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, QA Reviewer
+- Acceptance: OpenAPI v1.4 parse/validate trong CI; DTO/controller/status/error contract có test khung.
+- Required tests: Theo global DoD + acceptance
+- Started at: 2026-09-12
+- CI admission mode: `PRE_CI_BOOTSTRAP_NA`
+- PRE_CI eligible Task ID: `QA-FND-002`
+- CI status reason: `CI-FND-001` chưa effective và `QA-FND-002` nằm trong exact eligible list
+- Remote admission evidence: `main == origin/main`; public GitHub check page cho current SHA không hiển thị check run
+- Existing failing CI check: NONE observed
+- Failed CI check waiver: NOT USED
+- Self-review status: PROHIBITED — implementation session không được tự thỏa QAR gate
+
+Implementation plan:
+
+```text
+Add a test-scoped OpenAPI 3.1 parser and a reusable contract-test support utility that
+extracts the canonical YAML block from the approved OpenAPI v1.4 Markdown source.
+Fail Maven tests when parsing/validation reports messages or the canonical inventory,
+operation IDs, internal references, request/response/status contracts drift.
+
+Add focused tests connecting the existing BE-FND-007 runtime foundation to OpenAPI:
+SubmitLearningAttemptRequest properties/required fields/bounds, controller operation
+metadata and response status set, and ApiErrorResponse shape. Preserve existing product
+code and approved API/OpenAPI; do not implement future controllers or business behavior.
+```
+
+PLAN admission evidence:
+
+```text
+Mode: GOV009_DIRECT_MAIN
+Branch: main
+Worktree at admission: CLEAN
+main == origin/main: YES
+Git operation in progress: NONE
+Other direct-main task active: NONE
+Task status before PLAN: TODO
+Owner: QAR
+Dependency BE-FND-007: DONE
+Canonical sources, acceptance, scope/out-of-scope and reviewer mapping: IDENTIFIED
+CI-FND-001 effective: NO
+CI mode for exact task: PRE_CI_BOOTSTRAP_NA
+Existing failing CI check: NONE observed
+baseline_audit, py_compile, git diff --check and baseline-tag integrity: PASS
+Lifecycle transition: TODO → IN_PROGRESS
+Commit/push/merge/tag mutation: NONE
+```
+
+IMPLEMENT evidence:
+
+```text
+Added test-scoped io.swagger.parser.v3:swagger-parser:2.1.46.
+Added OpenApiContractTestSupport to extract and parse the first YAML block directly
+from docs/api/English_AI_Coach_OpenAPI_Swagger_v1_4.md, locate operations/schemas,
+compare Java record properties and inspect response status contracts.
+Added OpenApiContractHarnessTests covering:
+- OpenAPI 3.1.0 parse/validation and canonical info version 1.4.0;
+- canonical inventory 72 paths / 76 operations and unique non-null operationId;
+- SubmitLearningAttemptRequest properties, required fields, bounds and absence of
+  client-owned isCorrect;
+- POST /learning/attempts operationId, request schema and 200/400/409/429 statuses;
+- ApiErrorResponse/ErrorResponse shape and reusable error responses.
+README documents how the Maven harness consumes the canonical Markdown source.
+Product code, canonical API/OpenAPI, Flyway migrations and clients: UNCHANGED.
+```
+
+TEST chronology and evidence:
+
+```text
+1. Targeted OpenApiContractHarnessTests: FAIL — 4 tests run, 1 failure.
+   Cause: the initial assertion read only legacy Schema.getType(), while Swagger
+   Parser represents the OpenAPI 3.1 integer type through Schema.getTypes().
+   Contract/product defect: NO.
+2. Remediation: added an OpenAPI 3.1-aware schema-type assertion with a legacy
+   fallback; no product or canonical-contract change.
+3. Targeted OpenApiContractHarnessTests rerun: PASS — 4/4, failures 0, errors 0,
+   skipped 0.
+4. Maven clean verify: PASS — 38/38, failures 0, errors 0, skipped 0.
+5. PostgreSqlHarnessIntegrationTests: PASS — 3/3 against PostgreSQL
+   16.15-alpine3.24 through Testcontainers 2.0.5.
+6. Fresh-database Flyway: PASS — empty PostgreSQL schema migrated successfully to V1.
+7. Hibernate schema validation and package/JAR build: PASS.
+8. Repeatability/isolation: PASS — the four OpenAPI tests passed in both the corrected
+   targeted JVM and the subsequent clean full-suite JVM; Testcontainers exited with no
+   PostgreSQL/Ryuk test container remaining.
+9. Dependency resolution: PASS — swagger-parser:2.1.46 resolved with test scope.
+```
+
+Governance and scope audits:
+
+```text
+baseline_audit: PASS
+python -m py_compile tools/baseline_audit.py: PASS
+git diff --check: PASS
+Changed/untracked whitespace audit: PASS; no newly introduced whitespace error
+Secret/private-key/credential diff scan: PASS; findings 0
+Generated-file guard: PASS; backend/target and tools/__pycache__ are ignored/untracked
+Product-code diff: NONE
+API/OpenAPI diff: NONE
+Database/Flyway diff: NONE
+Client diff: NONE
+Baseline-tag integrity: PASS; tag objects unchanged
+HEAD == main == origin/main: a62740e490aa5321a79b6be87fa05c23bb0e3643
+Git operation in progress: NONE
+```
+
+Stop state after EXECUTE:
+
+```text
+QA-FND-002: IN_PROGRESS
+Acceptance implementation/test evidence: READY FOR INDEPENDENT REVIEW
+Required Architecture Reviewer: PENDING
+Required independent QA Reviewer: PENDING
+QAR ownership/reviewer mapping: SELF_REVIEW_CONFLICT — implementation session did not
+self-review and did not record QAR PASS
+Unresolved reviewer findings: NONE RECORDED; reviewer gates have not run
+PRE_CI_BOOTSTRAP_NA: pending finalization after independent reviewer gates
+Commit/push/merge/tag mutation: NONE
+Required next step: independent Architecture Review and independent QA Review
+```
+
+Independent Architecture Review chronology:
+
+```text
+Initial Architecture Review result: FAIL
+Finding: ARCH-QA-FND-002-001
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Finding summary: the initial harness validated the canonical OpenAPI document, DTO,
+operation responses and error schemas, but did not compare an actual Spring MVC
+Controller/Handler boundary with the OpenAPI operation. The OpenAPI-only learning
+attempt assertions could not detect controller path/method/request/status drift.
+Finding status before remediation: OPEN
+```
+
+Focused remediation for ARCH-QA-FND-002-001:
+
+```text
+Added a reusable test-only runtime contract boundary based on
+RequestMappingHandlerMapping, RequestMappingInfo and HandlerMethod.
+The validator independently extracts the registered runtime path, HTTP method,
+@RequestBody Java type and explicit @ResponseStatus, then compares them with the
+canonical OpenAPI server base path, operation path/method, request schema reference
+and success response.
+Added an isolated test-only canonical @RestController fixture for
+POST /api/v1/learning/attempts accepting SubmitLearningAttemptRequest and returning
+runtime HTTP 200. No production controller was added.
+Added an isolated deliberately drifted PUT fixture and a negative test proving the
+reusable validator rejects its HTTP-method mismatch against canonical POST.
+Preserved the existing DTO bounds, 400/409/429, ApiErrorResponse and reusable error
+response assertions.
+Swagger Parser remains version 2.1.46 and test-scope only; canonical OpenAPI Markdown
+remains the sole OpenAPI source.
+ARCH-QA-FND-002-001 final status: OPEN — only an independent Architecture Reviewer may
+set RESOLVED after focused re-review.
+```
+
+Focused remediation TEST evidence:
+
+```text
+1. OpenApiContractHarnessTests: PASS — 6/6, failures 0, errors 0, skipped 0.
+2. Runtime Spring MVC handler boundary test run independently: PASS — 1/1.
+   RequestMappingHandlerMapping registered POST /api/v1/learning/attempts;
+   HandlerMethod accepted SubmitLearningAttemptRequest; @ResponseStatus declared 200;
+   MockMvc invoked the registered handler with canonical JSON and observed HTTP 200.
+3. Negative controller-drift test run independently: PASS — 1/1.
+   The isolated test context registered PUT /api/v1/learning/attempts; the reusable
+   validator raised AssertionFailedError because canonical OpenAPI requires POST.
+4. Maven clean verify: PASS — 40/40, failures 0, errors 0, skipped 0.
+5. PostgreSqlHarnessIntegrationTests: PASS — 3/3 on PostgreSQL 16.15 through
+   Testcontainers 2.0.5.
+6. Fresh Flyway V1 migration: PASS — empty schema detected, canonical V1 validated and
+   applied successfully.
+7. Hibernate schema validation and package/JAR build: PASS.
+8. The initial targeted-test FAIL and its earlier remediation chronology remain
+   unchanged above.
+```
+
+Focused remediation stop state:
+
+```text
+QA-FND-002: IN_PROGRESS
+Architecture Review historical result: FAIL
+ARCH-QA-FND-002-001: OPEN
+Architecture Reviewer focused re-review: PENDING
+Independent QA Reviewer: PENDING
+PRE_CI_BOOTSTRAP_NA: pending finalization
+Commit/push/merge/tag mutation: NONE
+```
+
+Independent QA Review chronology:
+
+```text
+Historical QA Review result: FAIL
+Finding: QA-QA-FND-002-001
+Severity: MEDIUM
+Blocking: YES
+Original Status: OPEN
+Finding summary: the runtime boundary did not compare HandlerMethod response-body Java
+type with the canonical success response schema, and operation/reusable error responses
+were not proven to resolve through their reference chains to ErrorResponse. The test-only
+controller returned void despite canonical 200 application/json requiring
+LearningAttemptResponse, allowing a false-green result.
+Finding status before remediation: OPEN
+```
+
+Focused remediation for QA-QA-FND-002-001:
+
+```text
+Extended OpenApiContractTestSupport to unwrap the current ResponseEntity<T> handler
+return form using HandlerMethod Java reflection and compare T with the canonical success
+response application/json schema resolved from OpenAPI.
+Changed only the test fixture to return ResponseEntity<LearningAttemptResponse> and
+added test-only LearningAttemptResponse, SrsResult and VocabularyProgressResponse records
+whose property sets are checked against the canonical OpenAPI schemas.
+Added reusable operation/reusable-response resolvers that follow local
+#/components/responses/* and #/components/schemas/* chains with missing-ref and cycle
+guards, then require the terminal schema identity.
+Canonical POST /learning/attempts now proves 400 -> ValidationError -> ErrorResponse,
+409 -> ErrorResponse and 429 -> RateLimited -> ErrorResponse. ValidationError and
+RateLimited components are also verified directly.
+Added isolated negative fixtures/metadata proving detection of request DTO drift,
+response DTO drift and an error response that resolves to LearningAttemptResponse rather
+than ErrorResponse. Preserved the isolated HTTP-method drift test from
+ARCH-QA-FND-002-001 remediation.
+Product code, canonical API/OpenAPI, database/Flyway and clients remain unchanged.
+Swagger Parser remains 2.1.46 with test scope only.
+ARCH-QA-FND-002-001 status: OPEN
+QA-QA-FND-002-001 status: OPEN
+Only the corresponding independent reviewer may set either finding RESOLVED.
+```
+
+QA finding remediation TEST chronology:
+
+```text
+1. First focused OpenApiContractHarnessTests attempt: FAIL at test compilation.
+   Cause: a schema-name loop variable in the new test-only resolver was captured by
+   assertion-message lambdas without being effectively final. Product/contract defect: NO.
+2. Minimal remediation: introduced an immutable per-iteration schemaName variable;
+   product and canonical contract remained unchanged.
+3. Focused OpenApiContractHarnessTests rerun: PASS — 9/9, failures 0, errors 0, skipped 0.
+4. Positive runtime controller response contract test: PASS — 1/1.
+5. Negative method/request/response/error-reference drift tests: PASS — 4/4.
+6. Positive learning-attempt DTO/status/error-reference-chain test: PASS — 1/1.
+7. Maven clean verify: PASS — 43/43, failures 0, errors 0, skipped 0.
+8. PostgreSqlHarnessIntegrationTests: PASS — 3/3 on PostgreSQL 16.15 through
+   Testcontainers 2.0.5.
+9. Fresh Flyway V1 and Hibernate schema validation: PASS; package/JAR build: PASS.
+10. The original Swagger Parser representation FAIL/remediation chronology and historical
+   Architecture FAIL/OPEN chronology above remain unchanged.
+```
+
+QA finding remediation governance audits:
+
+```text
+baseline_audit: PASS
+python -m py_compile tools/baseline_audit.py: PASS
+git diff --check: PASS
+Untracked whitespace audit: PASS; findings 0
+Secret/private-key/credential diff scan: PASS; findings 0
+Generated-file guard: PASS; backend/target and tools/__pycache__ are ignored/untracked
+Product-code diff: NONE
+API/OpenAPI diff: NONE
+Database/Flyway diff: NONE
+Client diff: NONE
+Active PostgreSQL/Testcontainers/Ryuk test containers after suite: NONE
+Swagger Parser dependency scope: 2.1.46 test only
+Baseline-tag integrity: PASS; tag objects and peeled commits unchanged
+HEAD == main == origin/main: a62740e490aa5321a79b6be87fa05c23bb0e3643
+Git operation in progress: NONE
+```
+
+Stop state before independent re-review:
+
+```text
+QA-FND-002: IN_PROGRESS
+Historical Architecture Review: FAIL
+ARCH-QA-FND-002-001: OPEN
+Historical QA Review: FAIL
+QA-QA-FND-002-001: OPEN
+Architecture Reviewer focused re-review: PENDING
+Independent QA Reviewer focused re-review: PENDING
+SELF_REVIEW_CONFLICT: QA task implementer did not self-review or record QAR PASS
+PRE_CI_BOOTSTRAP_NA: pending finalization
+Commit/push/merge/tag mutation: NONE
+```
+
+Additional focused remediation for QA-QA-FND-002-001 — reusable error set:
+
+```text
+The finding remained OPEN after the prior remediation because only ValidationError and
+RateLimited reusable components were individually dereferenced. Unauthorized, Forbidden,
+NotFound and Conflict were protected only by exact component-name membership and could
+still drift to another valid schema without failing the suite.
+Derived the complete canonical reusable error response set directly from OpenAPI v1.4:
+ValidationError, Unauthorized, Forbidden, NotFound, Conflict and RateLimited.
+Added an explicit canonical set plus a table-driven loop that invokes
+assertReusableResponseResolvesToSchema for every member. Exact set equality makes removal
+or unreviewed addition fail; per-member dereferencing makes schema drift fail.
+Added a dedicated isolated negative regression using the same reusable validator:
+Unauthorized intentionally resolves to LearningAttemptResponse and is rejected instead
+of silently passing as ErrorResponse.
+Existing operation-level 400/409/429 resolution and all controller/request/response/error
+positive and negative coverage remain unchanged.
+ARCH-QA-FND-002-001 status: OPEN
+QA-QA-FND-002-001 status: OPEN
+No reviewer result or historical evidence was rewritten.
+```
+
+Additional remediation focused TEST evidence:
+
+```text
+1. OpenApiContractHarnessTests: PASS — 11/11, failures 0, errors 0, skipped 0.
+2. Positive all-reusable-error-response resolution test: PASS — 1/1.
+3. Negative reusable-response drift test: PASS — 1/1.
+4. Existing negative method/request/response/operation-error tests plus new reusable
+   error drift test: PASS — 5/5.
+5. Maven clean verify: PASS — 45/45, failures 0, errors 0, skipped 0.
+6. PostgreSqlHarnessIntegrationTests: PASS — 3/3; fresh Flyway V1 from empty schema,
+   Hibernate schema validation and package/JAR build: PASS.
+7. Earlier Swagger Parser representation failure, Architecture review FAIL/OPEN, QA review
+   FAIL/OPEN and all prior remediation attempts remain preserved above.
+```
+
+Additional remediation governance audits and stop state:
+
+```text
+baseline_audit: PASS
+python -m py_compile tools/baseline_audit.py: PASS
+git diff --check and untracked whitespace audit: PASS
+Secret/private-key/credential diff scan: PASS; findings 0
+Generated-file guard: PASS; generated outputs are ignored and untracked
+Product/API/OpenAPI/database/Flyway/client diff: NONE
+Active PostgreSQL/Testcontainers/Ryuk test containers after suite: NONE
+Swagger Parser dependency: 2.1.46, test scope only
+Baseline-tag integrity: PASS; tag objects and peeled commits unchanged
+HEAD == main == origin/main: a62740e490aa5321a79b6be87fa05c23bb0e3643
+QA-FND-002: IN_PROGRESS
+Historical Architecture Review: FAIL; ARCH-QA-FND-002-001: OPEN
+Historical QA Review: FAIL; QA-QA-FND-002-001: OPEN
+Focused Architecture and independent QA re-reviews: PENDING
+PRE_CI_BOOTSTRAP_NA: pending finalization
+Commit/push/merge/tag mutation: NONE
+```
+
+Independent reviewer evidence synchronization — QA-FND-002:
+
+```text
+Evidence source: chỉ các báo cáo độc lập đã hoàn tất trong các reviewer task;
+implementation session không tự review và không tạo reviewer result.
+
+Chronology preserved:
+1. Initial Architecture Review: FAIL
+   Finding: ARCH-QA-FND-002-001
+   Severity: MEDIUM
+   Blocking: YES
+   Original Status: OPEN
+   Historical Architecture finding/status remains immutable in the preceding record.
+2. Remediation chronology above remains unchanged: runtime Controller ↔ OpenAPI
+   boundary, response DTO/schema boundary, operation/reusable ErrorResponse resolution,
+   complete canonical reusable-response set and isolated drift regressions were added
+   in test scope only; product code and canonical API/OpenAPI remain unchanged.
+3. Independent QA Re-review report: PASS
+   QAR = PASS
+   Finding: QA-QA-FND-002-001
+   Status: RESOLVED
+   Historical QAR FAIL, MEDIUM/YES, Original Status OPEN preserved.
+   QA independently verified the remediation and 11/11 OpenApiContractHarnessTests,
+   4/4 focused response/error remediation tests and 45/45 full Maven tests PASS.
+   At that review point the Architecture finding was still recorded OPEN/pending
+   Architecture re-review; QA did not claim an Architecture result.
+4. Focused independent Architecture Re-review report: PASS
+   AR = PASS
+   Finding: ARCH-QA-FND-002-001
+   Status: RESOLVED
+   Historical Architecture FAIL, MEDIUM/YES, Original Status OPEN preserved.
+   Architecture independently verified the runtime HandlerMethod boundary, response
+   type comparison, isolated method-drift regression and 11/11, 45/45 validation
+   evidence. At that review point the QA finding was still recorded OPEN; Architecture
+   did not claim a QAR result.
+
+Synchronized final reviewer state:
+AR = PASS
+QAR = PASS
+ARCH-QA-FND-002-001 = RESOLVED
+QA-QA-FND-002-001 = RESOLVED
+Unresolved reviewer findings = NONE
+
+Task/lifecycle state remains unchanged:
+QA-FND-002: IN_PROGRESS
+PRE_CI_BOOTSTRAP_NA: pending finalization
+No reviewer result, historical FAIL, original OPEN status, or prior remediation
+chronology was rewritten. This entry records independent evidence only.
+Commit/push/merge/tag mutation: NONE
+```
+
+Finalization evidence for `QA-FND-002` — 2026-09-12:
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+Lifecycle transition: IN_PROGRESS → DONE
+
+Task / ownership / dependency:
+- Task: QA-FND-002 — OpenAPI/runtime contract-test harness
+- Owner: QAR
+- Dependency BE-FND-007: DONE
+- Priority: P0
+- Acceptance: PASS — OpenAPI v1.4 parse/validate và DTO/controller/status/error
+  contract harness đã được kiểm chứng.
+
+Independent reviewer gates:
+- Architecture Reviewer: PASS; AR = PASS; Architecture findings mới = NONE
+- QA Reviewer: PASS; QAR = PASS; findings mới = NONE
+- ARCH-QA-FND-002-001: RESOLVED bởi focused independent Architecture Re-review
+- QA-QA-FND-002-001: RESOLVED bởi focused independent QA Re-review
+- Historical Architecture/QA FAIL, MEDIUM, Blocking YES, Original Status OPEN:
+  preserved unchanged in the preceding chronology.
+- Unresolved findings: NONE
+- Self-review or fabricated reviewer PASS: NO
+
+TEST / validation gates:
+- Focused OpenApiContractHarnessTests: PASS — 11/11
+- Maven clean verify: PASS — 45/45; 0 failures, errors or skips
+- PostgreSQL 16.15 Testcontainers: PASS — 3/3
+- Fresh Flyway V1 from empty schema: PASS
+- Hibernate schema validation and package/JAR build: PASS
+- Repeatability/isolation and prior drift/error regression coverage: PASS
+- baseline_audit.py: PASS
+- python -m py_compile tools/baseline_audit.py: PASS
+- git diff --check and cached diff check: PASS
+- Untracked whitespace audit: PASS; findings 0
+- Secret/private-key/credential scan: PASS; findings 0
+- Generated-file guard: PASS; generated outputs are not tracked
+- Product/API/OpenAPI/database/Flyway/client scope guard: PASS; no out-of-scope
+  product or canonical contract changes
+- Baseline-tag integrity: PASS; baseline refs unchanged
+- Git operation in progress: NONE
+
+CI / PRE_CI evidence:
+- CI admission mode: PRE_CI_BOOTSTRAP_NA
+- PRE_CI eligible Task ID: QA-FND-002
+- CI-FND-001 effective: NO
+- Failed-check waiver: NOT USED
+- PRE_CI_BOOTSTRAP_NA: accepted as the valid CI mode for this eligible task;
+  CI-FND-001 bootstrap remains not effective globally.
+
+Milestone state:
+- M1 execution progress: 11 / 29 (37.9%)
+- M1 status: IN_PROGRESS
+
+Final state:
+QA-FND-002: DONE
+No commit, push, merge, branch, rebase, reset or tag mutation performed.
+Required next step: one final task-scoped commit on main, then push main via the
+English AI Coach Git workflow.
+```
