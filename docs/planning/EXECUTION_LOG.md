@@ -269,6 +269,12 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-11 | BE-FND-005 | RESOLVED | `QA-BE-FND-005-001` — historical metadata preserved as Severity: HIGH; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed all four Spring MVC request-failure mappings and regression coverage; final finding Status: RESOLVED; new findings: NONE. Historical QA Reviewer FAIL remains preserved. |
 | 2026-09-11 | BE-FND-007 | OPEN | `QA-BE-FND-007-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `PaginatedResponse.from(Page.empty())` truyền `size=0` vào constructor canonical và ném `IllegalArgumentException`. | Normalized only the Spring Page conversion boundary, centralized pagination constants and added empty/unpaged/Pageable/mapper regressions; finding remains OPEN pending independent focused QA re-review. |
 | 2026-09-11 | BE-FND-007 | RESOLVED | `QA-BE-FND-007-001` — historical metadata preserved as Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed the `Page.empty()` conversion remediation, shared `PaginationConvention` constants and focused regression coverage; final finding Status: RESOLVED; new findings: NONE. Historical QA Reviewer FAIL remains preserved. |
+| 2026-09-13 | CI-FND-001 | OPEN | `DB-CI-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Unit gate excluded named integration classes instead of the complete `*IntegrationTests` convention, so future integration tests could also run in Unit. | Replaced the named exclusion with the canonical `!*IntegrationTests` selector, retained the dedicated OpenAPI exclusion and added pattern-based audit regressions. Finding remains OPEN pending independent focused Database Reviewer re-review. |
+| 2026-09-13 | CI-FND-001 | OPEN | `SEC-CI-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The audit checked only top-level permissions, so job-level permission escalation could pass. | Prohibited job-level permissions across every job, enforced the exact canonical job set and added privileged-job regression coverage. Finding remains OPEN pending independent focused Security Reviewer re-review. |
+| 2026-09-13 | CI-FND-001 | OPEN | `SEC-CI-FND-001-002` — Severity: LOW; Blocking: NO; Original Status: OPEN. Checkout persisted Git credentials although later steps perform no authenticated Git operations. | Set and audited `persist-credentials: false`, with missing/true negative regressions. Recommendation remains OPEN pending independent focused Security Reviewer re-review. |
+| 2026-09-13 | CI-FND-001 | RESOLVED | `DB-CI-FND-001-001` — historical Database Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Database Reviewer re-review PASS confirmed complete `*IntegrationTests` selector separation, workflow-audit protection, named-class/missing-wildcard negative regressions, Unit 31/31, PostgreSQL integration 3/3 and fresh PostgreSQL/Flyway/Hibernate validation; final finding Status: RESOLVED; new Database findings: NONE. |
+| 2026-09-13 | CI-FND-001 | RESOLVED | `SEC-CI-FND-001-001` — historical Security Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Security Reviewer re-review PASS confirmed top-level `contents: read`, all-job permission auditing, job-level override rejection, exact job-set guard and rejection of `contents: write`, `id-token: write`, `write-all` and an extra privileged job; final finding Status: RESOLVED. |
+| 2026-09-13 | CI-FND-001 | RESOLVED | `SEC-CI-FND-001-002` — historical Security Reviewer FAIL preserved; Severity: LOW; Blocking: NO; Original Status: OPEN. | Supplied independent focused Security Reviewer re-review PASS confirmed checkout `persist-credentials: false`, audit enforcement and missing/true negative regressions; no authenticated Git command is required after checkout; final finding Status: RESOLVED. |
 
 #### Review result log
 
@@ -318,6 +324,13 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-11 | BE-FND-007 | QA Reviewer | FAIL | `QA-BE-FND-007-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. `Page.empty()` produced invalid canonical pagination metadata and caused `PaginatedResponse.from(...)` to throw; focused remediation and independent QA re-review are required; finding remains OPEN. |
 | 2026-09-11 | BE-FND-007 | QA Reviewer | PASS | Independent focused QA re-review confirmed `QA-BE-FND-007-001` RESOLVED; remediation and regression coverage for `Page.empty()`, `Page.empty(Pageable)`, constructor invariants and mapper behavior are sufficient; new findings: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
 | 2026-09-11 | BE-FND-007 | Architecture Reviewer | PASS | Independent Architecture re-review found no architecture findings or regressions after remediation; architecture boundaries, dependency direction, contract consistency and scope remain compliant; AR=PASS. This result does not independently resolve the QA finding and does not override the completed QA re-review that resolved it. |
+| 2026-09-13 | CI-FND-001 | Architecture Reviewer | PASS | Historical independent Architecture Reviewer PASS preserved as supplied for the CI-FND-001 review chronology; this remediation session did not perform or recreate Architecture review. |
+| 2026-09-13 | CI-FND-001 | Database Reviewer | FAIL | `DB-CI-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Unit excluded only named integration classes, allowing a future `*IntegrationTests` class to run in both Unit and PostgreSQL integration gates. Focused remediation and independent Database Reviewer re-review required; finding remains OPEN. |
+| 2026-09-13 | CI-FND-001 | Security Reviewer | FAIL | `SEC-CI-FND-001-001` — MEDIUM, Blocking YES, Original Status OPEN; job-level permission escalation was not audited. `SEC-CI-FND-001-002` — LOW, Blocking NO, Original Status OPEN; checkout persisted credentials unnecessarily. Focused remediation completed; both findings remain OPEN pending independent Security Reviewer re-review. |
+| 2026-09-13 | CI-FND-001 | Architecture Reviewer | PASS | Final independent Architecture re-review (supplied evidence): canonical Baseline → Build/static → Unit → PostgreSQL integration → OpenAPI → Package order preserved; complete Unit/integration selectors, least-privilege permissions, fail-closed job policy and `persist-credentials: false` verified; no product/API/database/client architecture changes; findings: NONE; AR=PASS. |
+| 2026-09-13 | CI-FND-001 | Database Reviewer | PASS | Independent focused Database re-review (supplied evidence): `DB-CI-FND-001-001` RESOLVED; complete `*IntegrationTests` separation and audit regressions verified; Unit 31/31, PostgreSQL integration 3/3 and fresh PostgreSQL/Flyway/Hibernate validation PASS; new findings: NONE; DBR=PASS. Historical Database FAIL and Original Status OPEN remain preserved. |
+| 2026-09-13 | CI-FND-001 | Security Reviewer | PASS | Independent focused Security re-review (supplied evidence): `SEC-CI-FND-001-001` RESOLVED and `SEC-CI-FND-001-002` RESOLVED; all-job permission enforcement, privileged-case negatives, exact job-set guard and checkout credential hardening verified; new findings: NONE; SR=PASS. Historical Security FAIL and both Original Status OPEN values remain preserved. |
+| 2026-09-13 | CI-FND-001 | QA Reviewer | PASS | Independent QA review (supplied evidence): workflow audit PASS; audit regressions 11/11; Build/static PASS; Unit 31/31; PostgreSQL integration 3/3; OpenAPI 11/11; Maven clean verify 45/45; Package PASS; canonical order and fail-closed security invariants verified; PRE_CI not used and actual remote CI not claimed; findings: NONE; QAR=PASS. |
 
 #### Milestone status
 
@@ -2742,4 +2755,350 @@ QA-FND-002: DONE
 No commit, push, merge, branch, rebase, reset or tag mutation performed.
 Required next step: one final task-scoped commit on main, then push main via the
 English AI Coach Git workflow.
+```
+
+## CI-FND-001 — PLAN / admission — 2026-09-13
+
+```text
+Command boundary: execute
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_BOOTSTRAP
+Lifecycle transition: TODO → IN_PROGRESS
+
+Admission evidence:
+- Branch: main
+- Worktree before PLAN: clean
+- HEAD == main == origin/main: b88f0a3bbd4d6af5d3b7c51ef0c4548c687ef1e9
+- Git operation in progress: NONE
+- Other active direct-main task: NONE
+- Dependencies: QA-FND-001 DONE; QA-FND-002 DONE; GOV-004 DONE
+- Repository health blocker: NONE; CI-FND-001 is not yet effective
+- PRE_CI_BOOTSTRAP_NA: NOT USED
+- OWNER_AUTHORIZED_GOVERNANCE_TRANSITION: NOT USED
+
+Canonical sources checked:
+- docs/PROJECT_RULES.md
+- docs/planning/IMPLEMENTATION_PLAN.md
+- docs/planning/MASTER_BACKLOG.md
+- docs/technical/English_AI_Coach_Technical_Specification_v1.2.md, Section 83
+- docs/technical/English_AI_Coach_Backend_Technical_Specification_v1.3.md, Section 131
+- docs/agents/CODEX_BACKEND_LEAD.md
+- Required reviewer instructions: AR, DBR, SR, QAR
+
+PLAN:
+1. Add one mandatory GitHub Actions workflow for push to main, pull requests and
+   manual dispatch, with read-only repository contents permission.
+2. Preserve the exact gate order: baseline audit → build/static checks → unit tests
+   → PostgreSQL/Testcontainers integration tests → OpenAPI contract tests → package.
+3. Use Java 21, the Maven Wrapper and the existing Python audit dependency; pin
+   first-party actions to immutable commit SHAs.
+4. Add a narrow repository audit that rejects trigger, permission, action-pin,
+   runtime or gate-order drift in the workflow.
+5. Run focused workflow checks, every pipeline-equivalent stage, Maven clean verify,
+   PostgreSQL/Testcontainers, baseline/py_compile/diff/scope/secret/generated-file/
+   whitespace/tag audits. Keep the task IN_PROGRESS and stop before review.
+
+Scope:
+- In scope: CI workflow, CI workflow audit, CI-FND-001 lifecycle/test evidence.
+- Out of scope: product behavior, API/OpenAPI, database/Flyway, clients, secrets,
+  reviewer decisions, commit/push, baseline-tag mutation and CI effective-state closure.
+- Required reviewers after TEST: AR, DBR, SR, QAR.
+```
+
+## CI-FND-001 — IMPLEMENT / TEST — 2026-09-13
+
+```text
+Implementation:
+- Added .github/workflows/ci.yml as the single Required CI workflow.
+- Triggers: push to main, pull_request and workflow_dispatch.
+- Workflow permissions: contents: read only; no secret or write permission added.
+- Runtime: ubuntu-latest, Python 3.13, Temurin Java 21, Maven dependency cache.
+- First-party actions are pinned to immutable 40-character commit SHAs:
+  actions/checkout v7.0.1, actions/setup-python v7.0.0,
+  actions/setup-java v6.0.1. The tag-to-commit mappings were verified against
+  the official GitHub repositories on 2026-09-13.
+- Canonical execution order is explicit in one fail-fast sequential job:
+  baseline audit → build/static checks → unit tests → PostgreSQL integration tests
+  → OpenAPI contract tests → package.
+- The Maven Wrapper is invoked through sh because backend/mvnw is intentionally
+  tracked without the executable bit; no wrapper or index metadata was mutated.
+- Added tools/ci_workflow_audit.py to guard triggers, read-only permissions,
+  immutable action pins, runtime versions, exact gate order and required commands.
+- Added tools/test_ci_workflow_audit.py with one positive and two negative
+  regressions for the live workflow, an unpinned action and gate-order drift.
+- Product code, API/OpenAPI, database/Flyway and clients: unchanged.
+
+Focused TEST evidence:
+1. ci_workflow_audit.py: PASS.
+2. CiWorkflowAuditTests: PASS — 3/3.
+3. py_compile for baseline/workflow audit and workflow audit tests: PASS.
+4. CI build/static Maven command: PASS — 32 production and 11 test sources
+   compiled with release 21.
+5. CI unit-test selector: PASS — 31/31; failures 0, errors 0, skipped 0.
+6. CI PostgreSQL integration selector: PASS — 3/3 on PostgreSQL 16.15 via
+   Testcontainers 2.0.5; fresh Flyway V1 and Hibernate validation PASS.
+7. CI OpenAPI selector: PASS — 11/11; failures 0, errors 0, skipped 0.
+8. CI package command: PASS — executable Spring Boot JAR produced.
+9. Maven clean verify after the final implementation: PASS — 45/45; failures 0,
+   errors 0, skipped 0; package PASS.
+
+Governance / repository audits:
+- baseline_audit: PASS.
+- git diff --check: PASS.
+- Untracked whitespace audit: PASS; findings 0.
+- Scope audit: PASS; only CI workflow/audit/tests and CI-FND-001 planning evidence.
+- Secret/private-key/credential diff scan: PASS; findings 0.
+- Generated-file audit: PASS; backend/target and tools/__pycache__ remain ignored
+  and untracked.
+- Baseline-tag integrity: PASS; local and origin tag objects/peeled commits match.
+- Active PostgreSQL/Testcontainers/Ryuk containers after tests: NONE.
+- HEAD == main == origin/main: b88f0a3bbd4d6af5d3b7c51ef0c4548c687ef1e9.
+- Git operation in progress: NONE.
+
+Stop state before independent review and bootstrap publication:
+- CI-FND-001: IN_PROGRESS.
+- CI mode: ACTUAL_CI_BOOTSTRAP.
+- Architecture Reviewer: PENDING.
+- Database Reviewer: PENDING.
+- Security Reviewer: PENDING.
+- Independent QA Reviewer: PENDING.
+- Reviewer findings for CI-FND-001: not yet assessed; no PASS fabricated.
+- Actual remote CI: NOT RUN because workflow changes are intentionally uncommitted.
+- CI-FND-001 effective: NO.
+- PRE_CI_BOOTSTRAP_NA: NOT USED.
+- OWNER_AUTHORIZED_GOVERNANCE_TRANSITION: NOT USED.
+- Commit/push/merge/tag mutation: NONE.
+- Required next boundary: independent REVIEW while task remains IN_PROGRESS;
+  bootstrap commit/push and actual remote CI belong to the later Git workflow.
+```
+
+## CI-FND-001 — remediation DB-CI-FND-001-001 — 2026-09-13
+
+```text
+Command boundary: remediate
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_BOOTSTRAP
+Task status: IN_PROGRESS (unchanged)
+
+Historical independent reviewer chronology preserved:
+1. Architecture Reviewer: PASS — historical result preserved; not recreated by the
+   implementation session.
+2. Database Reviewer: FAIL.
+   Finding: DB-CI-FND-001-001
+   Severity: MEDIUM
+   Blocking: YES
+   Original Status: OPEN
+3. The Database finding remains OPEN. Only an independent focused Database Reviewer
+   re-review may mark it RESOLVED.
+
+Focused remediation:
+- Unit selector changed from named-class exclusions to the complete convention:
+  -Dtest='!*IntegrationTests,!OpenApiContractHarnessTests'
+- PostgreSQL integration selector remains:
+  -Dtest='*IntegrationTests'
+- OpenApiContractHarnessTests remains excluded from Unit and selected only by the
+  dedicated OpenAPI contract gate.
+- Canonical gate order remains unchanged: Baseline audit → Build/static → Unit
+  → PostgreSQL integration → OpenAPI contract → Package.
+- No continue-on-error, waiver or failure suppression was introduced.
+- ci_workflow_audit now requires the complete wildcard exclusion for Unit and the
+  complete wildcard inclusion for PostgreSQL integration; named-class regression is
+  rejected with UNIT_SELECTOR_DRIFT.
+- Audit tests now include an isolated LearningTransactionIntegrationTests name to
+  prove that enumerating known/future class names is not accepted. No production or
+  integration test class was added for this governance-only fixture.
+
+Remediation TEST evidence:
+1. python tools/ci_workflow_audit.py: PASS.
+2. python -m unittest tools.test_ci_workflow_audit: PASS — 5/5.
+   - canonical complete wildcard selector: PASS
+   - named PostgreSqlHarnessIntegrationTests + LearningTransactionIntegrationTests
+     exclusions: correctly rejected
+   - missing *IntegrationTests exclusion: correctly rejected
+   - existing action-pin and gate-order negative regressions: PASS
+3. py_compile for ci_workflow_audit.py, test_ci_workflow_audit.py and
+   baseline_audit.py: PASS.
+4. Unit selector independently: PASS — 31/31; executed no *IntegrationTests and did
+   not execute OpenApiContractHarnessTests.
+5. PostgreSQL integration selector independently: PASS — 3/3; executed
+   PostgreSqlHarnessIntegrationTests through *IntegrationTests on PostgreSQL 16.15,
+   Testcontainers 2.0.5, fresh Flyway V1 and Hibernate validation.
+6. OpenAPI selector independently: PASS — 11/11; executed
+   OpenApiContractHarnessTests outside Unit.
+7. Maven clean verify: PASS — 45/45; failures 0, errors 0, skipped 0.
+8. Separate package command: PASS — executable Spring Boot JAR produced.
+9. baseline_audit: PASS.
+10. git diff --check and untracked whitespace audit: PASS.
+11. Scope audit: PASS; product/API/OpenAPI/database/Flyway/client files unchanged.
+12. Secret/private-key/credential scan: PASS; findings 0.
+13. Generated-file audit: PASS; generated outputs remain ignored and untracked.
+14. Baseline-tag integrity: PASS; local and origin tag refs match.
+15. Active PostgreSQL/Testcontainers/Ryuk containers after tests: NONE.
+
+Explicit gate attribution confirmation:
+- Unit gate DOES NOT execute any *IntegrationTests.
+- PostgreSQL integration gate DOES execute *IntegrationTests.
+- OpenApiContractHarnessTests remains outside Unit and runs in the OpenAPI gate.
+
+Stop state:
+- CI-FND-001: IN_PROGRESS.
+- DB-CI-FND-001-001: OPEN.
+- Historical Architecture Reviewer PASS: PRESERVED.
+- Historical Database Reviewer FAIL: PRESERVED.
+- Focused Database Reviewer re-review: REQUIRED.
+- Actual remote CI PASS: NOT CLAIMED; no remote CI run occurred.
+- CI-FND-001 effective: NO.
+- PRE_CI_BOOTSTRAP_NA: NOT USED.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+## CI-FND-001 — remediation SEC-CI-FND-001-001 / SEC-CI-FND-001-002 — 2026-09-13
+
+```text
+Command boundary: remediate
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_BOOTSTRAP
+Task status: IN_PROGRESS (unchanged)
+
+Historical reviewer chronology preserved in order:
+1. Architecture Reviewer: PASS — historical result preserved; not recreated here.
+2. Database Reviewer: FAIL.
+   DB-CI-FND-001-001: MEDIUM; Blocking YES; Original Status OPEN; remains OPEN
+   pending independent focused Database Reviewer re-review.
+3. Security Reviewer: FAIL.
+   SEC-CI-FND-001-001: MEDIUM; Blocking YES; Original Status OPEN.
+   SEC-CI-FND-001-002: LOW; Blocking NO; Original Status OPEN.
+4. Both Security findings remain OPEN. Only an independent Security Reviewer may
+   change their final reviewer status.
+
+Focused security remediation:
+- Preserved top-level permissions exactly as contents: read.
+- Chose the simpler fail-closed job policy: job-level permissions are prohibited.
+- ci_workflow_audit iterates every job and emits JOB_PERMISSION_OVERRIDE for any
+  job-level permissions value, including mappings, write-all and unknown permissions.
+- The audit additionally enforces the exact canonical job set {required}; an extra
+  privileged job produces both JOB_PERMISSION_OVERRIDE and JOB_SET_DRIFT.
+- actions/checkout now sets persist-credentials: false; the audit requires the
+  parsed value to be exactly false.
+- Existing trigger, gate-order, immutable action SHA, Java/Python runtime,
+  unit/integration separation, OpenAPI and package audits remain enabled.
+- DB-CI-FND-001-001 remediation remains unchanged: Unit excludes all
+  *IntegrationTests and the PostgreSQL gate selects all *IntegrationTests.
+- No pull_request_target, repository/user secret, write permission,
+  continue-on-error, shell command derived from a GitHub expression or authenticated
+  Git operation after checkout was introduced.
+
+Explicit negative security audit evidence — all correctly rejected:
+A. jobs.required.permissions.contents = write → JOB_PERMISSION_OVERRIDE.
+B. jobs.required.permissions.id-token = write → JOB_PERMISSION_OVERRIDE.
+C. jobs.required.permissions = write-all → JOB_PERMISSION_OVERRIDE.
+D. Extra privileged job with security-events: write → JOB_PERMISSION_OVERRIDE and
+   JOB_SET_DRIFT.
+E. Missing checkout persist-credentials: false → CHECKOUT_CREDENTIAL_PERSISTENCE.
+F. checkout persist-credentials: true → CHECKOUT_CREDENTIAL_PERSISTENCE.
+Positive canonical workflow, contents: read, no job override and
+persist-credentials: false → PASS.
+
+Remediation TEST evidence:
+1. python tools/ci_workflow_audit.py: PASS.
+2. python -m unittest tools.test_ci_workflow_audit: PASS — 11/11, including all
+   six required security negative cases, canonical positive coverage and every
+   pre-existing selector/action-pin/gate-order regression.
+3. python -m py_compile tools/ci_workflow_audit.py
+   tools/test_ci_workflow_audit.py: PASS.
+4. Unit CI selector: PASS — 31/31; no *IntegrationTests or
+   OpenApiContractHarnessTests executed.
+5. PostgreSQL integration selector: PASS — 3/3 on PostgreSQL 16.15 through
+   Testcontainers 2.0.5; *IntegrationTests executed.
+6. OpenAPI selector: PASS — 11/11; OpenApiContractHarnessTests executed only in
+   its dedicated gate.
+7. Maven clean verify: PASS — 45/45; failures 0, errors 0, skipped 0.
+8. Separate package command: PASS — executable Spring Boot JAR produced.
+
+Stop state before independent focused Security Reviewer re-review:
+- CI-FND-001: IN_PROGRESS.
+- ACTUAL_CI_BOOTSTRAP: preserved.
+- Historical AR PASS: PRESERVED.
+- Historical DBR FAIL and DB-CI-FND-001-001 OPEN chronology: PRESERVED.
+- Historical SR FAIL: PRESERVED.
+- SEC-CI-FND-001-001: OPEN.
+- SEC-CI-FND-001-002: OPEN.
+- Actual remote CI PASS: NOT CLAIMED; workflow remains uncommitted/unpushed.
+- PRE_CI_BOOTSTRAP_NA: NOT USED.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+Final governance audit addendum for the Security remediation:
+
+```text
+- baseline_audit: PASS.
+- git diff --check: PASS.
+- Untracked whitespace audit: PASS; findings 0.
+- Scope audit: PASS; only CI workflow/audit/tests and CI-FND-001 evidence changed.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; backend/target and tools/__pycache__ remain ignored
+  and untracked.
+- Baseline-tag integrity: PASS; local and origin tag objects/peeled commits match.
+- Security workflow invariant scan: PASS; no pull_request_target,
+  continue-on-error or shell command built from GitHub expression input.
+- Authenticated/post-checkout Git commands: NONE.
+- Active PostgreSQL/Testcontainers/Ryuk containers after tests: NONE.
+- HEAD == main == origin/main: b88f0a3bbd4d6af5d3b7c51ef0c4548c687ef1e9.
+- Git operation in progress: NONE.
+- Actual remote CI result: NOT OBSERVED / NOT CLAIMED.
+```
+
+## CI-FND-001 — independent reviewer evidence synchronization — 2026-09-13
+
+```text
+Command boundary: synchronize independent reviewer evidence
+Evidence source: completed independent AR, DBR, SR and QAR reports supplied by
+the task owner in the synchronization request. This entry is evidence
+synchronization only; it is not self-review and does not change task lifecycle.
+
+Historical chronology preserved:
+- Database Reviewer FAIL
+  → DB-CI-FND-001-001 OPEN (MEDIUM; Blocking YES; Original Status OPEN)
+  → selector/audit remediation
+  → focused Database Reviewer PASS
+  → DB-CI-FND-001-001 RESOLVED.
+- Security Reviewer FAIL
+  → SEC-CI-FND-001-001 OPEN (MEDIUM; Blocking YES; Original Status OPEN)
+  → SEC-CI-FND-001-002 OPEN (LOW; Blocking NO; Original Status OPEN)
+  → permission/checkout remediation
+  → focused Security Reviewer PASS for 001
+  → SEC-CI-FND-001-001 RESOLVED
+  → focused Security Reviewer PASS for 002
+  → SEC-CI-FND-001-002 RESOLVED.
+
+Final independent reviewer state from supplied reports:
+- Architecture Reviewer: PASS; findings NONE.
+- Database Reviewer: PASS; DB-CI-FND-001-001 RESOLVED; new findings NONE.
+- Security Reviewer: PASS; SEC-CI-FND-001-001 RESOLVED;
+  SEC-CI-FND-001-002 RESOLVED; new findings NONE.
+- QA Reviewer: PASS; findings NONE.
+- AR=PASS; DBR=PASS; SR=PASS; QAR=PASS.
+- Unresolved findings: NONE.
+
+Synchronized evidence highlights:
+- Canonical gate order remains Baseline → Build/static → Unit → PostgreSQL
+  integration → OpenAPI → Package.
+- Unit excludes the complete `*IntegrationTests` pattern and PostgreSQL
+  integration selects the complete `*IntegrationTests` pattern.
+- Top-level permissions are exactly `contents: read`; job-level permission
+  overrides are prohibited and the exact job set is guarded.
+- `actions/checkout` uses `persist-credentials: false` and the audit rejects
+  missing/true values.
+- QA evidence records workflow audit PASS, audit regressions 11/11, Build/static
+  PASS, Unit 31/31, PostgreSQL integration 3/3, OpenAPI 11/11, Maven clean
+  verify 45/45 and Package PASS.
+- No product/API/database/client architecture changes were reported.
+
+Required unchanged task/governance state:
+- CI-FND-001: IN_PROGRESS.
+- CI mode: ACTUAL_CI_BOOTSTRAP.
+- Actual remote CI: NOT RUN; no actual CI PASS claimed.
+- CI-FND-001 effective: NO.
+- PRE_CI_BOOTSTRAP_NA: NOT USED.
+- Commit/push/merge/tag mutation: NONE.
 ```
