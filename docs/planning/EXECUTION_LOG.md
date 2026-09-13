@@ -275,6 +275,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | CI-FND-001 | RESOLVED | `DB-CI-FND-001-001` — historical Database Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Database Reviewer re-review PASS confirmed complete `*IntegrationTests` selector separation, workflow-audit protection, named-class/missing-wildcard negative regressions, Unit 31/31, PostgreSQL integration 3/3 and fresh PostgreSQL/Flyway/Hibernate validation; final finding Status: RESOLVED; new Database findings: NONE. |
 | 2026-09-13 | CI-FND-001 | RESOLVED | `SEC-CI-FND-001-001` — historical Security Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Security Reviewer re-review PASS confirmed top-level `contents: read`, all-job permission auditing, job-level override rejection, exact job-set guard and rejection of `contents: write`, `id-token: write`, `write-all` and an extra privileged job; final finding Status: RESOLVED. |
 | 2026-09-13 | CI-FND-001 | RESOLVED | `SEC-CI-FND-001-002` — historical Security Reviewer FAIL preserved; Severity: LOW; Blocking: NO; Original Status: OPEN. | Supplied independent focused Security Reviewer re-review PASS confirmed checkout `persist-credentials: false`, audit enforcement and missing/true negative regressions; no authenticated Git command is required after checkout; final finding Status: RESOLVED. |
+| 2026-09-13 | DB-FND-003 | OPEN | `QA-DB-FND-003-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Partial-index behavioral coverage did not prove all three canonical notification types or the allowed-side boundaries for notification dedupe, primary goals and assessment in-progress uniqueness. | Strengthened PostgreSQL integration coverage without changing the already-canonical V2 predicate; finding remained OPEN pending independent focused QA re-review. |
+| 2026-09-13 | DB-FND-003 | RESOLVED | `QA-DB-FND-003-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed complete behavioral and allowed-side partial-index coverage; final finding Status: RESOLVED; new QA findings: NONE. |
 
 #### Review result log
 
@@ -331,13 +333,17 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | CI-FND-001 | Database Reviewer | PASS | Independent focused Database re-review (supplied evidence): `DB-CI-FND-001-001` RESOLVED; complete `*IntegrationTests` separation and audit regressions verified; Unit 31/31, PostgreSQL integration 3/3 and fresh PostgreSQL/Flyway/Hibernate validation PASS; new findings: NONE; DBR=PASS. Historical Database FAIL and Original Status OPEN remain preserved. |
 | 2026-09-13 | CI-FND-001 | Security Reviewer | PASS | Independent focused Security re-review (supplied evidence): `SEC-CI-FND-001-001` RESOLVED and `SEC-CI-FND-001-002` RESOLVED; all-job permission enforcement, privileged-case negatives, exact job-set guard and checkout credential hardening verified; new findings: NONE; SR=PASS. Historical Security FAIL and both Original Status OPEN values remain preserved. |
 | 2026-09-13 | CI-FND-001 | QA Reviewer | PASS | Independent QA review (supplied evidence): workflow audit PASS; audit regressions 11/11; Build/static PASS; Unit 31/31; PostgreSQL integration 3/3; OpenAPI 11/11; Maven clean verify 45/45; Package PASS; canonical order and fail-closed security invariants verified; PRE_CI not used and actual remote CI not claimed; findings: NONE; QAR=PASS. |
+| 2026-09-13 | DB-FND-003 | Database Reviewer | PASS | Independent initial Database review verified the append-only V1 → V2 migration, canonical indexes/partial predicates, due-review EXPLAIN, optimistic-lock invariants and PostgreSQL 16.15 execution; Database findings: NONE; DBR=PASS. |
+| 2026-09-13 | DB-FND-003 | QA Reviewer | FAIL | `QA-DB-FND-003-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Behavioral coverage was incomplete for `REVIEW_REMINDER`, `DAILY_PLAN`, `STREAK` and allowed-side partial-index boundaries; focused remediation and independent QA re-review required. |
+| 2026-09-13 | DB-FND-003 | QA Reviewer | PASS | Independent focused QA re-review confirmed `QA-DB-FND-003-001` RESOLVED; focused 10/10, full 59/59 and fresh Flyway V1 → V2 PostgreSQL validation PASS; new findings/regressions: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
+| 2026-09-13 | DB-FND-003 | Database Reviewer | PASS | Independent post-remediation Database review reconfirmed the complete canonical predicates and allowed-side boundaries, append-only migration integrity, PostgreSQL 16.15 validation and no Database findings; DBR=PASS. This review did not resolve or claim the QA finding independently. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 13 |    29 |              44.8% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 14 |    29 |              48.3% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -3454,4 +3460,294 @@ Finalization validation after lifecycle/evidence update:
 - Required next boundary: Git workflow records this lifecycle/evidence closure
   in the existing legacy branch and pushes it, then completes PR #5 according
   to the preserved legacy merge workflow.
+```
+
+## DB-FND-003 — PLAN / admission — 2026-09-13
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main.
+- HEAD == main == origin/main == remote refs/heads/main:
+  b7872194f8cfcf526ba322d284773ccc65a1e87d.
+- Worktree at admission: clean.
+- Git operation in progress: NONE.
+- Other active direct-main task: NONE.
+- DB-FND-003 owner/priority/status: CBL / P0 / TODO.
+- Dependency: DB-FND-002 DONE.
+- Required reviewers: DBR, QAR.
+- CI-FND-001: DONE and effective; PRE_CI permanently expired.
+- Latest origin/main Required CI run 34747987612: completed / success.
+- Repository health: HEALTHY.
+
+Canonical sources and decisions:
+- Database Schema v1.6: canonical tables, indexes, partial uniqueness,
+  idempotency indexes and optimistic-lock columns/constraints.
+- Backend Technical Specification v1.3: due-review query/index, important
+  database indexes, append-only Flyway and PostgreSQL Testcontainers coverage.
+- System Architecture v1.3: PostgreSQL/Flyway persistence and optimistic
+  locking on user_vocabulary_progress and streaks.
+- Technical Specification v1.2: PostgreSQL/Flyway/testing conventions.
+- PROJECT_RULES.md, IMPLEMENTATION_PLAN.md and MASTER_BACKLOG.md: direct-main
+  lifecycle, acceptance, scope and validation gates.
+
+Planned scope:
+- Add the next append-only Flyway migration for canonical secondary and partial
+  indexes; do not edit the applied V1 migration.
+- Add PostgreSQL integration coverage for index definitions, partial uniqueness,
+  optimistic-lock target invariants and EXPLAIN sanity of the due-review query.
+- Preserve all production table/column/API/client contracts.
+
+Explicitly out of scope:
+- Seed data (DB-FND-004), JPA/application behavior, API/OpenAPI, clients,
+  unrelated schema changes and later feature queries.
+- No dependency addition, commit, push, merge or baseline-tag mutation.
+
+PLAN transition: DB-FND-003 TODO → IN_PROGRESS.
+```
+
+## DB-FND-003 — IMPLEMENT / TEST — 2026-09-13
+
+```text
+Command boundary: execute — stop after TEST
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Implementation:
+- Added append-only Flyway migration V2__create_canonical_indexes.sql; V1 remains
+  unchanged.
+- Added canonical secondary indexes for authentication, account/assessment,
+  vocabulary/learning, quiz/gamification, notification, AI/audit and
+  idempotency lookup/retention paths.
+- Added canonical partial unique indexes for provider identity, primary goal,
+  one in-progress assessment, notification dedupe and reusable AI generation
+  keys.
+- Preserved the existing version BIGINT NOT NULL DEFAULT 0 and business-key
+  uniqueness invariants for user_vocabulary_progress and streaks; no invented
+  (id, version) index was added because the canonical contract does not define
+  one and the primary-key lookup already supports optimistic updates.
+- Added DatabaseIndexIntegrationTests using real PostgreSQL/Testcontainers.
+
+Acceptance evidence:
+- Due review: composite (user_id, next_review_at) index exists and EXPLAIN with
+  sequential scan disabled selects that exact index.
+- Assessment in-progress: partial unique index metadata and duplicate behavior
+  PASS.
+- Notification dedupe: duplicate DAILY_PLAN/user/local-date is rejected while
+  SYSTEM duplicates remain allowed.
+- Primary goal: a second primary goal for one user is rejected.
+- Optimistic-lock targets: both canonical version columns remain NOT NULL with
+  default 0; their canonical uniqueness indexes remain present.
+- Idempotency: both (user_id, created_at) and (endpoint, created_at) indexes
+  exist.
+- Fresh schema: Flyway validates/applies V1 then V2 on PostgreSQL 16.15 and
+  Hibernate schema validation PASS.
+
+Final TEST evidence:
+- Focused DatabaseIndexIntegrationTests: PASS — 7/7.
+- Maven clean verify: PASS — 56/56; failures 0; errors 0; skipped 0.
+- CI Unit selector: PASS — 35/35.
+- CI PostgreSQL integration selector: PASS — 10/10.
+- CI OpenAPI selector: PASS — 11/11.
+- Package: PASS — executable Spring Boot JAR produced.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py
+  tools/test_ci_workflow_audit.py: PASS.
+- git diff --check: PASS.
+- Untracked whitespace and conflict-marker audits: PASS; findings 0.
+- Scope audit: PASS — only DB-FND-003 lifecycle/evidence, V2 migration and its
+  PostgreSQL integration test changed.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; findings 0.
+- Baseline-tag integrity: PASS; both local baseline tags match origin.
+- Active PostgreSQL/Testcontainers/Ryuk containers after tests: NONE.
+
+Contract impact:
+- Database: append-only index migration only; no table/column/FK/CHECK/default
+  or existing migration changed.
+- API/OpenAPI/clients: NONE.
+- Dependencies: NONE.
+- Backward compatibility: additive indexes and stricter canonical partial
+  uniqueness already required by Database Schema v1.6.
+
+Stop state:
+- DB-FND-003 remains IN_PROGRESS.
+- Independent reviewer PASS is not claimed.
+- Unresolved reviewer findings: not yet assessed.
+- Required next reviewers: Database Reviewer, then QA Reviewer.
+- Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+## DB-FND-003 — remediation QA-DB-FND-003-001 — 2026-09-13
+
+```text
+Command boundary: remediate QA-DB-FND-003-001
+Workflow mode: GOV009_DIRECT_MAIN
+Task state: DB-FND-003 IN_PROGRESS
+
+Historical independent QA Reviewer evidence preserved:
+- QAR result: FAIL.
+- Finding ID: QA-DB-FND-003-001.
+- Severity: MEDIUM.
+- Blocking: YES.
+- Original Status: OPEN.
+- Current finding status: OPEN; only independent QAR focused re-review may
+  resolve it.
+- DBR final PASS: not yet recorded.
+
+Finding:
+- Partial-index behavioral coverage did not prove all canonical notification
+  types or the allowed-side boundaries for notification dedupe, primary goals
+  and assessment in-progress uniqueness.
+
+Migration inspection:
+- uq_notifications_user_type_local_date in V2 already has the exact canonical
+  predicate: local_notification_date IS NOT NULL and type IN
+  (REVIEW_REMINDER, DAILY_PLAN, STREAK).
+- Production migration change for this remediation: NONE.
+- No V3 migration was created; V1 remains unchanged and V2 remains the next
+  unpublished append-only migration.
+
+Focused remediation:
+- Parameterized duplicate-rejection coverage now executes independently for
+  REVIEW_REMINDER, DAILY_PLAN and STREAK with the same user/type/local date.
+- Allowed-side notification coverage proves duplicate SYSTEM rows with the same
+  user/date are accepted and duplicate rows with NULL local_notification_date
+  are accepted for all three canonical reminder types.
+- Metadata coverage additionally verifies the PostgreSQL predicate contains all
+  three canonical type values.
+- Primary-goal coverage now first inserts multiple is_primary=false goals for
+  one user, then proves only the second is_primary=true row is rejected.
+- Assessment coverage now inserts COMPLETED and CANCELLED rows for one user,
+  then proves only the second IN_PROGRESS row is rejected.
+
+Remediation TEST evidence:
+- Focused DatabaseIndexIntegrationTests: PASS — 10/10.
+- Maven clean verify: PASS — 59/59; failures 0; errors 0; skipped 0.
+- CI Unit selector: PASS — 35/35.
+- CI PostgreSQL integration selector: PASS — 13/13.
+- CI OpenAPI selector: PASS — 11/11.
+- Package: PASS.
+- Fresh PostgreSQL 16.15 migration: V1 → V2 validated/applied successfully;
+  Hibernate schema validation PASS.
+
+Stop state before independent focused QA re-review:
+- DB-FND-003: IN_PROGRESS.
+- QA-DB-FND-003-001: OPEN.
+- QAR: historical FAIL preserved; remediation does not self-approve PASS.
+- DBR final PASS: not recorded.
+- Actual remote CI for uncommitted task diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/tag mutation: NONE.
+```
+
+## DB-FND-003 — independent reviewer evidence synchronization — 2026-09-13
+
+```text
+Command boundary: synchronize independent reviewer evidence
+Workflow mode: GOV009_DIRECT_MAIN
+Evidence source: completed read-only reports from the independent Database
+Reviewer and QA Reviewer Codex tasks. This operation records reviewer outcomes
+only; it is not self-review and does not finalize the task.
+
+Historical chronology preserved:
+- Initial Database Reviewer review: PASS; findings NONE.
+- QA Reviewer review: FAIL.
+  → QA-DB-FND-003-001 OPEN
+    (Severity MEDIUM; Blocking YES; Original Status OPEN).
+  → focused test-only remediation; production V2 predicate unchanged.
+  → independent focused QA re-review: PASS.
+  → QA-DB-FND-003-001 RESOLVED; new QA findings NONE.
+- Independent post-remediation Database Reviewer review: PASS; Database
+  findings NONE. The DBR report did not resolve or claim the QA finding.
+
+Synchronized independent reviewer state:
+- DBR: PASS.
+- QAR: PASS.
+- QA-DB-FND-003-001: RESOLVED by independent focused QA re-review.
+- Unresolved findings: NONE.
+
+Reviewer evidence highlights:
+- All three canonical notification types (`REVIEW_REMINDER`, `DAILY_PLAN`,
+  `STREAK`) have metadata and duplicate-rejection coverage.
+- Allowed-side coverage proves duplicate `SYSTEM` notifications and canonical
+  notification rows with NULL local_notification_date are accepted.
+- Multiple non-primary goals and non-IN_PROGRESS assessments are accepted;
+  duplicate primary goals and duplicate IN_PROGRESS assessments are rejected.
+- Focused DatabaseIndexIntegrationTests: PASS — 10/10.
+- Maven clean verify: PASS — 59/59.
+- Fresh Flyway V1 → V2 and Hibernate validation on PostgreSQL 16.15: PASS.
+- Migration remains append-only; V1 integrity preserved; no production change
+  was introduced by the QA remediation.
+
+Required unchanged stop state:
+- DB-FND-003: IN_PROGRESS.
+- Branch: main; uncommitted direct-main worktree.
+- Actual remote CI for this uncommitted diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/baseline-tag mutation: NONE.
+- Finalization: NOT PERFORMED.
+```
+
+## DB-FND-003 — FINALIZE — 2026-09-13
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Finalization gates:
+- Task/owner/priority before transition: DB-FND-003 / CBL / P0 / IN_PROGRESS.
+- Dependency DB-FND-002: DONE.
+- Required reviewers: DBR, QAR.
+- Independent Database Reviewer: PASS; Database findings NONE.
+- Independent QA Reviewer: PASS.
+- QA-DB-FND-003-001: RESOLVED by independent focused QA re-review.
+- Historical QAR FAIL, Severity MEDIUM, Blocking YES and Original Status OPEN
+  chronology: PRESERVED.
+- Unresolved findings: NONE.
+- Acceptance: PASS — canonical due-review, assessment, notification, primary
+  goal, optimistic-lock and idempotency indexes are present; due-review EXPLAIN
+  selects the expected composite index.
+
+Fresh final validation on the post-review worktree:
+- Maven clean verify: PASS — 59/59; failures 0; errors 0; skipped 0.
+- DatabaseIndexIntegrationTests within the full run: PASS — 10/10.
+- PostgreSQL/Testcontainers 16.15: PASS.
+- Flyway fresh migration: successfully validated and applied V1 → V2.
+- Hibernate schema validation: PASS.
+- OpenApiContractHarnessTests: PASS — 11/11.
+- Package/repackaged executable JAR: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check: PASS.
+- Conflict-marker, untracked-whitespace, secret/private-key, generated-file,
+  scope and baseline-tag integrity audits: PASS; findings 0.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Lifecycle and milestone transition:
+- DB-FND-003: IN_PROGRESS → DONE.
+- M1 execution progress: 14/29 (48.3%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- Database: additive append-only V2 index migration; V1 unchanged.
+- API/OpenAPI/clients/security/business rules: NONE.
+- QA remediation changed test coverage only; canonical production predicate was
+  already correct and remains unchanged.
+- Unrelated/later-task/V2-V3 scope: NONE.
+
+Git/publication stop state:
+- Branch: main; HEAD and origin/main remain
+  b7872194f8cfcf526ba322d284773ccc65a1e87d.
+- Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED;
+  direct-main remote CI is the post-push repository-health gate.
+- Commit/push/merge/tag mutation: NONE.
+- Next step: create the one final task-scoped commit, then fast-forward push
+  main through the separate Git workflow.
 ```
