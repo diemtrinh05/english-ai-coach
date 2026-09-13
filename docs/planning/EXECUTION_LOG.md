@@ -337,7 +337,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 10 |    29 |              34.5% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 12 |    29 |              41.4% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -3101,4 +3101,72 @@ Required unchanged task/governance state:
 - CI-FND-001 effective: NO.
 - PRE_CI_BOOTSTRAP_NA: NOT USED.
 - Commit/push/merge/tag mutation: NONE.
+```
+
+## CI-FND-001 — FINALIZE after bootstrap CI PASS — 2026-09-13
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_BOOTSTRAP
+
+Task and dependency state:
+- CI-FND-001 owner/priority: CBL / P0.
+- Dependencies: QA-FND-001 DONE; QA-FND-002 DONE; GOV-004 DONE.
+- Required reviewers: AR, DBR, SR, QAR.
+- Final reviewer gates: AR=PASS; DBR=PASS; SR=PASS; QAR=PASS.
+- Unresolved findings: NONE.
+- Historical DBR/SR FAIL and original OPEN finding chronology: PRESERVED.
+
+Bootstrap publication evidence:
+- Bootstrap commit: 0a2501fb65c0777bd51fa6a64f16b7de3b01dd6a.
+- Commit subject: chore(CI-FND-001): bootstrap required CI pipeline.
+- Branch/ref: main == origin/main at the bootstrap commit before closure changes.
+- GitHub Actions workflow: Required CI (.github/workflows/ci.yml).
+- Run ID: 34745300419.
+- Event: push.
+- Run status/conclusion: completed / success.
+- Run URL: https://github.com/diemtrinh05/english-ai-coach/actions/runs/34745300419
+- Required CI job: completed / success.
+- Successful required steps: Checkout; Setup Python; Install audit dependencies;
+  Baseline audit; Setup Java; Build and static checks; Unit tests; PostgreSQL
+  integration tests; OpenAPI contract tests; Package.
+- Actual remote CI: PASS — observed directly from the GitHub Actions API for the
+  exact bootstrap SHA; no waiver or PRE_CI substitution used.
+
+Acceptance and closure gates:
+- Canonical pipeline order: PASS.
+- Workflow/audit regression evidence: PASS.
+- Local TEST evidence: PASS — Unit 31/31; PostgreSQL integration 3/3; OpenAPI
+  11/11; Maven clean verify 45/45; Package PASS.
+- baseline_audit/build/static/diff/scope/secret/generated-file gates: PASS.
+- Baseline-tag integrity: PASS; no tag mutation.
+- Product/API/OpenAPI/database/Flyway/client contract change: NONE.
+- CI-FND-001 transition: IN_PROGRESS → DONE.
+- M1 execution progress: 12 / 29 (41.4%); milestone remains IN_PROGRESS.
+
+Finalization validation after lifecycle/evidence update:
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py
+  tools/test_ci_workflow_audit.py: PASS.
+- git diff --check: PASS.
+- Scope audit: PASS — only docs/planning/MASTER_BACKLOG.md and
+  docs/planning/EXECUTION_LOG.md changed for closure.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; findings 0.
+- Baseline-tag integrity: PASS; local/origin baseline tag refs unchanged.
+
+Post-finalize state before Git closure publication:
+- CI-FND-001: DONE in the uncommitted closure worktree.
+- CI-FND-001 effective: NO — closure commit has not been pushed to origin/main.
+- PRE_CI_BOOTSTRAP_NA: NOT USED.
+- PRE_CI expiry: NOT YET; it expires irreversibly only after successful closure
+  commit push to origin/main.
+- Commit/push/merge/tag mutation by Backend Task finalize: NONE.
+- Required next boundary: Git workflow creates the small CI-FND-001 closure
+  commit and pushes origin/main. At successful push, CI-FND-001 becomes effective
+  and PRE_CI expires permanently; the closure/latest-main CI then determines
+  repository health as CI_PENDING → HEALTHY or BLOCKED.
 ```
