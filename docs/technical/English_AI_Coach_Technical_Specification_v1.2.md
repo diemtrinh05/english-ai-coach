@@ -2541,11 +2541,27 @@ API contract validation
 Build artifacts
 ```
 
-On pull request:
+For legacy/grandfathered pull requests, this pipeline must pass before merge.
+For post-`GOV-009` direct-main tasks, the same applicable local gates pass
+before finalization/commit; before `CI-FND-001`, approved repository-level
+`PRE_CI_BOOTSTRAP_NA` evidence applies only to eligible tasks; after
+`CI-FND-001` is effective, remote CI verifies repository health after push:
 
 ```text
 must pass
 ```
+
+Each post-CI direct-main push sets repository health `CI_PENDING`. No next task
+may enter PLAN until required CI for latest `origin/main` PASSes and restores
+`HEALTHY`; a failure sets repository health `BLOCKED` without rewriting the
+already-`DONE` task.
+
+If required CI fails for a published direct-main commit, the originating task
+remains `DONE` and the repository enters `PUBLISHED_MAIN_RECOVERY`. This is not
+normal task admission: only minimal `FIX_FORWARD` or `REVERT` recovery tied to
+the failing Task ID/commit may proceed. Affected validations/reviewers must pass
+before the recovery commit is fast-forward pushed; the push sets `CI_PENDING`,
+and only remote CI PASS closes recovery and restores `HEALTHY`.
 
 ---
 

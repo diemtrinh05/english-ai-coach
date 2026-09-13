@@ -4795,7 +4795,16 @@ Accessibility?
 
 ---
 
-# 253. Pull Request Checklist
+# 253. Change Review Checklist
+
+This checklist applies to both post-`GOV-009` direct-main review and
+legacy/grandfathered Pull Requests; a PR is not required for a new direct-main
+task by default.
+
+If published direct-main CI fails, `PUBLISHED_MAIN_RECOVERY` is repository-level
+operational recovery rather than a new Android backlog task. The originating
+task remains `DONE`; minimal `FIX_FORWARD` or `REVERT` changes must rerun every
+affected Android/build/reviewer gate before a fast-forward recovery push.
 
 ```text
 [ ] Feature follows package structure

@@ -3428,7 +3428,24 @@ OpenAPI validation
 Package
 ```
 
-PR must pass before merge.
+Legacy/grandfathered PRs must pass before merge. For post-`GOV-009`
+direct-main tasks, applicable local gates must pass before finalization/commit;
+before `CI-FND-001`, approved repository-level `PRE_CI_BOOTSTRAP_NA` evidence
+applies only to eligible tasks; after `CI-FND-001` is effective, remote CI
+verifies repository health after push.
+
+Each post-CI direct-main push sets repository health `CI_PENDING`. The next
+task cannot enter PLAN until required CI for latest `origin/main` PASSes and
+restores `HEALTHY`; failure sets repository health `BLOCKED` without changing
+the already-`DONE` task lifecycle.
+
+A required CI failure on published direct-main work uses
+`PUBLISHED_MAIN_RECOVERY`, not a new task and not a lifecycle rollback. The
+originating task remains `DONE`; only minimal `FIX_FORWARD` or `REVERT` work
+bound to its Task ID and failing commit is permitted. Affected build/test/
+runtime gates and impact-based independent reviewers must pass before a
+fast-forward recovery push. The push sets repository/recovery `CI_PENDING`;
+remote PASS restores `HEALTHY` and closes recovery.
 
 ---
 

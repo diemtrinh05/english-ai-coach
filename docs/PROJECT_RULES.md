@@ -1404,7 +1404,11 @@ report
 
 # 44. Branch Rule
 
-Recommended:
+For tasks started after the `GOV-009` effective point, work directly on `main`;
+no task branch is required by default. Section 59.2 defines the mandatory
+PLAN and safety gates.
+
+The following branch model is LEGACY / GRANDFATHERED guidance only:
 
 ```text
 main
@@ -1427,16 +1431,15 @@ feature/admin
 
 # 45. Commit Rule
 
-Use:
+Every task-scoped commit uses a type and Task ID:
 
 ```text
-feat:
-fix:
-refactor:
-test:
-docs:
-chore:
+<type>(<TASK-ID>): <description>
 ```
+
+For a normal post-`GOV-009` direct-main task, one final commit is created only
+after status `DONE`. Legacy/grandfathered branch commits retain their original
+workflow. `CI-FND-001` is the explicit two-commit exception in Section 59.2.
 
 ---
 
@@ -1721,7 +1724,7 @@ documentation synchronized
 
 ## 59.1. Pre-CI Bootstrap Gate
 
-Trước khi `CI-FND-001` ở trạng thái `DONE` và đã được merge vào `main`, chỉ các task tiên quyết sau được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`:
+Trước khi `CI-FND-001` effective theo Section 59.2, chỉ các task tiên quyết sau được phép dùng CI status `PRE_CI_BOOTSTRAP_NA` thay cho `CI PASS`:
 
 ```text
 GOV-008
@@ -1745,15 +1748,163 @@ required local/unit/integration/task tests PASS as applicable
 required reviewers PASS
 baseline_audit PASS
 applicable build/static/git/diff validations PASS
-the PR records the eligible Task ID, reason, and local validation evidence
+unresolved reviewer findings = NONE
+the applicable repository or grandfathered PR evidence records the eligible Task ID, reason, and local validation evidence
 no existing CI check is failing
+failed-check waiver = NOT USED
 ```
 
 CI check đang fail không bao giờ được waive bằng `PRE_CI_BOOTSTRAP_NA`. `NOT_APPLICABLE` không được dùng thay cho ngoại lệ bootstrap này.
 
-`CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` cho final gate. Pipeline CI thực tế do task này tạo ra phải `PASS` trên PR `CI-FND-001` trước khi task chuyển `DONE`.
+Task grandfathered tiếp tục dùng PR-level evidence theo workflow lịch sử. Với task direct-main bắt đầu sau effective point của `GOV-009`, repository-level evidence thay PR-level evidence và phải ghi Task ID, dependency/acceptance/tests/reviewer/finding/audit/build-static-git state, xác nhận không có known failing CI check, `failed-check waiver = NOT USED`, và lý do `CI-FND-001` chưa effective. Danh sách eligible task ở trên không thay đổi.
 
-Ngay sau khi `CI-FND-001` `DONE` và được merge vào `main`, ngoại lệ tự động hết hiệu lực. Từ thời điểm đó, mọi executable task tiếp theo phải có `CI PASS` thực tế trước `DONE`/merge. Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+`CI-FND-001` không được dùng `PRE_CI_BOOTSTRAP_NA` hoặc `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`. Task này là ngoại lệ hai commit: sau PLAN/IMPLEMENT/TEST/REVIEW vẫn giữ `IN_PROGRESS`; bootstrap implementation commit được push lên `main`; actual CI phải `PASS`; sau đó mới chuyển `DONE` và tạo closure commit nhỏ.
+
+Ngay sau khi `CI-FND-001` `DONE` và effective trên `main`, ngoại lệ tự động hết hiệu lực. Legacy/grandfathered tasks tiếp tục yêu cầu actual CI PASS trước `DONE` theo workflow gốc. Với direct-main task mới, các pre-publish gates quyết định `DONE`; actual remote CI chạy sau push như repository-health gate, không phải pre-`DONE` task gate. Gate thoát M1 luôn yêu cầu `CI PASS` thực tế.
+
+## 59.2. GOV-009 Simplified Main-Branch Task Workflow
+
+### Governance precedence and effective point
+
+`PROJECT_RULES.md` remains the highest-priority project workflow truth. Historical rules and evidence remain historical; `GOV-009` supersedes branch/PR requirements only for tasks started after its effective point. `GOV-008` remains valid except that new direct-main PRE_CI tasks use repository-level evidence as defined in Section 59.1. Immutable baseline-tag rules and all product/API/database contracts remain unchanged.
+
+`GOV-009` is a one-time transition explicitly authorized by the repository owner and intentionally implemented directly on `main`. The new workflow is not effective while its changes are merely uncommitted.
+
+The only closure mode allowed for this transition is `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION`. It applies only to `GOV-009`; it is neither `PRE_CI_BOOTSTRAP_NA` nor `CI PASS`; it does not change the PRE_CI eligible task list; it cannot be reused by another task; it expires permanently when the GOV-009 commit is pushed to `main`; and it cannot waive an existing failing CI check. `GOV-009` may transition `IN_PROGRESS → DONE` only when all of the following pass:
+
+```text
+repository-owner authorization = CONFIRMED
+Architecture Reviewer = PASS
+QA Reviewer = PASS
+unresolved findings = NONE
+acceptance/governance consistency validation = PASS
+baseline_audit = PASS
+py_compile = PASS
+git diff --check = PASS
+scope/secret/generated-file checks = PASS
+baseline tag integrity = PASS
+existing failing CI check = NONE
+```
+
+Its official effective point then requires all of:
+
+```text
+Architecture Reviewer PASS
+QA Reviewer PASS
+unresolved findings = NONE
+GOV-009 status = DONE
+GOV-009 commit successfully pushed to main
+```
+
+Until that push succeeds, no normal product task may start under the new workflow. Installed Codex skill migration is pending and must occur in a separate phase after this effective point.
+
+### New default lifecycle and workflow
+
+For tasks started after the effective point:
+
+```text
+TODO → IN_PROGRESS → DONE
+
+PLAN → IMPLEMENT → TEST → REVIEW → DONE
+     → ONE FINAL COMMIT ON MAIN → PUSH MAIN
+```
+
+`BLOCKED` may be used from `IN_PROGRESS` only for an actual blocker. `READY` and `IN_REVIEW` remain supported historical/legacy states but are not required for new tasks. Only one direct-main task may be active at a time; a parked grandfathered task on an old branch does not count.
+
+### Authoritative direct-main admission and CI-mode state machine
+
+Every task started after the GOV-009 effective point must pass admission before entering PLAN or transitioning `TODO → IN_PROGRESS`. Common admission always requires: current branch = `main`; clean worktree; local `main == origin/main`; no Git operation in progress; no other post-GOV-009 direct-main task active; task = `TODO`; dependencies = `DONE`; repository health is not `BLOCKED`; and canonical sources, acceptance, scope/out-of-scope, and reviewer mapping are identified. Merely identifying a CI mode is insufficient—the mode must be valid for that exact task.
+
+| Time / task class | CI mode | Admission |
+|---|---|---|
+| Before `CI-FND-001` effective: explicitly PRE_CI-eligible task | `PRE_CI_BOOTSTRAP_NA` | Allowed only when every common and PRE_CI admission gate is satisfied and the Task ID is positively present in the approved eligible list. |
+| Before `CI-FND-001` effective: `CI-FND-001` | `ACTUAL_CI_BOOTSTRAP` | Allowed under its documented special bootstrap flow. |
+| Before `CI-FND-001` effective: non-eligible ordinary task | `INVALID_BEFORE_CI` | `ADMISSION = BLOCKED`; wait until `CI-FND-001` is effective. `NOT_APPLICABLE` and PRE_CI inference are prohibited. |
+| `GOV-009` transition only | `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` | One-time transition closure mode only; not reusable as later-task admission. |
+| After `CI-FND-001` effective: ordinary new task | `ACTUAL_CI_REPOSITORY_HEALTH` | Allowed only when every common gate passes and repository health = `HEALTHY`. |
+
+After `CI-FND-001` is effective, repository/main CI health has exactly these workflow states:
+
+```text
+HEALTHY    = latest required remote CI for current origin/main PASS
+CI_PENDING = required remote CI for current origin/main exists/is expected but is incomplete
+BLOCKED    = required remote CI for current origin/main FAIL, or another explicit published-main failure
+```
+
+`CI_PENDING` and repository health `BLOCKED` both prohibit PLAN and `TODO → IN_PROGRESS`. A repository-health `BLOCKED` state is distinct from task lifecycle `BLOCKED`, which remains available only for an `IN_PROGRESS` task with an actual task-level blocker. A repository failure never rewrites an already-`DONE` task to `BLOCKED`.
+
+After every normal direct-main push once `CI-FND-001` is effective, repository health immediately becomes `CI_PENDING`. Remote CI PASS changes it to `HEALTHY`; remote CI FAIL changes it to `BLOCKED`. Another task cannot start while the latest `origin/main` CI is pending or failing.
+
+### Published-main recovery state machine
+
+`PUBLISHED_MAIN_RECOVERY` is a separate emergency operational state machine, not an executable backlog task and not normal PLAN admission. It exists only after required remote CI fails for an already-published direct-main commit. The originating task remains `DONE`; its previously satisfied pre-publish gates and reviewer history are preserved. A recovery incident must distinguish all three dimensions:
+
+```text
+TASK STATUS                    = DONE
+REPOSITORY HEALTH              = BLOCKED
+PUBLISHED_MAIN_RECOVERY STATUS = OPEN
+```
+
+Recovery states are `OPEN`, `VALIDATING`, `CI_PENDING`, `CLOSED`, with optional `BLOCKED` only when recovery itself cannot proceed. These states must never be written into the normal task lifecycle.
+
+Normal PLAN admission remains prohibited while repository health is `BLOCKED` or `CI_PENDING`. The only exception is that `PUBLISHED_MAIN_RECOVERY` may begin when `BLOCKED` was caused by required remote CI failure on a published direct-main commit. This is recovery of the existing published incident, not admission of a new task; no unrelated task or `TODO → IN_PROGRESS` transition is allowed while recovery is open. Neither `OWNER_AUTHORIZED_GOVERNANCE_TRANSITION` nor `PRE_CI_BOOTSTRAP_NA` is a recovery mechanism.
+
+Every recovery incident is traceable to:
+
+```text
+originating Task ID
+failing origin/main commit SHA
+failing CI run/check identity when available
+failure summary
+strategy = FIX_FORWARD | REVERT
+recovery commit SHA after publication
+affected TEST gates
+affected reviewer gates
+unresolved recovery findings
+final remote CI result
+```
+
+The recovery flow is authoritative:
+
+1. Required CI failure sets repository health `BLOCKED`; record the incident and set `PUBLISHED_MAIN_RECOVERY = OPEN`.
+2. Select exactly `FIX_FORWARD` or `REVERT`; modify only what is necessary to recover the failure. Unrelated refactors, later-task work, feature expansion, V2/V3 scope and opportunistic cleanup are prohibited.
+3. Set recovery `VALIDATING`; rerun every affected TEST gate, including at minimum the failed CI-equivalent check, applicable Maven/build/tests and integration/runtime validation, `baseline_audit`, applicable py_compile, `git diff --check`, secret/generated-file audit, scope audit and baseline-tag integrity.
+4. Rerun only independent reviewers whose prior domain gate can be affected by the recovery diff. Database recovery requires DBR/QAR and AR when architecture is affected; security recovery requires SR/QAR and AR when architecture is affected; a build-only typo with no architecture/database/security impact may require only QAR when governance mapping permits. All required affected reviewer gates must PASS and unresolved recovery findings must be `NONE`; historical reviewer PASS/FAIL evidence remains intact.
+5. Create a recovery commit directly on `main`, using the originating Task ID: `fix(<TASK-ID>): recover published main after CI failure` or `revert(<TASK-ID>): revert failing published change`. Push `main` fast-forward only.
+6. Successful recovery push sets repository health and recovery status to `CI_PENDING`. Required remote CI runs for the recovery commit.
+7. PASS sets repository health `HEALTHY` and recovery `CLOSED`; only then may normal PLAN admission resume. FAIL sets repository health `BLOCKED` and recovery `OPEN`; continue the same originating Task ID and incident chronology, without admitting unrelated work.
+
+The recovery commit is a narrow exception to `ONE TASK = ONE FINAL COMMIT`, allowed only after an actual published-main CI failure. The only commit-count exceptions are the `CI-FND-001` bootstrap flow and this published-main recovery flow. Recovery must never bypass normal pre-publish completion gates.
+
+`FIX_FORWARD` is preferred when the defect is small and safely recoverable. `REVERT` is also permitted, but never replace it with reset, rebase, force-push or history rewrite. A revert preserves the failing commit as Git evidence and references both the originating Task ID and failing commit. If the revert removes the capability delivered by the original task, record that acceptance is no longer present and the explicit planning consequence; any future replacement task may be created and admitted only after repository health returns `HEALTHY`.
+
+During the `CI-FND-001` bootstrap, a bootstrap CI failure keeps `CI-FND-001` `IN_PROGRESS`; repository health becomes `BLOCKED`, and additional minimal bootstrap/fix commits may be made within that same task until actual CI PASS. This does not reopen a `DONE` task and does not use general `PUBLISHED_MAIN_RECOVERY`. After `CI-FND-001` becomes effective, any later published-main CI failure—including failure of its closure commit—uses `PUBLISHED_MAIN_RECOVERY`; `PRE_CI_BOOTSTRAP_NA` remains permanently expired.
+
+`CI-FND-001` becomes effective only after its bootstrap implementation flow has produced mandatory actual remote CI PASS, the task has transitioned `IN_PROGRESS → DONE`, and its closure commit has been pushed successfully to `origin/main`. At that instant `PRE_CI_BOOTSTRAP_NA` expires permanently and can never reactivate. If CI for the closure commit/latest `origin/main` remains incomplete, PRE_CI stays expired and repository health = `CI_PENDING`; if it fails, PRE_CI stays expired and repository health = `BLOCKED` until fix-forward/revert remediation reaches remote CI PASS.
+
+PLAN requires all applicable common admission conditions and the exact valid CI mode above. It performs `TODO → IN_PROGRESS`; it creates no branch and performs no commit/push.
+
+IMPLEMENT changes only the current task, adds/updates applicable tests and documentation, preserves canonical contracts, keeps `IN_PROGRESS`, and performs no commit/push. TEST runs applicable build/unit/integration/runtime, PostgreSQL/Flyway, API/OpenAPI, baseline audit, py_compile, Git/diff/whitespace, secret/generated-output, scope-creep and tag-integrity gates. A failure returns to remediation and TEST.
+
+REVIEW is independent and impact-based. Reviewers remain strictly read-only and inspect tracked plus untracked current-task files in the uncommitted `main` worktree; they must not require a branch or PR. Every FAIL/finding/remediation/re-review remains in chronological evidence. The task stays `IN_PROGRESS` until all required reviewers PASS and unresolved findings = `NONE`.
+
+FINALIZE synchronizes evidence, CI mode and milestone progress, preserves historical findings/snapshots, then performs `IN_PROGRESS → DONE`. Finalization does not commit or push. Normal policy is `ONE TASK = ONE FINAL COMMIT`.
+
+### Direct-main commit safety
+
+A normal task may be committed directly to `main` only when task = `DONE`, dependency and current-task scope gates PASS, applicable TEST gates PASS, all required reviewers PASS, unresolved findings = `NONE`, baseline audit and `git diff --check` PASS, secret/generated-file audit PASS, and baseline tag integrity PASS. Then commit on `main` and push `origin main`.
+
+Never force-push `main`, rebase published `main`, use `reset --hard` or destructive clean as normal remediation, rewrite published history, mutate baseline tags, commit unresolved findings/known failing tests, or combine unrelated tasks. A defective published commit must be fixed forward or reverted.
+
+### Grandfathered tasks
+
+Tasks and PRs started before the effective point retain their original workflow. `BE-FND-003` / PR #5 is explicitly grandfathered: its existing OPEN PR and branch remain valid; lifecycle/status and AR/SR/QAR evidence remain unchanged; actual CI remains required; `PRE_CI_BOOTSTRAP_NA` remains not eligible; and it must not be cherry-picked to `main` solely because `GOV-009` exists. It completes later through the legacy branch/PR workflow. Completed historical task/PR evidence is not rewritten.
+
+### Post-CI direct-main behavior
+
+After `CI-FND-001` becomes effective, normal tasks follow PLAN → IMPLEMENT → TEST → REVIEW → DONE → COMMIT → PUSH → actual remote CI repository-health verification. Because direct-main has no pre-merge remote execution point, remote CI occurs after push and is not a pre-`DONE` task gate.
+
+If remote CI PASSes, repository/main health = `HEALTHY` and no task lifecycle change is required. If remote CI FAILs, repository/main health = `BLOCKED`; the already-`DONE` task is not rewritten to `BLOCKED`; no new task may start; the failure may never be waived; fix-forward or revert must begin immediately; affected TEST/reviewer gates must rerun; remediation must be pushed; and repository/main remains `BLOCKED` until remote CI PASSes. Never force-push or rewrite published history.
 
 ---
 

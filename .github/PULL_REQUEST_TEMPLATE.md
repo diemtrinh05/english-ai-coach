@@ -1,5 +1,14 @@
 # Pull Request
 
+> Applicability: this template remains mandatory for legacy/grandfathered tasks
+> and for any future task that explicitly requires a PR. Post-`GOV-009`
+> direct-main tasks use equivalent repository-level task evidence and do not
+> require a PR by default.
+>
+> `PUBLISHED_MAIN_RECOVERY` for failed direct-main CI is also repository-level
+> evidence, not a new PR/task admission. Legacy/grandfathered recovery continues
+> to follow its original PR workflow.
+
 ## Task
 
 - Backlog ID:
@@ -23,7 +32,9 @@ If `PRE_CI_BOOTSTRAP_NA` is selected:
 - Local validation evidence:
 - [ ] Confirmed that no existing CI check is failing.
 
-`PRE_CI_BOOTSTRAP_NA` is valid only for the explicit eligible task list and conditions in the active governance documents, and only before `CI-FND-001` is `DONE` and merged into `main`. A failing CI check can never be waived. `CI-FND-001` cannot use `PRE_CI_BOOTSTRAP_NA` for its final gate.
+This CI/PRE_CI section is LEGACY / GRANDFATHERED PR evidence where applicable. `PRE_CI_BOOTSTRAP_NA` is valid only for the explicit eligible task list and active governance conditions, and only before `CI-FND-001` becomes effective: mandatory actual remote CI PASS on its bootstrap flow, task status `DONE`, and successful closure-commit push to `origin/main`. At that instant PRE_CI expires permanently and never reactivates, even if latest-main CI is pending or failing. A failing CI check can never be waived. `CI-FND-001` cannot use `PRE_CI_BOOTSTRAP_NA` for its final gate.
+
+For a new post-`GOV-009` direct-main task, the same fields are recorded as repository-level evidence instead of PR-level evidence. Grandfathered tasks continue using this PR evidence.
 
 If `NOT_APPLICABLE` is selected, explain why the CI gate genuinely does not apply. `NOT_APPLICABLE` must not be used as a substitute for `PRE_CI_BOOTSTRAP_NA`.
 

@@ -1,0 +1,65 @@
+name: Required CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: required-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  required:
+    name: Required CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install audit dependencies
+        run: python -m pip install --disable-pip-version-check --requirement requirements-dev.txt
+
+      - name: Baseline audit
+        run: python tools/baseline_audit.py
+
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Build and static checks
+        run: |
+          python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py tools/test_ci_workflow_audit.py
+          python -m unittest tools.test_ci_workflow_audit
+          python tools/ci_workflow_audit.py
+          sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml clean test-compile -DskipTests
+
+      - name: Unit tests
+        run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -Dtest='!*IntegrationTests,!OpenApiContractHarnessTests' test
+
+      - name: PostgreSQL integration tests
+        run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -Dtest='*IntegrationTests' test
+
+      - name: OpenAPI contract tests
+        run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -Dtest=OpenApiContractHarnessTests test
+
+      - name: Package
+        run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -DskipTests package
