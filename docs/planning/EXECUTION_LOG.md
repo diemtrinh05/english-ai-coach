@@ -337,7 +337,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 12 |    29 |              41.4% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 13 |    29 |              44.8% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -3373,4 +3373,85 @@ Post-finalize state before Git closure publication:
   commit and pushes origin/main. At successful push, CI-FND-001 becomes effective
   and PRE_CI expires permanently; the closure/latest-main CI then determines
   repository health as CI_PENDING → HEALTHY or BLOCKED.
+```
+
+## BE-FND-003 — FINALIZE after legacy PR CI PASS — 2026-09-13
+
+```text
+Command boundary: finalize
+Workflow mode: LEGACY_GRANDFATHERED
+CI mode: LEGACY_ACTUAL_CI
+
+Task and dependency state:
+- BE-FND-003 owner/priority: CBL / P0.
+- Dependency: BE-FND-001 DONE.
+- Required reviewers: AR, SR, QAR.
+- Final reviewer gates from preserved independent evidence: AR=PASS; SR=PASS;
+  QAR=PASS.
+- QA-BE-FND-003-001: RESOLVED.
+- QA-BE-FND-003-002: RESOLVED.
+- Unresolved findings: NONE.
+- Historical QA FAIL, finding, remediation and re-review chronology: PRESERVED.
+
+Legacy branch and Pull Request evidence:
+- Branch: feat/BE-FND-003-application-profiles-config.
+- Pull Request: #5; state OPEN; draft false; base main.
+- PR head SHA: cb79d1ebf99744a620e085d9939b776b85b3e67a.
+- Local HEAD and origin branch matched the PR head before closure changes.
+- PR mergeability at finalization: mergeable true; mergeable state clean.
+- The semantic origin/main synchronization merge is complete; no Git operation
+  remains in progress.
+
+Remediation and local TEST evidence on the exact PR head:
+- ConfigurationPropertiesTests uses an isolated ApplicationContextRunner with
+  ConfigDataApplicationContextInitializer and a minimal @TestConfiguration /
+  @EnableConfigurationProperties boundary for the six BE-FND-003 property
+  records; datasource, Flyway and Hibernate/JPA are not bootstrapped.
+- Focused ConfigurationPropertiesTests: PASS — 4/4.
+- Maven clean verify: PASS — 49/49; failures 0; errors 0; skipped 0.
+- PostgreSQL integration selector: PASS — 3/3 on PostgreSQL/Testcontainers;
+  production datasource behavior and integration coverage remain unchanged.
+- OpenAPI contract selector: PASS — 11/11.
+- CI workflow audit: PASS; audit regression tests: PASS — 11/11.
+- baseline_audit, py_compile, git diff, conflict-marker, scope,
+  secret/private-key, generated-file and baseline-tag integrity gates: PASS.
+- Production/API/OpenAPI/database/Flyway/client changes in the isolation
+  remediation: NONE.
+
+Actual CI evidence:
+- GitHub Actions workflow: Required CI.
+- Run ID: 34747195022.
+- Event: pull_request.
+- Run status/conclusion: completed / success.
+- Run URL: https://github.com/diemtrinh05/english-ai-coach/actions/runs/34747195022
+- Required CI check: completed / success for exact PR head SHA
+  cb79d1ebf99744a620e085d9939b776b85b3e67a.
+- Actual remote CI: PASS; no waiver or PRE_CI substitution used.
+
+Acceptance and closure state:
+- BE-FND-003 acceptance semantics and canonical profile/property values:
+  PRESERVED and satisfied.
+- CI-FND-001: DONE and effective on origin/main; PRE_CI is permanently expired.
+- PRE_CI_BOOTSTRAP_NA: NOT ELIGIBLE and NOT USED.
+- BE-FND-003 transition: IN_REVIEW → DONE.
+- M1 execution progress: 13 / 29 (44.8%); milestone remains IN_PROGRESS.
+- PR #5 remains OPEN under the preserved legacy workflow.
+
+Finalization validation after lifecycle/evidence update:
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py
+  tools/test_ci_workflow_audit.py: PASS.
+- git diff --check and conflict-marker scan: PASS.
+- Scope audit: PASS — only docs/planning/MASTER_BACKLOG.md and
+  docs/planning/EXECUTION_LOG.md changed for closure.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; findings 0.
+- Baseline-tag integrity: PASS; both local baseline tags match origin.
+
+- Commit/push/merge/tag mutation by Backend Task finalize: NONE.
+- Required next boundary: Git workflow records this lifecycle/evidence closure
+  in the existing legacy branch and pushes it, then completes PR #5 according
+  to the preserved legacy merge workflow.
 ```
