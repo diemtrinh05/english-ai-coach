@@ -337,7 +337,7 @@ If a proposed decision would change an approved contract, do not record it as an
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 12 |    29 |              41.4% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 13 |    29 |              44.8% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -634,6 +634,210 @@ QA Reviewer: PASS — findings none
 PR #4 PRE_CI_BOOTSTRAP_NA evidence: PASS
 Existing failing CI check: NONE
 Unresolved blockers: NONE
+```
+
+### BE-FND-003 — Thiết lập application profiles và typed configuration
+
+- Status: IN_REVIEW
+- Status history: TODO → READY → IN_PROGRESS → IN_REVIEW → BLOCKED → IN_REVIEW
+- Branch: `feat/BE-FND-003-application-profiles-config`
+- Baseline provenance: `baseline-v1-implementation-ready-r1` (`34362780eb7ffeb9391ade95220cf895a4592f70`)
+- Dependencies: `BE-FND-001` DONE
+- Priority: P0
+- Required reviewers: Architecture Reviewer, Security Reviewer, QA Reviewer
+- Acceptance: `application.yml/local/test/prod`; typed properties cho assessment/SRS/personalization/gamification/notification/idempotency; default constants khớp baseline.
+- Required tests: Theo global DoD + acceptance
+- Source documents checked: SRS v1.2; System Architecture v1.3; AI Personalization v1.3; Technical Specification v1.2; Backend Technical Specification v1.3
+- Blockers: actual CI PASS pending; BE-FND-003 is not eligible for `PRE_CI_BOOTSTRAP_NA`
+- Contract changes: None
+- Started at: 2026-09-02
+- Ready for review: 2026-09-02
+- Current reviewer state: AR=PASS; SR=PASS; QAR=PASS
+
+Historical QA finding:
+
+```text
+Reviewer: QA Reviewer
+Result: FAIL
+Finding ID: QA-BE-FND-003-001
+Severity: HIGH
+Blocking: YES
+Finding: maximum-decrease-percent represented the canonical maximum workload decrease
+as signed -30 instead of the approved positive magnitude 30.
+Required action: change only maximum-decrease-percent to 30 and update its focused test;
+preserve low-change-percent = -20 because it is a signed raw change.
+Finding status: RESOLVED
+```
+
+Focused remediation for `QA-BE-FND-003-001`:
+
+```text
+Changed only app.personalization.workload.maximum-decrease-percent from -30 to 30
+so the maximum decrease is represented as the approved positive magnitude.
+Updated only the corresponding maximumDecreasePercent test expectation from -30 to 30.
+Preserved app.personalization.workload.low-change-percent = -20 and its test expectation
+because lowChangePercent is the signed raw change applied in the low-performance branch.
+Focused ConfigurationPropertiesTests: PASS — 4 tests, 0 failures, 0 errors, 0 skipped.
+No other configuration value, typed field, behavior, dependency, or contract changed.
+QA-BE-FND-003-001 current status is RESOLVED; its original QA result FAIL remains
+preserved in the historical finding above.
+```
+
+Historical QA re-review finding:
+
+```text
+Finding ID: QA-BE-FND-003-002
+Reviewer: QA Reviewer
+Result: FAIL
+Severity: MEDIUM
+Blocking: YES
+Finding: historical metadata for QA-BE-FND-003-001 did not preserve its original
+Severity: HIGH, Blocking: YES, and current status RESOLVED.
+Required action: restore that metadata exactly without changing product code,
+configuration values, tests, reviewer results, or unrelated planning history.
+Remediation: restored Severity: HIGH, added Blocking: YES, and restored Finding status:
+RESOLVED for QA-BE-FND-003-001 while preserving its historical Result: FAIL.
+Finding status: RESOLVED
+Governance validation: baseline_audit PASS; py_compile PASS; git diff --check PASS;
+git status, diff stat, and full execution-log diff inspected.
+```
+
+Independent reviewer results:
+
+```text
+Reviewer: Architecture Reviewer
+Result: PASS
+Findings: none
+
+Reviewer: Security Reviewer
+Result: PASS
+Findings: none
+
+Reviewer: QA Reviewer
+Final re-review result: PASS
+QA-BE-FND-003-001: RESOLVED
+QA-BE-FND-003-002: RESOLVED
+Historical chain preserved: initial QA FAIL → QA-BE-FND-003-001 → remediation
+→ QA re-review FAIL → QA-BE-FND-003-002 → remediation → final QA re-review PASS.
+Final reviewer gates: AR=PASS; SR=PASS; QAR=PASS
+Unresolved reviewer findings: NONE
+```
+
+CI gate state:
+
+```text
+CI status: PENDING — actual CI PASS required before DONE
+PRE_CI_BOOTSTRAP_NA eligibility: NO — BE-FND-003 is not in the exact eligible task list
+PRE_CI_BOOTSTRAP_NA usage: NOT USED
+Closure blocker: actual CI PASS evidence is still pending
+Task status: IN_REVIEW
+```
+
+Implementation plan:
+
+```text
+Add application.yml plus local/test/prod profile resources without credentials.
+Add immutable typed configuration records for Assessment, SRS, Personalization,
+Gamification, Notification, and Idempotency under app.* prefixes.
+Bind canonical Reconciled V1 constants and verify them through Spring context tests.
+Do not implement algorithms, schedulers, persistence, providers, security controls,
+Clock abstraction, API endpoints, or secrets/env conventions owned by later tasks.
+```
+
+Non-contract decisions:
+
+```text
+Use immutable Java records with @ConfigurationProperties and centralized
+@ConfigurationPropertiesScan. Prefixes follow the task domains:
+app.assessment, app.srs, app.personalization, app.gamification,
+app.notification, app.idempotency.
+Profile-specific files only activate their named profile; all canonical defaults live
+in application.yml so local/test/prod inherit one source and cannot drift.
+```
+
+Implementation evidence:
+
+```text
+Added application.yml as the single source for approved baseline defaults and added
+application-local.yml, application-test.yml, and application-prod.yml with explicit
+profile activation only.
+Added immutable typed configuration records for assessment, SRS, personalization,
+gamification, notification, and idempotency under their documented app.* prefixes.
+Enabled centralized typed-property discovery through @ConfigurationPropertiesScan.
+Added ConfigurationPropertiesTests to load the test profile, verify all four profile
+resources, reject embedded sensitive property names, and assert every configured
+algorithm identifier, threshold, weight, duration, allocation, notification time,
+XP value, and idempotency retention value against the approved baseline.
+Added one narrow .gitignore exception for the repository-safe
+backend/src/main/resources/application-local.yml required by acceptance; the broader
+machine-local Spring configuration ignore rules remain in force.
+No dependency or pom.xml change was required.
+```
+
+Implementation-side validation evidence:
+
+```text
+.\backend\mvnw.cmd -f backend\pom.xml clean verify
+→ BUILD SUCCESS
+→ Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+→ Spring context smoke tests: PASS
+→ Typed configuration/profile tests: PASS (4 tests)
+→ Modular package structure tests: PASS (2 tests)
+→ Executable Spring Boot JAR packaging: PASS
+
+Profile resource safety check
+→ application.yml/local/test/prod contain no password, secret, API/access/private key,
+  client secret, or token property
+
+python tools/baseline_audit.py
+→ BASELINE AUDIT: PASS
+
+python -m py_compile tools/baseline_audit.py
+→ PASS
+
+git diff --check
+→ PASS
+
+git status --short --untracked-files=all, git diff --stat, and git diff
+→ INSPECTED
+
+Scope and provenance checks
+→ PASS; no tracked target output, secret, dependency, contract, database/Flyway,
+  security behavior, later-task implementation, branch, HEAD, or baseline tag mutation
+```
+
+Acceptance state:
+
+```text
+application.yml/local/test/prod: SATISFIED
+Typed assessment properties: SATISFIED
+Typed SRS properties: SATISFIED
+Typed personalization properties: SATISFIED
+Typed gamification properties: SATISFIED
+Typed notification properties: SATISFIED
+Typed idempotency properties: SATISFIED
+Configured default constants match approved baseline: SATISFIED by focused binding tests
+Dependency BE-FND-001: DONE
+Implementation-side blockers: NONE
+Reviewer gates: AR=PASS; SR=PASS; QAR=PASS
+Task status: IN_REVIEW pending actual CI PASS
+```
+
+Change impact:
+
+```text
+Change: Add Spring application profiles, canonical typed configuration, and focused tests.
+Why: Satisfy the approved BE-FND-003 acceptance criteria.
+Affected documents: MASTER_BACKLOG.md and EXECUTION_LOG.md lifecycle/evidence only.
+Affected API/OpenAPI: None.
+Affected database/Flyway: None.
+Affected security behavior: None; no credential or secret convention implemented.
+Affected business behavior: None; algorithms remain unimplemented and only approved
+configuration values are exposed as typed inputs for later tasks.
+Affected clients: None.
+Migration: None.
+Tests: Build/context smoke, profile loading, typed binding/defaults, and secret-name scan.
+Backward compatibility: Preserved; no existing contract or dependency changed.
 ```
 
 ### DB-FND-001 — Dựng PostgreSQL local + Docker Compose
@@ -3169,4 +3373,85 @@ Post-finalize state before Git closure publication:
   commit and pushes origin/main. At successful push, CI-FND-001 becomes effective
   and PRE_CI expires permanently; the closure/latest-main CI then determines
   repository health as CI_PENDING → HEALTHY or BLOCKED.
+```
+
+## BE-FND-003 — FINALIZE after legacy PR CI PASS — 2026-09-13
+
+```text
+Command boundary: finalize
+Workflow mode: LEGACY_GRANDFATHERED
+CI mode: LEGACY_ACTUAL_CI
+
+Task and dependency state:
+- BE-FND-003 owner/priority: CBL / P0.
+- Dependency: BE-FND-001 DONE.
+- Required reviewers: AR, SR, QAR.
+- Final reviewer gates from preserved independent evidence: AR=PASS; SR=PASS;
+  QAR=PASS.
+- QA-BE-FND-003-001: RESOLVED.
+- QA-BE-FND-003-002: RESOLVED.
+- Unresolved findings: NONE.
+- Historical QA FAIL, finding, remediation and re-review chronology: PRESERVED.
+
+Legacy branch and Pull Request evidence:
+- Branch: feat/BE-FND-003-application-profiles-config.
+- Pull Request: #5; state OPEN; draft false; base main.
+- PR head SHA: cb79d1ebf99744a620e085d9939b776b85b3e67a.
+- Local HEAD and origin branch matched the PR head before closure changes.
+- PR mergeability at finalization: mergeable true; mergeable state clean.
+- The semantic origin/main synchronization merge is complete; no Git operation
+  remains in progress.
+
+Remediation and local TEST evidence on the exact PR head:
+- ConfigurationPropertiesTests uses an isolated ApplicationContextRunner with
+  ConfigDataApplicationContextInitializer and a minimal @TestConfiguration /
+  @EnableConfigurationProperties boundary for the six BE-FND-003 property
+  records; datasource, Flyway and Hibernate/JPA are not bootstrapped.
+- Focused ConfigurationPropertiesTests: PASS — 4/4.
+- Maven clean verify: PASS — 49/49; failures 0; errors 0; skipped 0.
+- PostgreSQL integration selector: PASS — 3/3 on PostgreSQL/Testcontainers;
+  production datasource behavior and integration coverage remain unchanged.
+- OpenAPI contract selector: PASS — 11/11.
+- CI workflow audit: PASS; audit regression tests: PASS — 11/11.
+- baseline_audit, py_compile, git diff, conflict-marker, scope,
+  secret/private-key, generated-file and baseline-tag integrity gates: PASS.
+- Production/API/OpenAPI/database/Flyway/client changes in the isolation
+  remediation: NONE.
+
+Actual CI evidence:
+- GitHub Actions workflow: Required CI.
+- Run ID: 34747195022.
+- Event: pull_request.
+- Run status/conclusion: completed / success.
+- Run URL: https://github.com/diemtrinh05/english-ai-coach/actions/runs/34747195022
+- Required CI check: completed / success for exact PR head SHA
+  cb79d1ebf99744a620e085d9939b776b85b3e67a.
+- Actual remote CI: PASS; no waiver or PRE_CI substitution used.
+
+Acceptance and closure state:
+- BE-FND-003 acceptance semantics and canonical profile/property values:
+  PRESERVED and satisfied.
+- CI-FND-001: DONE and effective on origin/main; PRE_CI is permanently expired.
+- PRE_CI_BOOTSTRAP_NA: NOT ELIGIBLE and NOT USED.
+- BE-FND-003 transition: IN_REVIEW → DONE.
+- M1 execution progress: 13 / 29 (44.8%); milestone remains IN_PROGRESS.
+- PR #5 remains OPEN under the preserved legacy workflow.
+
+Finalization validation after lifecycle/evidence update:
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py
+  tools/test_ci_workflow_audit.py: PASS.
+- git diff --check and conflict-marker scan: PASS.
+- Scope audit: PASS — only docs/planning/MASTER_BACKLOG.md and
+  docs/planning/EXECUTION_LOG.md changed for closure.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; findings 0.
+- Baseline-tag integrity: PASS; both local baseline tags match origin.
+
+- Commit/push/merge/tag mutation by Backend Task finalize: NONE.
+- Required next boundary: Git workflow records this lifecycle/evidence closure
+  in the existing legacy branch and pushes it, then completes PR #5 according
+  to the preserved legacy merge workflow.
 ```

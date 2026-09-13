@@ -1,0 +1,5 @@
+# Profile prod dành chỗ cho override được phê duyệt; hiện không thay đổi default baseline.
+spring:
+  config:
+    activate:
+      on-profile: prod
