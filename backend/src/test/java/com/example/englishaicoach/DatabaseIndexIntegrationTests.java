@@ -237,12 +237,9 @@ class DatabaseIndexIntegrationTests extends PostgreSqlIntegrationTestSupport {
     }
 
     private UUID insertCefrLevel() {
-        UUID cefrLevelId = UUID.randomUUID();
-        jdbc().update("""
-                INSERT INTO cefr_levels (id, code, name, sort_order)
-                VALUES (?, 'A1', 'A1', 1)
-                """, cefrLevelId);
-        return cefrLevelId;
+        return jdbc().queryForObject(
+                "SELECT id FROM cefr_levels WHERE code = 'A1'",
+                UUID.class);
     }
 
     private void insertAssessment(UUID userId, UUID cefrLevelId, String status) {

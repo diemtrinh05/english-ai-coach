@@ -337,13 +337,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | DB-FND-003 | QA Reviewer | FAIL | `QA-DB-FND-003-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Behavioral coverage was incomplete for `REVIEW_REMINDER`, `DAILY_PLAN`, `STREAK` and allowed-side partial-index boundaries; focused remediation and independent QA re-review required. |
 | 2026-09-13 | DB-FND-003 | QA Reviewer | PASS | Independent focused QA re-review confirmed `QA-DB-FND-003-001` RESOLVED; focused 10/10, full 59/59 and fresh Flyway V1 → V2 PostgreSQL validation PASS; new findings/regressions: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
 | 2026-09-13 | DB-FND-003 | Database Reviewer | PASS | Independent post-remediation Database review reconfirmed the complete canonical predicates and allowed-side boundaries, append-only migration integrity, PostgreSQL 16.15 validation and no Database findings; DBR=PASS. This review did not resolve or claim the QA finding independently. |
+| 2026-09-15 | DB-FND-004 | Database Reviewer | PASS | Independent Database review verified append-only V3, canonical 6 CEFR/7 goals/5 badges, natural-key upsert repeatability, fresh PostgreSQL V1 → V2 → V3 migration and Hibernate validation; Database findings: NONE; DBR=PASS. |
+| 2026-09-15 | DB-FND-004 | QA Reviewer | PASS | Independent QA review verified all acceptance criteria, focused PostgreSQL 15/15, full Maven 64/64, fresh Flyway V1 → V2 → V3, audit gates and scope boundaries; QA findings: NONE; QAR=PASS. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 14 |    29 |              48.3% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 15 |    29 |              51.7% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -3745,6 +3747,230 @@ Contract/scope impact:
 Git/publication stop state:
 - Branch: main; HEAD and origin/main remain
   b7872194f8cfcf526ba322d284773ccc65a1e87d.
+- Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED;
+  direct-main remote CI is the post-push repository-health gate.
+- Commit/push/merge/tag mutation: NONE.
+- Next step: create the one final task-scoped commit, then fast-forward push
+  main through the separate Git workflow.
+```
+
+## DB-FND-004 — PLAN / admission — 2026-09-15
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main.
+- Worktree before PLAN: clean.
+- HEAD == main == origin/main == remote refs/heads/main:
+  da1012a262fbb7216e4e4b67a6a74e40d82a60e5.
+- Git operation in progress: NONE.
+- Other active direct-main task: NONE.
+- DB-FND-004 owner/priority/status: CBL / P0 / TODO.
+- Dependency DB-FND-002: DONE.
+- DB-FND-003 publication is present on origin/main.
+- Required reviewers: Database Reviewer, QA Reviewer.
+- CI-FND-001: DONE and effective; PRE_CI permanently expired.
+- Live Required CI run 34760502799 for exact origin/main SHA da1012a...:
+  completed / success.
+- Repository health: HEALTHY.
+
+Canonical sources and decisions:
+- Database Schema v1.6 defines six CEFR codes A1..C2, seven onboarding goals
+  and the reference-data table shapes.
+- SRS v1.2 defines the five canonical badges and the PERFECT_QUIZ boundary.
+- MASTER_BACKLOG maps the badge evaluator to the exact condition identifiers
+  FIRST_LESSON, STREAK_7, WORDS_100, WORDS_500 and PERFECT_QUIZ.
+- PROJECT_RULES.md, IMPLEMENTATION_PLAN.md and MASTER_BACKLOG.md govern the
+  direct-main lifecycle, acceptance, scope and reviewer gates.
+
+Planned scope:
+- Add the next append-only Flyway migration with stable UUIDs and idempotent
+  upserts for 6 CEFR levels, 7 canonical goals and 5 canonical badges.
+- Add PostgreSQL/Testcontainers tests for exact reference values, ordering,
+  badge thresholds, Flyway application and safe repeated seed execution.
+
+Explicitly out of scope:
+- Initial topics/vocabulary, goal-topic mappings, user data and content seeds.
+- Badge evaluation/award behavior, APIs, OpenAPI, clients and JPA mappings.
+- No dependency addition, unrelated migration, commit, push or tag mutation.
+
+PLAN transition: DB-FND-004 TODO → IN_PROGRESS.
+```
+
+## DB-FND-004 — IMPLEMENT / TEST — 2026-09-15
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+Task state after TEST: IN_PROGRESS
+
+Implementation:
+- Added append-only Flyway migration V3__seed_reference_data.sql.
+- Seeded 6 CEFR levels A1, A2, B1, B2, C1, C2 with stable UUIDs and
+  canonical sort order 1..6.
+- Seeded 7 active goals: GENERAL_ENGLISH, TRAVEL, BUSINESS, TOEIC, IELTS,
+  COMMUNICATION and ACADEMIC.
+- Seeded 5 active canonical badges with rule identifiers and thresholds:
+  FIRST_LESSON=1, STREAK_7=7, WORDS_100=100, WORDS_500=500,
+  PERFECT_QUIZ=5.
+- Used natural-key ON CONFLICT upserts so repeated execution is safe and does
+  not duplicate reference rows.
+- Added ReferenceDataIntegrationTests for migration state, exact canonical
+  rows, ordering, badge rules and two repeated seed executions.
+- Updated DatabaseIndexIntegrationTests to reuse the seeded A1 reference row;
+  production schema, indexes and behavior are unchanged.
+
+Test evidence:
+- Focused ReferenceDataIntegrationTests + DatabaseIndexIntegrationTests:
+  PASS, 15/15.
+- Fresh PostgreSQL 16.15 / Testcontainers migration V1 → V2 → V3:
+  PASS; schema reached v3 with all 3 migrations applied successfully.
+- Maven clean verify: PASS, 64/64; package/repackage PASS.
+- CI Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests):
+  PASS, 35/35.
+- CI PostgreSQL selector (*IntegrationTests): PASS, 18/18.
+- CI OpenAPI selector (OpenApiContractHarnessTests): PASS, 11/11.
+- Explicit Maven package with skipped tests: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS, 11/11.
+- python tools/baseline_audit.py: PASS.
+- py_compile for baseline/CI audit Python files: PASS.
+- git diff --check: PASS.
+- Conflict-marker scan: PASS; none found.
+- Scope audit: PASS; only DB-FND-004 migration/test and lifecycle evidence
+  files changed.
+- Tracked and untracked whitespace audit: PASS.
+- Secret/private-key audit: PASS; none found.
+- Generated-file audit: PASS; none present in Git status.
+- Baseline-tag integrity: PASS; both local tags and peeled targets match
+  origin exactly.
+
+Impact:
+- API/OpenAPI: NONE.
+- Database: append-only V3 reference-data rows only; no schema change.
+- Clients: NONE.
+- Backward compatibility: compatible; deterministic natural-key upserts are
+  repeatable and preserve existing migration history.
+
+Review/publication stop state:
+- Database Reviewer and QA Reviewer have not been invoked by this execute
+  command; no independent reviewer result is claimed.
+- Actual remote CI for the uncommitted DB-FND-004 worktree: NOT RUN and not
+  claimed. Admission used repository health for the unchanged origin/main SHA.
+- Unresolved findings: no task review has started; no finding state changed.
+- No commit, push, merge, PR or baseline-tag mutation performed.
+- Next lifecycle step: independent Database Reviewer, then QA Reviewer.
+```
+
+## DB-FND-004 — independent reviewer evidence synchronization — 2026-09-15
+
+```text
+Command boundary: synchronize independent reviewer evidence
+Workflow mode: GOV009_DIRECT_MAIN
+Evidence source: completed read-only reports from the independent Database
+Reviewer and QA Reviewer Codex tasks. This operation records supplied reviewer
+outcomes only; it is not self-review and does not finalize the task.
+
+Independent reviewer chronology:
+1. Database Reviewer initial review: PASS.
+   - Database findings: NONE.
+   - Recommendation: APPROVE.
+2. QA Reviewer initial review: PASS.
+   - QA findings: NONE.
+   - Recommendation: APPROVE.
+
+Synchronized reviewer state:
+- DBR: PASS.
+- QAR: PASS.
+- Historical reviewer FAIL/finding chronology for DB-FND-004: NONE.
+- Unresolved findings: NONE.
+
+Database Reviewer evidence highlights:
+- V3 is append-only; published V1 and V2 remain unchanged.
+- Fresh PostgreSQL 16.15 migration applies V1 → V2 → V3 successfully.
+- Exact 6 CEFR levels, 7 active goals and 5 canonical badge rules are present.
+- Natural-key upserts are repeatable, preserve an existing PK on conflict and
+  do not create duplicate reference rows.
+- Focused tests 15/15, Maven clean verify 64/64 and PostgreSQL selector 18/18
+  PASS; Hibernate schema validation PASS.
+
+QA Reviewer evidence highlights:
+- Acceptance for CEFR order, goals, badge identifiers/thresholds and repeated
+  seed execution: PASS; unverified acceptance: NONE.
+- Focused PostgreSQL tests: 15/15 PASS.
+- Maven clean verify: 64/64 PASS; package/repackage PASS.
+- Fresh Flyway V1 → V2 → V3 and Hibernate validation: PASS.
+- baseline_audit, ci_workflow_audit, CI audit tests 11/11, py_compile,
+  git diff --check, conflict/secret/tag guards: PASS.
+- No API/OpenAPI/client/JPA/later-task scope change or regression found.
+
+Required unchanged stop state:
+- DB-FND-004: IN_PROGRESS.
+- Branch: main; uncommitted direct-main worktree.
+- CI mode: ACTUAL_CI_REPOSITORY_HEALTH.
+- Admission Required CI run 34760502799 for unchanged origin/main SHA
+  da1012a262fbb7216e4e4b67a6a74e40d82a60e5: completed/success.
+- Actual remote CI for the uncommitted DB-FND-004 diff: NOT RUN / NOT CLAIMED.
+- No commit, push, merge, PR or baseline-tag mutation performed.
+- Task is eligible for a separate finalize command; this evidence-sync command
+  does not change lifecycle status.
+```
+
+## DB-FND-004 — FINALIZE — 2026-09-15
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Finalization gates:
+- Task/owner/priority before transition: DB-FND-004 / CBL / P0 / IN_PROGRESS.
+- Dependency DB-FND-002: DONE.
+- Required reviewers: DBR, QAR.
+- Independent Database Reviewer: PASS; Database findings NONE.
+- Independent QA Reviewer: PASS; QA findings NONE.
+- Historical reviewer FAIL/finding chronology for DB-FND-004: NONE.
+- Unresolved findings: NONE.
+- Acceptance: PASS — 6 ordered CEFR levels, 7 active canonical goals and 5
+  canonical badge rules are seeded by repeatable natural-key upserts.
+
+Fresh final validation on the post-review worktree:
+- Maven clean verify: PASS — 64/64; failures 0; errors 0; skipped 0.
+- PostgreSQL/Testcontainers 16.15: PASS.
+- Flyway fresh migration: successfully validated and applied V1 → V2 → V3.
+- ReferenceDataIntegrationTests: PASS — 5/5 within the full run.
+- DatabaseIndexIntegrationTests: PASS — 10/10 within the full run.
+- OpenApiContractHarnessTests: PASS — 11/11.
+- Package/repackaged executable JAR: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check: PASS.
+- Conflict-marker, untracked-whitespace, secret/private-key, generated-file,
+  scope and baseline-tag integrity audits: PASS; findings 0.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Lifecycle and milestone transition:
+- DB-FND-004: IN_PROGRESS → DONE.
+- M1 execution progress: 15/29 (51.7%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- Database: additive append-only V3 reference-data migration; published V1
+  and V2 unchanged; no schema shape change.
+- API/OpenAPI/clients/security/business behavior: NONE.
+- Backward compatibility: compatible; natural-key upserts preserve existing
+  primary keys and do not duplicate reference rows.
+- Unrelated/later-task/V2 scope: NONE.
+
+Git/publication stop state:
+- Branch: main; HEAD and origin/main remain
+  da1012a262fbb7216e4e4b67a6a74e40d82a60e5.
+- Admission Required CI run 34760502799 for that exact origin/main SHA remains
+  completed/success; repository health before publication is HEALTHY.
 - Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED;
   direct-main remote CI is the post-push repository-health gate.
 - Commit/push/merge/tag mutation: NONE.
