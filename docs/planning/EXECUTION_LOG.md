@@ -277,6 +277,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | CI-FND-001 | RESOLVED | `SEC-CI-FND-001-002` — historical Security Reviewer FAIL preserved; Severity: LOW; Blocking: NO; Original Status: OPEN. | Supplied independent focused Security Reviewer re-review PASS confirmed checkout `persist-credentials: false`, audit enforcement and missing/true negative regressions; no authenticated Git command is required after checkout; final finding Status: RESOLVED. |
 | 2026-09-13 | DB-FND-003 | OPEN | `QA-DB-FND-003-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Partial-index behavioral coverage did not prove all three canonical notification types or the allowed-side boundaries for notification dedupe, primary goals and assessment in-progress uniqueness. | Strengthened PostgreSQL integration coverage without changing the already-canonical V2 predicate; finding remained OPEN pending independent focused QA re-review. |
 | 2026-09-13 | DB-FND-003 | RESOLVED | `QA-DB-FND-003-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed complete behavioral and allowed-side partial-index coverage; final finding Status: RESOLVED; new QA findings: NONE. |
+| 2026-09-15 | BE-FND-008 | OPEN | `QA-BE-FND-008-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The concurrent duplicate test could pass through sequential initial lookup/replay without proving the PostgreSQL `ON CONFLICT` / `inserted=false` path. | Added deterministic winner/loser transaction coordination and PostgreSQL lock observation; remediation completed while the finding remained OPEN pending independent focused QA re-review. |
+| 2026-09-15 | BE-FND-008 | RESOLVED | `QA-BE-FND-008-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused QA re-review PASS confirmed the loser reaches the real PostgreSQL insert, waits on the winner lock, receives `inserted=false`, replays the committed response and performs exactly one mutation; final finding Status: RESOLVED; new QA findings: NONE. |
 
 #### Review result log
 
@@ -339,13 +341,18 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | DB-FND-003 | Database Reviewer | PASS | Independent post-remediation Database review reconfirmed the complete canonical predicates and allowed-side boundaries, append-only migration integrity, PostgreSQL 16.15 validation and no Database findings; DBR=PASS. This review did not resolve or claim the QA finding independently. |
 | 2026-09-15 | DB-FND-004 | Database Reviewer | PASS | Independent Database review verified append-only V3, canonical 6 CEFR/7 goals/5 badges, natural-key upsert repeatability, fresh PostgreSQL V1 → V2 → V3 migration and Hibernate validation; Database findings: NONE; DBR=PASS. |
 | 2026-09-15 | DB-FND-004 | QA Reviewer | PASS | Independent QA review verified all acceptance criteria, focused PostgreSQL 15/15, full Maven 64/64, fresh Flyway V1 → V2 → V3, audit gates and scope boundaries; QA findings: NONE; QAR=PASS. |
+| 2026-09-15 | BE-FND-008 | Database Reviewer | PASS | Supplied independent Database review verified the canonical `idempotency_keys` schema and indexes, `INSERT ... ON CONFLICT (event_id) DO NOTHING`, atomic claim/mutation/snapshot rollback semantics, strict retention cutoff and deterministic real PostgreSQL conflict path; Database findings: NONE; DBR=PASS. |
+| 2026-09-15 | BE-FND-008 | Security Reviewer | PASS | Supplied independent Security re-review verified user/endpoint/request-hash replay binding, cross-user reuse rejection, canonical hash scope, atomic duplicate-race behavior, absence of sensitive logging and no API/Flyway/client/security regression; Security findings: NONE; SR=PASS. |
+| 2026-09-15 | BE-FND-008 | Architecture Reviewer | PASS | Supplied independent Architecture re-review verified the test-only remediation, unchanged production idempotency architecture, package-private repository visibility, no production synchronization hook, deterministic PostgreSQL conflict flow and no layer/dependency/contract regression; Architecture findings: NONE; AR=PASS. This reviewer did not resolve the QA finding. |
+| 2026-09-15 | BE-FND-008 | QA Reviewer | FAIL | Historical independent QA review: `QA-BE-FND-008-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The concurrent duplicate test was nondeterministic and could false-pass without exercising the PostgreSQL conflict path. |
+| 2026-09-15 | BE-FND-008 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-BE-FND-008-001` RESOLVED; the loser deterministically reaches the real PostgreSQL insert/lock path, receives `inserted=false`, replays the winner response, commits exactly one record and one mutation, and does not return 500; new QA findings: NONE; QAR=PASS. Historical QAR FAIL and Original Status OPEN remain preserved. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 15 |    29 |              51.7% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 16 |    29 |              55.2% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -3754,6 +3761,128 @@ Git/publication stop state:
   main through the separate Git workflow.
 ```
 
+## BE-FND-008 — PLAN — 2026-09-15
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch/worktree: main / clean before PLAN.
+- HEAD == main == origin/main == remote refs/heads/main:
+  8cdf2d14c3b60aa866e36be2651794ef61fc5bf6.
+- Git operation in progress: NONE; other active direct-main task: NONE.
+- BE-FND-008 owner/priority/status: CBL / P0 / TODO.
+- Dependencies DB-FND-002 and BE-FND-005: DONE.
+- CI-FND-001 is DONE/effective; PRE_CI permanently expired.
+- Live Required CI run 34921532954 for the exact origin/main SHA:
+  completed / success; repository health = HEALTHY.
+- Required reviewers: DBR, SR, AR, QAR.
+
+Canonical scope:
+- Implement application-layer IdempotencyService backed by PostgreSQL.
+- Build SHA-256 over canonical method, route template, path, query and body
+  after excluding body eventId; compare user ownership separately.
+- Claim event_id with INSERT ... ON CONFLICT DO NOTHING.
+- Commit claim, business mutation and stored response status/snapshot in one
+  transaction; replay the same logical request and reject reuse with
+  IDEMPOTENCY_KEY_REUSE.
+- Reuse IdempotencyProperties retention = 30 days and expose the cleanup
+  boundary without scheduling a job.
+- Add focused unit and real PostgreSQL/Testcontainers integration coverage for
+  canonical hashing, replay, reuse, concurrency, rollback and retention.
+
+Explicitly out of scope:
+- Production API endpoints and business mutations that consume the service.
+- Idempotency HTTP headers, client changes, authentication/authorization,
+  scheduler/background-job wiring, database migrations and API/OpenAPI edits.
+- Commit, push, merge, PR or baseline-tag mutation.
+
+PLAN transition: BE-FND-008 TODO → IN_PROGRESS.
+```
+
+## BE-FND-008 — IMPLEMENT / TEST — 2026-09-15
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+Task state after TEST: IN_PROGRESS
+
+Implementation:
+- Added common.idempotency application capability with IdempotencyService,
+  RequestHashService, JDBC repository, immutable request/result/record types
+  and package boundary documentation.
+- Canonical request hash covers method, routeTemplate, path, sorted query/body
+  object keys and normalized UUID text; top-level body eventId is excluded.
+- PostgreSQL claim uses INSERT ... ON CONFLICT (event_id) DO NOTHING; no
+  unique-violation exception is used as normal control flow.
+- Claim, supplied business mutation and response status/JSONB snapshot execute
+  under one @Transactional boundary. Same user/logical request replays the
+  snapshot; any user/endpoint/hash mismatch throws IDEMPOTENCY_KEY_REUSE.
+- Added deleteExpired(referenceTime), deriving its strict cutoff from the
+  existing IdempotencyProperties retention=30d. No scheduler was added.
+- Kept the datasource-disabled application smoke test isolated by supplying a
+  Mockito JdbcTemplate test bean; production datasource behavior is unchanged.
+
+Regression coverage:
+- RequestHashServiceTests: canonical key ordering, eventId exclusion, numeric
+  normalization, UUID normalization and changes to method/route/path/query/body.
+- IdempotencyServiceIntegrationTests on real PostgreSQL: first result storage,
+  exact status/body replay, different body/route/user rejection, two concurrent
+  identical claims with exactly one mutation/no 500, business rollback removing
+  mutation and claim, retry after rollback, and strict 30-day retention cutoff.
+
+Validation chronology:
+- Initial focused run: 6/7 PASS, 1 test-setup error because PostgreSQL JDBC
+  required an explicit Timestamp for a test fixture Instant; fixture corrected.
+- Final focused idempotency coverage: PASS, 8/8 (focused command 9/9 including
+  the application smoke test).
+- Initial clean verify: 71/72 PASS, 1 context setup error because the existing
+  smoke test disables DataSource while the new repository requires JdbcTemplate;
+  smoke test received a Mockito JdbcTemplate and remained DB-isolated.
+- Final Maven clean verify: PASS, 72/72; failures 0; errors 0; skipped 0.
+- CI Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests):
+  PASS, 38/38.
+- CI PostgreSQL selector (*IntegrationTests): PASS, 23/23.
+- CI OpenAPI selector (OpenApiContractHarnessTests): PASS, 11/11.
+- Fresh PostgreSQL 16.15/Testcontainers + Flyway V1 → V2 → V3 + Hibernate
+  schema validation: PASS.
+- Explicit package/repackage: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS, 11/11.
+- python tools/baseline_audit.py: PASS.
+- py_compile for applicable audit files: PASS.
+- git diff --check: PASS.
+- Scope audit: PASS; 12 changed files are limited to BE-FND-008 production,
+  tests and lifecycle evidence.
+- Conflict-marker audit: PASS; findings 0.
+- Secret/private-key audit: PASS; findings 0.
+- Generated-file audit: PASS; findings 0.
+- Untracked whitespace audit: PASS; findings 0. Existing trailing spaces on
+  unchanged MASTER_BACKLOG heading lines are outside this diff; added diff is clean.
+- Baseline-tag integrity: PASS; both local tag refs and peeled targets match
+  origin exactly.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Impact:
+- API/OpenAPI: NONE; no endpoint/header contract added or changed.
+- Database/Flyway: NONE; uses the canonical existing idempotency_keys table.
+- Clients: NONE.
+- Security: ownership remains an explicit independent reuse comparison; no
+  secret or response logging was introduced.
+- Backward compatibility: additive internal service capability.
+
+Review/publication stop state:
+- BE-FND-008 remains IN_PROGRESS.
+- Required independent reviews DBR, SR, AR and QAR have not been invoked by
+  this execute command; no reviewer PASS or finding state is claimed.
+- Actual remote CI for the uncommitted BE-FND-008 worktree: NOT RUN / NOT
+  CLAIMED. Admission used healthy CI for the unchanged origin/main SHA only.
+- No commit, push, merge, PR or baseline-tag mutation performed.
+- Next lifecycle step: independent DBR, SR, AR and QAR reviews.
+```
+
 ## DB-FND-004 — PLAN / admission — 2026-09-15
 
 ```text
@@ -3974,6 +4103,229 @@ Git/publication stop state:
 - Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED;
   direct-main remote CI is the post-push repository-health gate.
 - Commit/push/merge/tag mutation: NONE.
+- Next step: create the one final task-scoped commit, then fast-forward push
+  main through the separate Git workflow.
+```
+
+## BE-FND-008 — QA finding / remediation — 2026-09-15
+
+```text
+Command boundary: remediate QA-BE-FND-008-001
+Workflow mode: GOV009_DIRECT_MAIN
+Task state: BE-FND-008 remains IN_PROGRESS
+
+Historical independent QA Reviewer evidence (preserved):
+- QAR result: FAIL.
+- Finding: QA-BE-FND-008-001.
+- Severity: MEDIUM.
+- Blocking: YES.
+- Original status: OPEN.
+- Defect: concurrent duplicate test could pass through initial lookup/replay
+  without deterministically exercising PostgreSQL ON CONFLICT inserted=false.
+
+Focused remediation:
+- Moved IdempotencyServiceIntegrationTests into the common.idempotency test
+  package so a test-only MockitoSpyBean can observe the package-private real
+  repository without widening production visibility.
+- Replaced the timing-sensitive start latch with an explicit winner/loser
+  transaction sequence. The winner performs the real claim and is held after
+  INSERT while its transaction remains uncommitted.
+- The loser starts only after WINNER_CLAIMED. Reaching the repository spy proves
+  its initial lookup completed without seeing the uncommitted row.
+- Before releasing the winner, the test queries PostgreSQL pg_stat_activity and
+  requires the loser's real INSERT into idempotency_keys to be active with
+  wait_event_type='Lock'. This proves the loser reached and blocked on the real
+  ON CONFLICT path; no PostgreSQL behavior is mocked.
+- After winner commit, the spy records real claim results winner=true and
+  loser=false. The loser replays status=200 and body={accepted,1}; both futures
+  complete normally, exactly one mutation is committed, and no 500 occurs.
+- The deterministic concurrency case uses @RepeatedTest(10); no Thread.sleep
+  timing assumption or production synchronization hook was added.
+
+Validation:
+- Focused deterministic concurrency repetitions: PASS, 10/10.
+- Complete IdempotencyServiceIntegrationTests: PASS, 14/14.
+- RequestHashServiceTests: PASS, 3/3.
+- Maven clean verify: PASS, 81/81; failures 0; errors 0; skipped 0.
+- PostgreSQL integration selector (*IntegrationTests): PASS, 32/32.
+- OpenAPI contract selector: PASS, 11/11.
+- Package/repackage: PASS.
+- Fresh PostgreSQL 16.15/Testcontainers, Flyway V1 → V2 → V3 and Hibernate
+  schema validation: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS, 11/11.
+- python tools/baseline_audit.py: PASS.
+- py_compile for applicable audit files: PASS.
+
+Scope/contract:
+- Production implementation, database/Flyway, API/OpenAPI, clients and baseline
+  tags: UNCHANGED by this remediation.
+- Remediation code change is test-only plus this historical evidence.
+- Existing hash/replay/reuse/rollback/retention assertions remain enabled and
+  PASS.
+
+Required stop state:
+- QA-BE-FND-008-001 remains OPEN; this implementation task does not mark it
+  RESOLVED.
+- QAR remains historical FAIL pending independent focused QA re-review.
+- No reviewer PASS is claimed.
+- Actual remote CI for the uncommitted worktree: NOT RUN / NOT CLAIMED.
+- No commit, push, merge, PR or baseline-tag mutation performed.
+```
+
+## BE-FND-008 — independent reviewer evidence synchronization — 2026-09-15
+
+```text
+Command boundary: synchronize independent reviewer evidence
+Workflow mode: GOV009_DIRECT_MAIN
+Evidence source: completed independent Database, Security, Architecture and
+focused QA re-review reports supplied by the project owner. This operation
+records supplied reviewer outcomes only; it is not self-review and does not
+finalize the task.
+
+Historical chronology preserved:
+1. Independent Database review: PASS; Database findings NONE.
+2. Independent Security re-review: PASS; Security findings NONE.
+3. Independent Architecture re-review: PASS; Architecture findings NONE.
+   - The Architecture Reviewer did not resolve the QA finding.
+4. Initial independent QA review: FAIL.
+   - QA-BE-FND-008-001 OPEN.
+   - Severity MEDIUM; Blocking YES; Original Status OPEN.
+5. Focused deterministic concurrency remediation completed while the finding
+   remained OPEN.
+6. Independent focused QA re-review: PASS.
+   - QA-BE-FND-008-001 RESOLVED by the QA Reviewer.
+   - Required action remaining: NONE; new QA findings: NONE.
+
+Synchronized independent reviewer state:
+- DBR: PASS.
+- SR: PASS.
+- AR: PASS.
+- QAR: PASS.
+- QA-BE-FND-008-001: RESOLVED by independent focused QA re-review.
+- Unresolved findings: NONE.
+
+Database Reviewer evidence highlights:
+- Canonical PostgreSQL `idempotency_keys` schema, mappings and indexes remain
+  unchanged; no migration change was introduced.
+- Claim uses `INSERT ... ON CONFLICT (event_id) DO NOTHING` without exception
+  control flow.
+- Claim, business mutation and response snapshot remain atomic; business
+  failure rolls back claim and mutation.
+- The deterministic test proves the loser waits on the real PostgreSQL lock,
+  receives `inserted=false` and replays the winner response.
+- Strict `created_at < cutoff` cleanup semantics remain preserved.
+
+Security Reviewer evidence highlights:
+- Replay independently matches `userId`, endpoint and `request_hash`; cross-user
+  reuse returns `IDEMPOTENCY_KEY_REUSE` without exposing the stored response.
+- Canonical request hashing covers method, routeTemplate, path, query and body
+  while excluding top-level `eventId`.
+- No tokens, credentials, PII or response snapshots were added to logs; secret
+  and private-key scan reported zero findings.
+- The duplicate race commits one business mutation and returns no 500 or
+  response leak.
+
+Architecture Reviewer evidence highlights:
+- QA remediation is test-only; production idempotency and transaction
+  architecture remain unchanged.
+- `IdempotencyRepository` remains package-private and no production test hook
+  or widened visibility was introduced.
+- Winner/loser sequencing proves the real lookup → insert/lock → commit →
+  `inserted=false` → replay flow without a dependency or layer violation.
+- No API/OpenAPI/database/Flyway/client or later-task scope change occurred.
+
+Focused QA re-review resolution evidence:
+- Winner inserts the real claim and keeps its transaction uncommitted.
+- Loser completes the initial invisible-row lookup, reaches the real
+  `INSERT INTO idempotency_keys` and is observed waiting on a PostgreSQL lock.
+- Winner commit releases the loser; verified claim results are winner=true and
+  loser=false.
+- Both requests return the same replay response; exactly one business mutation
+  and one idempotency record are committed; no application/HTTP 500 occurs.
+- Deterministic concurrency repetitions: PASS — 10/10.
+
+Supplied reviewer validation evidence:
+- IdempotencyServiceIntegrationTests: PASS — 14/14.
+- Focused idempotency/smoke/hash coverage: PASS — 18/18.
+- Maven clean verify: PASS — 81/81; failures 0; errors 0; skipped 0.
+- PostgreSQL integration selector: PASS — 32/32.
+- PostgreSQL 16.15 and Flyway V1 → V2 → V3: PASS.
+- Package/repackage and OpenAPI contract selector: PASS.
+- ci_workflow_audit and its regression tests: PASS — 11/11.
+- baseline_audit, py_compile and git diff checks: PASS.
+
+Required unchanged stop state:
+- BE-FND-008: IN_PROGRESS.
+- Branch: main; uncommitted direct-main worktree.
+- Actual remote CI for this uncommitted diff: NOT RUN / NOT CLAIMED.
+- Finalization: NOT PERFORMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+```
+
+## BE-FND-008 — FINALIZE — 2026-09-15
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Finalization gates:
+- Task/owner/priority before transition: BE-FND-008 / CBL / P0 /
+  IN_PROGRESS.
+- Dependencies DB-FND-002 and BE-FND-005: DONE.
+- Required reviewers: DBR, SR, AR, QAR.
+- Independent Database Reviewer: PASS; Database findings NONE.
+- Independent Security Reviewer: PASS; Security findings NONE.
+- Independent Architecture Reviewer: PASS; Architecture findings NONE.
+- Independent focused QA re-review: PASS; QA findings NONE.
+- QA-BE-FND-008-001: RESOLVED by the independent focused QA Reviewer.
+- Historical QAR FAIL, Severity MEDIUM, Blocking YES and Original Status OPEN
+  chronology: PRESERVED.
+- Unresolved findings: NONE.
+- Acceptance: PASS — body eventId-only contract, SHA-256 canonical request
+  hash, PostgreSQL ON CONFLICT claim, replay/reuse semantics, atomic mutation
+  and response persistence, strict 30-day retention and deterministic
+  concurrent duplicate behavior.
+
+Fresh final validation on the post-review worktree:
+- Maven clean verify: PASS — 81/81; failures 0; errors 0; skipped 0.
+- Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests): PASS —
+  38/38.
+- PostgreSQL integration selector (*IntegrationTests): PASS — 32/32.
+- OpenAPI contract selector: PASS — 11/11.
+- Package/repackage: PASS.
+- PostgreSQL 16.15/Testcontainers, Flyway V1 → V2 → V3 and Hibernate
+  validation: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check: PASS.
+- Conflict-marker, untracked-whitespace, secret/private-key, generated-file,
+  scope and baseline-tag integrity audits: PASS; findings 0.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Lifecycle and milestone transition:
+- BE-FND-008: IN_PROGRESS → DONE.
+- M1 execution progress: 16/29 (55.2%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- API/OpenAPI: NONE.
+- Database/Flyway: NONE; canonical existing `idempotency_keys` schema reused.
+- Clients: NONE.
+- Security: ownership, endpoint and request-hash binding preserved; no
+  sensitive logging introduced.
+- Backward compatibility: additive internal service capability; replay,
+  reuse-conflict, rollback and retention behavior remain canonical.
+- Unrelated/later-task/V2 scope: NONE.
+
+Git/publication stop state:
+- Branch: main; HEAD and origin/main remain
+  8cdf2d14c3b60aa866e36be2651794ef61fc5bf6.
+- Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED;
+  repository-health admission evidence applies only to unchanged origin/main.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
 - Next step: create the one final task-scoped commit, then fast-forward push
   main through the separate Git workflow.
 ```
