@@ -6,13 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,6 +63,29 @@ class GlobalExceptionHandlerTests {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.code").value(ApiErrorCodes.CONCURRENT_UPDATE))
+                .andExpect(jsonPath("$.details", hasSize(0)));
+    }
+
+    @Test
+    void mapsJakartaOptimisticLockExceptionToConcurrentUpdate() throws Exception {
+        mockMvc.perform(get("/test/jpa-optimistic-lock"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.code").value(ApiErrorCodes.CONCURRENT_UPDATE))
+                .andExpect(jsonPath("$.message")
+                        .value("Dữ liệu đã thay đổi trên máy chủ. Vui lòng tải lại và thử lại."))
+                .andExpect(jsonPath("$.path").value("/test/jpa-optimistic-lock"))
+                .andExpect(jsonPath("$.details", hasSize(0)));
+    }
+
+    @Test
+    void mapsSpringOptimisticLockingFailureToConcurrentUpdate() throws Exception {
+        mockMvc.perform(get("/test/spring-optimistic-lock"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.code").value(ApiErrorCodes.CONCURRENT_UPDATE))
+                .andExpect(jsonPath("$.path").value("/test/spring-optimistic-lock"))
                 .andExpect(jsonPath("$.details", hasSize(0)));
     }
 
@@ -159,6 +185,16 @@ class GlobalExceptionHandlerTests {
         @GetMapping("/test/concurrent-update")
         void concurrentUpdate() {
             throw new ConcurrentUpdateException();
+        }
+
+        @GetMapping("/test/jpa-optimistic-lock")
+        void jpaOptimisticLock() {
+            throw new OptimisticLockException("Chi tiết stale state nội bộ");
+        }
+
+        @GetMapping("/test/spring-optimistic-lock")
+        void springOptimisticLock() {
+            throw new ObjectOptimisticLockingFailureException("Streak", UUID.randomUUID());
         }
 
         @GetMapping("/test/idempotency-key-reuse")

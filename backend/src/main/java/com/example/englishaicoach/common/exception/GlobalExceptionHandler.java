@@ -5,9 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -36,6 +38,13 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 request,
                 exception.getDetails());
+    }
+
+    @ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<ApiErrorResponse> handleOptimisticLockingFailure(
+            RuntimeException exception,
+            HttpServletRequest request) {
+        return handleApiException(new ConcurrentUpdateException(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -346,13 +346,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-15 | BE-FND-008 | Architecture Reviewer | PASS | Supplied independent Architecture re-review verified the test-only remediation, unchanged production idempotency architecture, package-private repository visibility, no production synchronization hook, deterministic PostgreSQL conflict flow and no layer/dependency/contract regression; Architecture findings: NONE; AR=PASS. This reviewer did not resolve the QA finding. |
 | 2026-09-15 | BE-FND-008 | QA Reviewer | FAIL | Historical independent QA review: `QA-BE-FND-008-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The concurrent duplicate test was nondeterministic and could false-pass without exercising the PostgreSQL conflict path. |
 | 2026-09-15 | BE-FND-008 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-BE-FND-008-001` RESOLVED; the loser deterministically reaches the real PostgreSQL insert/lock path, receives `inserted=false`, replays the winner response, commits exactly one record and one mutation, and does not return 500; new QA findings: NONE; QAR=PASS. Historical QAR FAIL and Original Status OPEN remain preserved. |
+| 2026-09-16 | BE-FND-009 | Database Reviewer | PASS | Independent Database review verified canonical BIGINT/JPA Long `@Version` mappings for `user_vocabulary_progress` and `streaks`, real PostgreSQL stale-write rejection, preserved winner state, unchanged schema/Flyway and fresh V1 → V2 → V3 validation; Database findings: NONE; DBR=PASS. |
+| 2026-09-16 | BE-FND-009 | QA Reviewer | PASS | Independent QA review verified canonical HTTP 409 + `CONCURRENT_UPDATE` mapping for Jakarta/Spring optimistic-lock exceptions, real stale-version conflict without silent overwrite, 13/13 focused and 84/84 full regression PASS; QA findings: NONE; QAR=PASS. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 16 |    29 |              55.2% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 17 |    29 |              58.6% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -4328,4 +4330,227 @@ Git/publication stop state:
 - Commit/push/merge/PR/baseline-tag mutation: NONE.
 - Next step: create the one final task-scoped commit, then fast-forward push
   main through the separate Git workflow.
+```
+
+## BE-FND-009 — PLAN — 2026-09-16
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main; clean worktree before PLAN.
+- HEAD == main == origin/main == remote refs/heads/main:
+  fcc9544fdb8602b08a34f22a080b686e62b93a2b.
+- Git operation in progress: NONE; other active direct-main task: NONE.
+- BE-FND-009 owner/priority/status: CBL / P0 / TODO.
+- Dependencies BE-FND-004 and BE-FND-005: DONE.
+- CI-FND-001 is DONE/effective; PRE_CI permanently expired.
+- Live Required CI run 34949093997 for the exact origin/main SHA:
+  completed / success; repository health = HEALTHY.
+- Required reviewers: Database Reviewer and QA Reviewer.
+
+Canonical sources and decisions:
+- Backend Technical Specification v1.3 Sections 26, 27 and 118 require
+  `@Version`, HTTP 409 for optimistic-lock failures and no silent overwrite.
+- Database Schema v1.6 Section 20 limits canonical optimistic locking to
+  `user_vocabulary_progress` and `streaks`, with BIGINT version columns.
+- API Specification v1.4 Section 36 requires the canonical error envelope,
+  HTTP 409 and code `CONCURRENT_UPDATE` when a conflict cannot be retried.
+- Existing BE-FND-005 conventions own the canonical exception envelope and
+  existing `ConcurrentUpdateException` message/code mapping.
+
+Scope:
+- Map actual Jakarta Persistence and Spring optimistic-lock exception families
+  to the existing canonical `409 CONCURRENT_UPDATE` response.
+- Add real PostgreSQL/JPA stale-version coverage proving the winning update is
+  preserved and the losing update cannot silently overwrite it.
+- Add MockMvc coverage through real Spring MVC exception resolution for the
+  canonical response envelope.
+
+Explicitly out of scope:
+- Product endpoints, retry policy, business-service mutations or later learning
+  and gamification use cases.
+- Database/Flyway, API/OpenAPI, client or public error-code changes.
+- Additional versioned entities, pessimistic locking or unrelated refactoring.
+- Commit, push, merge, PR or baseline-tag mutation.
+
+PLAN transition: BE-FND-009 TODO → IN_PROGRESS.
+```
+
+## BE-FND-009 — IMPLEMENT / TEST — 2026-09-16
+
+```text
+Implementation:
+- GlobalExceptionHandler now maps both Jakarta Persistence
+  OptimisticLockException and Spring OptimisticLockingFailureException families
+  through the existing ConcurrentUpdateException contract.
+- The canonical response remains HTTP 409 with code CONCURRENT_UPDATE and the
+  existing common envelope; the generic unexpected-error fallback is unchanged.
+- MockMvc tests exercise actual Spring MVC exception resolution for both
+  exception families and verify canonical response fields.
+- A PostgreSQL 16/Testcontainers JPA integration test loads the same streak row
+  in two independent EntityManagers, commits the winner, then proves the stale
+  transaction raises an optimistic-lock exception and cannot overwrite the
+  committed value or version.
+- No database migration, entity version mapping, API/OpenAPI, client or product
+  endpoint was changed.
+
+Test chronology:
+- Initial focused run exposed only a test-fixture binding issue: PgJDBC could
+  not infer a SQL type for java.time.Instant passed through JdbcTemplate.
+- The fixture was corrected to bind java.sql.Timestamp for TIMESTAMPTZ; no
+  production behavior or assertion was weakened.
+- Final focused GlobalExceptionHandlerTests + OptimisticLockIntegrationTests:
+  PASS — 13/13; failures 0; errors 0; skipped 0.
+- Maven clean verify: PASS — 84/84; failures 0; errors 0; skipped 0.
+- Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests): PASS — 40/40.
+- PostgreSQL integration selector (*IntegrationTests): PASS — 33/33.
+- OpenAPI contract selector: PASS — 11/11.
+- PostgreSQL 16.15, fresh Flyway V1 → V2 → V3 and Hibernate validation: PASS.
+- Package/repackage: PASS.
+- ci_workflow_audit: PASS; audit regression tests: PASS — 11/11.
+- baseline_audit and py_compile: PASS.
+- git diff --check, untracked-whitespace, conflict-marker, secret/private-key,
+  generated-file, scope and baseline-tag integrity audits: PASS.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Acceptance result:
+- Actual stale @Version conflict is surfaced, not silently overwritten.
+- Optimistic-lock exceptions resolve to HTTP 409 + CONCURRENT_UPDATE through
+  the canonical common error envelope.
+- Winning database state remains intact after the stale transaction fails.
+
+Required unchanged stop state:
+- BE-FND-009: IN_PROGRESS.
+- Independent Database Reviewer and QA Reviewer review: NOT YET PERFORMED.
+- Reviewer findings: NONE RECORDED; no reviewer result is self-claimed.
+- Branch: main; uncommitted direct-main worktree.
+- Actual remote CI for this uncommitted diff: NOT RUN / NOT CLAIMED.
+- Finalization, commit, push, merge, PR and baseline-tag mutation: NONE.
+- Next step: independent Database Reviewer review, then independent QA Reviewer
+  review; remediate any findings before a separate finalize command.
+```
+
+## BE-FND-009 — independent reviewer evidence synchronization — 2026-09-16
+
+```text
+Operation boundary: evidence synchronization only
+Workflow mode: GOV009_DIRECT_MAIN
+Task state preserved: BE-FND-009 = IN_PROGRESS
+
+Evidence provenance:
+- Independent Database Reviewer task/thread:
+  01a08624-a453-7de0-9357-8e1b742bd88e; completed report for
+  BE-FND-009 observed without modifying the reviewed worktree.
+- Independent QA Reviewer task/thread:
+  01a0863c-25fe-72c0-94bc-bf1921446833; completed report for
+  BE-FND-009 observed without modifying the reviewed worktree.
+- This synchronization records supplied/completed independent reports only;
+  it is not an implementation self-review.
+
+Independent Database Reviewer result:
+- DBR: PASS.
+- Database findings: NONE.
+- Canonical `user_vocabulary_progress.version` and `streaks.version` remain
+  BIGINT / JPA Long with `@Version`; schema and Flyway are unchanged.
+- Real PostgreSQL/JPA evidence proves two persistence contexts read version 0,
+  the winner commits value 2/version 1, the stale loser conflicts, and the
+  winner state remains intact without silent overwrite.
+- Fresh PostgreSQL 16.15 migration V1 → V2 → V3, Hibernate validation,
+  focused tests 13/13, Maven clean verify 84/84 and PostgreSQL integration
+  selector 33/33 were reported PASS.
+- Migration required: NO; Database gate recommendation: APPROVE.
+
+Independent QA Reviewer result:
+- QAR: PASS.
+- QA findings: NONE; unverified acceptance: NONE.
+- MockMvc evidence verifies canonical HTTP 409 + CONCURRENT_UPDATE response
+  for Jakarta and Spring optimistic-lock exception families.
+- PostgreSQL/JPA evidence verifies the stale value 99 cannot overwrite the
+  committed value 2/version 1.
+- Focused tests 13/13, Maven clean verify 84/84, package, PostgreSQL 16.15,
+  Flyway V1 → V2 → V3, baseline/CI audits and CI audit tests 11/11 were
+  reported PASS.
+- QA gate recommendation: APPROVE.
+
+Synchronized canonical reviewer state:
+- Required reviewers: DBR, QAR.
+- DBR = PASS.
+- QAR = PASS.
+- Reviewer findings = NONE.
+- Unresolved findings = NONE.
+- Acceptance evidence = COMPLETE.
+
+Required unchanged stop state:
+- BE-FND-009 remains IN_PROGRESS; finalization is NOT PERFORMED.
+- Branch remains main; HEAD == origin/main ==
+  fcc9544fdb8602b08a34f22a080b686e62b93a2b.
+- Actual remote CI for the current uncommitted task diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Next permitted task action: separate `finalize BE-FND-009` command.
+```
+
+## BE-FND-009 — FINALIZE — 2026-09-16
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Finalization gates:
+- Task/owner/priority before transition: BE-FND-009 / CBL / P0 /
+  IN_PROGRESS.
+- Dependencies BE-FND-004 and BE-FND-005: DONE.
+- Required reviewers: DBR, QAR.
+- Independent Database Reviewer: PASS; Database findings NONE.
+- Independent QA Reviewer: PASS; QA findings NONE.
+- Unresolved findings: NONE.
+- Acceptance: PASS — stale @Version conflict returns HTTP 409 with code
+  CONCURRENT_UPDATE and cannot silently overwrite the committed winner state.
+- Live Required CI run 34949093997 for unchanged origin/main SHA
+  fcc9544fdb8602b08a34f22a080b686e62b93a2b: completed / success.
+
+Fresh final validation on the post-review worktree:
+- Maven clean verify: PASS — 84/84; failures 0; errors 0; skipped 0.
+- Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests): PASS —
+  40/40.
+- PostgreSQL integration selector (*IntegrationTests): PASS — 33/33.
+- OpenAPI contract selector: PASS — 11/11.
+- Package/repackage: PASS.
+- PostgreSQL 16.15/Testcontainers, Flyway V1 → V2 → V3 and Hibernate
+  validation: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check: PASS.
+- Conflict-marker, untracked-whitespace, secret/private-key, generated-file,
+  scope and baseline-tag integrity audits: PASS; findings 0.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Lifecycle and milestone transition:
+- BE-FND-009: IN_PROGRESS → DONE.
+- M1 execution progress: 17/29 (58.6%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- API/OpenAPI: NONE; existing canonical 409 + CONCURRENT_UPDATE contract is
+  now implemented for actual optimistic-lock exception families.
+- Database/Flyway: NONE; canonical @Version mappings and schema are unchanged.
+- Clients: NONE.
+- Security/business rules: NONE.
+- Backward compatibility: improved expected-conflict handling from possible
+  generic 500 fallback to the already-defined canonical conflict response.
+- Unrelated/later-task/V2-V3 scope: NONE.
+
+Git/publication stop state:
+- Branch: main; HEAD and origin/main remain
+  fcc9544fdb8602b08a34f22a080b686e62b93a2b.
+- Actual remote CI for this uncommitted finalized task diff: NOT RUN /
+  NOT CLAIMED; the observed Required CI applies only to unchanged origin/main.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Next step: create the one final task-scoped commit, then fast-forward push
+  main through the separate Git workflow; repository health becomes CI_PENDING
+  after publication until Required CI completes.
 ```
