@@ -19,7 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
@@ -27,6 +28,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class ConfigurationPropertiesTests {
+
+    private static final Pattern SENSITIVE_PROPERTY = Pattern.compile(
+            "(?im)^\\s*(?:password|secret|api-key|access-key|private-key|client-secret|token):\\s*(?<value>[^#\\r\\n]+)");
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withInitializer(new ConfigDataApplicationContextInitializer())
@@ -168,7 +172,7 @@ class ConfigurationPropertiesTests {
     }
 
     @Test
-    void loadsAllApprovedProfileResourcesWithoutSecretProperties() throws IOException {
+    void loadsAllApprovedProfileResourcesWithoutLiteralSecrets() throws IOException {
         contextRunner.run(context -> {
             assertTrue(context.getEnvironment().matchesProfiles("test"));
 
@@ -179,19 +183,12 @@ class ConfigurationPropertiesTests {
                     "application-prod.yml")) {
                 try (InputStream input = getClass().getClassLoader().getResourceAsStream(resource)) {
                     assertNotNull(input, () -> "Thiếu profile: " + resource);
-                    String source = new String(input.readAllBytes(), StandardCharsets.UTF_8)
-                            .toLowerCase(Locale.ROOT);
-
-                    for (String forbiddenProperty : List.of(
-                            "password:",
-                            "secret:",
-                            "api-key:",
-                            "access-key:",
-                            "private-key:",
-                            "client-secret:",
-                            "token:")) {
-                        assertFalse(source.contains(forbiddenProperty),
-                                () -> resource + " chứa thuộc tính nhạy cảm: " + forbiddenProperty);
+                    String source = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+                    Matcher matcher = SENSITIVE_PROPERTY.matcher(source);
+                    while (matcher.find()) {
+                        String value = matcher.group("value").trim();
+                        assertTrue(value.matches("\\$\\{[A-Z][A-Z0-9_]*}"),
+                                () -> resource + " chứa giá trị nhạy cảm không lấy từ environment: " + value);
                     }
                 }
             }

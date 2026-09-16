@@ -279,6 +279,10 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-13 | DB-FND-003 | RESOLVED | `QA-DB-FND-003-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Independent focused QA re-review PASS confirmed complete behavioral and allowed-side partial-index coverage; final finding Status: RESOLVED; new QA findings: NONE. |
 | 2026-09-15 | BE-FND-008 | OPEN | `QA-BE-FND-008-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. The concurrent duplicate test could pass through sequential initial lookup/replay without proving the PostgreSQL `ON CONFLICT` / `inserted=false` path. | Added deterministic winner/loser transaction coordination and PostgreSQL lock observation; remediation completed while the finding remained OPEN pending independent focused QA re-review. |
 | 2026-09-15 | BE-FND-008 | RESOLVED | `QA-BE-FND-008-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused QA re-review PASS confirmed the loser reaches the real PostgreSQL insert, waits on the winner lock, receives `inserted=false`, replays the committed response and performs exactly one mutation; final finding Status: RESOLVED; new QA findings: NONE. |
+| 2026-09-16 | SEC-FND-001 | OPEN | `SEC-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Secret detection missed common lowercase YAML, properties, env-style and JSON sensitive-key assignments. | Added case-insensitive normalized assignment parsing, preserved redacted findings and completed focused remediation; finding remained OPEN pending independent focused Security re-review. |
+| 2026-09-16 | SEC-FND-001 | RESOLVED | `SEC-SEC-FND-001-001` — historical Security Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Security re-review PASS confirmed the remediation; final finding Status: RESOLVED. |
+| 2026-09-16 | SEC-FND-001 | OPEN | `QA-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Secret detection missed access-key and credential categories, including object-storage credential names. | Added access-key, `AWS_ACCESS_KEY_ID`, credential/credentials coverage and redaction regressions; finding remains OPEN pending independent focused QA re-review. |
+| 2026-09-16 | SEC-FND-001 | RESOLVED | `QA-SEC-FND-001-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused QA re-review PASS confirmed access-key/credential detection across YAML, properties, env-style and JSON, preserved placeholder/boolean-control behavior and redacted output; final finding Status: RESOLVED; new QA findings: NONE. |
 
 #### Review result log
 
@@ -350,13 +354,17 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-16 | BE-FND-009 | QA Reviewer | PASS | Independent QA review verified canonical HTTP 409 + `CONCURRENT_UPDATE` mapping for Jakarta/Spring optimistic-lock exceptions, real stale-version conflict without silent overwrite, 13/13 focused and 84/84 full regression PASS; QA findings: NONE; QAR=PASS. |
 | 2026-09-16 | BE-FND-010 | Architecture Reviewer | PASS | Independent Architecture review verified constructor-injected `Clock`, UTC composition-root wiring, user-profile-timezone local-day conversion, removal of direct production wall-clock calls, valid dependency direction and absence of scope/contract drift; Architecture findings: NONE; AR=PASS. |
 | 2026-09-16 | BE-FND-010 | QA Reviewer | PASS | Independent QA review verified injectable/fixed `Clock`, explicit `user_profiles.timezone` day boundaries, server-zone independence, invalid-timezone rejection, exact error-envelope timestamp and 29/29 focused plus 89/89 full regression PASS; QA findings: NONE; QAR=PASS. |
+| 2026-09-16 | SEC-FND-001 | Security Reviewer | FAIL | Historical independent Security review: `SEC-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Secret audit had false negatives for common sensitive-key configuration formats. |
+| 2026-09-16 | SEC-FND-001 | Security Reviewer | PASS | Supplied independent focused Security re-review confirmed `SEC-SEC-FND-001-001` RESOLVED. Historical Security FAIL and Original Status OPEN remain preserved. |
+| 2026-09-16 | SEC-FND-001 | QA Reviewer | FAIL | Historical independent QA review: `QA-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Access-key and credential categories were not fully detected; the finding remains OPEN pending independent focused QA re-review. |
+| 2026-09-16 | SEC-FND-001 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-SEC-FND-001-001` RESOLVED; required probes and redaction regressions PASS, full backend regression 89/89 PASS, new QA findings: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 18 |    29 |              62.1% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 19 |    29 |              65.5% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -4788,4 +4796,382 @@ Git/publication stop state:
 - Next step: create the one final task-scoped commit, then fast-forward push
   main through the separate Git workflow; repository health becomes CI_PENDING
   after publication until Required CI completes.
+```
+
+## SEC-FND-001 — PLAN — 2026-09-16
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main; clean worktree before PLAN.
+- HEAD == main == origin/main:
+  f836f741cd741698ed96894c64025b6b7f1bb7ff.
+- Git operation in progress: NONE; other active direct-main task: NONE.
+- SEC-FND-001 owner/priority/status: CBL / P0 / TODO.
+- Dependency BE-FND-003: DONE.
+- CI-FND-001 is DONE/effective; PRE_CI permanently expired.
+- Required CI run 35071532519 for the exact origin/main SHA: completed /
+  success; repository health = HEALTHY.
+- Required reviewers: Security Reviewer and QA Reviewer.
+
+Canonical sources and decisions:
+- PROJECT_RULES Sections 54-55 prohibit committed secrets and sensitive logs;
+  secrets must come from environment variables or secret management.
+- Technical Specification v1.2 Section 69 requires environment-specific
+  configuration and prohibits committed JWT, database, AI and OAuth secrets.
+- Backend Technical Specification v1.3 keeps provider credentials on the
+  backend and outside client/source configuration.
+- Existing .env.example is local-only and contains a replacement placeholder,
+  not a credential; .gitignore already excludes environment/credential/key
+  files while allowing example templates.
+
+Scope:
+- Make application-prod.yml require datasource configuration from environment
+  variables without source-controlled fallback credentials.
+- Add a repository secret/config audit with isolated positive and negative
+  regression tests.
+- Run the secret audit and its tests in the existing CI Build/static gate while
+  preserving the canonical gate order and least-privilege workflow.
+- Document production environment/secret-manager injection and the prohibition
+  on committed/logged secret values.
+
+Explicitly out of scope:
+- JWT issuing/verification, OAuth, password hashing, provider SDKs/credentials,
+  CORS, security headers, rate limiting or structured/correlation logging.
+- API/OpenAPI, database/Flyway, clients or product business behavior.
+- Creating real .env files, credentials, keys or deployment-secret values.
+- Commit, push, merge, PR or baseline-tag mutation.
+
+PLAN transition: SEC-FND-001 TODO → IN_PROGRESS.
+```
+
+## SEC-FND-001 — IMPLEMENT / TEST — 2026-09-16
+
+```text
+Phạm vi lệnh: execute (PLAN → IMPLEMENT → TEST)
+Chế độ workflow: GOV009_DIRECT_MAIN
+Trạng thái task: IN_PROGRESS
+
+Thay đổi đã thực hiện:
+- application-prod.yml yêu cầu SPRING_DATASOURCE_URL,
+  SPRING_DATASOURCE_USERNAME và SPRING_DATASOURCE_PASSWORD từ environment;
+  không có credential fallback trong source.
+- Bổ sung tools/secret_audit.py quét file tracked và untracked không bị
+  ignore; chặn .env thật, file credential/key, private-key material, literal
+  sensitive assignment và production binding không đúng canonical.
+- Bổ sung regression test dương/âm cho environment reference,
+  placeholder, literal secret, .env, private key thường/encrypted và prod
+  binding bị thiếu.
+- Tích hợp secret audit, py_compile và regression tests vào gate
+  Build/static hiện hữu; ci_workflow_audit bảo vệ các lệnh này.
+- ConfigurationPropertiesTests cho phép duy nhất sensitive property có giá
+  trị là environment reference canonical, và vẫn từ chối literal/default.
+- README mô tả cách inject secret production bằng environment/secret
+  manager và cấm log/commit giá trị nhạy cảm.
+
+Kết quả TEST:
+- ConfigurationPropertiesTests: 4/4 PASS.
+- Secret + CI workflow audit regression tests: 20/20 PASS.
+- Build/static gate cục bộ: PASS.
+- Unit selector: 45/45 PASS.
+- PostgreSQL integration selector: 33/33 PASS; PostgreSQL 16.15 và Flyway
+  V1 → V3 PASS.
+- OpenAPI contract selector: 11/11 PASS.
+- Package: PASS.
+- Maven clean verify: 89/89 PASS; failure 0, error 0, skipped 0.
+- baseline_audit, ci_workflow_audit, secret_audit và py_compile: PASS.
+- git diff --check (tracked/cached), scope, untracked-whitespace,
+  conflict-marker, generated-file và baseline-tag integrity: PASS.
+
+Tác động contract/phạm vi:
+- API/OpenAPI: NONE.
+- Database/Flyway: NONE.
+- Clients: NONE.
+- Production database behavior: chỉ thay nguồn credential của profile prod
+  sang environment bắt buộc; schema/migration/runtime persistence không đổi.
+- Backward compatibility: local/test profile và PostgreSQL integration coverage
+  giữ nguyên; không thêm dependency.
+
+Trạng thái dừng:
+- SEC-FND-001 giữ IN_PROGRESS; chưa finalize/DONE.
+- Security Reviewer và QA Reviewer độc lập: NOT RUN.
+- Unresolved reviewer findings: NONE RECORDED; không tự tạo kết quả review.
+- Actual remote CI cho diff chưa commit hiện tại: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Bước kế tiếp: Security Reviewer, sau đó QA Reviewer.
+```
+
+## SEC-FND-001 — REMEDIATION SEC-SEC-FND-001-001 — 2026-09-16
+
+```text
+Chế độ workflow: GOV009_DIRECT_MAIN
+Task/status: SEC-FND-001 / IN_PROGRESS
+
+Lịch sử Security Reviewer được bảo toàn:
+- Historical SR result: FAIL.
+- Finding: SEC-SEC-FND-001-001.
+- Severity: MEDIUM.
+- Blocking: YES.
+- Original/Current Status: OPEN.
+- Finding không được tự đánh dấu RESOLVED; SR focused re-review là
+  reviewer duy nhất có thẩm quyền thay đổi final finding status.
+
+Remediation tập trung:
+- Thay uppercase-only assignment matcher bằng parser cấu hình
+  case-insensitive cho YAML, Java/Spring properties, env-style và JSON.
+- Chuẩn hóa dotted, underscore, hyphen và camelCase key về safe metadata;
+  bao phủ password, secret/client_secret, api_key/api-key/apiKey, token,
+  datasource/database password và private-key categories.
+- Finding output chỉ chứa finding type, path, line và normalized key;
+  không chứa discovered value.
+- Giữ nguyên .env, credential/key file, private-key material, placeholder,
+  production binding và Git-ignore checks.
+- Không thêm Git-history scan, gitleaks, auth, CORS, rate-limit, security
+  header hoặc thay đổi application contract.
+
+Evidence false-negative/redaction:
+- Synthetic probes cho lowercase YAML, dotted properties, lowercase/env,
+  quoted JSON và mixed/camel-case keys: 11/11 DETECTED.
+- Safe output mẫu: LITERAL_SECRET:<path>:line=<n>:key=<normalized-key>.
+- Synthetic discovered value không xuất hiện trong findings/stdout:
+  REDACTION_CHECK=PASS.
+- Secret audit focused regression tests: 13/13 PASS.
+- Secret + CI workflow audit regression tests: 26/26 PASS.
+
+TEST gate cuối:
+- python tools/secret_audit.py: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- py_compile applicable Python audit files/tests: PASS.
+- Unit selector: 45/45 PASS.
+- PostgreSQL integration selector: 33/33 PASS; PostgreSQL 16.15 và Flyway
+  V1 → V3 PASS.
+- OpenAPI contract selector: 11/11 PASS.
+- Package: PASS.
+- Maven clean verify: 89/89 PASS; failure 0, error 0, skipped 0.
+- baseline_audit: PASS.
+
+Hạ tầng test chronology:
+- Lần PostgreSQL selector đầu gặp 33 setup errors do Docker daemon pipe
+  không tồn tại; Surefire root cause là "Could not find a valid Docker
+  environment", không phải assertion/code regression.
+- Docker Desktop startup ban đầu gặp stale sailor-ingest.sock; không xóa/reset
+  dữ liệu Docker ngoài scope. Daemon sau đó phục hồi bình thường.
+- clean verify và PostgreSQL selector độc lập sau phục hồi đều PASS;
+  evidence FAIL hạ tầng ban đầu không bị ghi đè.
+
+Trạng thái dừng:
+- SEC-FND-001 giữ IN_PROGRESS.
+- SEC-SEC-FND-001-001 giữ OPEN pending independent focused SR re-review.
+- SR PASS/RESOLVED: NOT CLAIMED.
+- QAR: NOT RUN.
+- Actual remote CI cho current uncommitted diff: NOT RUN / NOT CLAIMED.
+- Finalize/commit/push/merge/PR/baseline-tag mutation: NONE.
+```
+
+## SEC-FND-001 — REMEDIATION QA-SEC-FND-001-001 — 2026-09-16
+
+```text
+Chế độ workflow: GOV009_DIRECT_MAIN
+Task/status: SEC-FND-001 / IN_PROGRESS
+
+Reviewer chronology được bảo toàn theo independent evidence đã cung cấp:
+- Initial Security Review: FAIL.
+- SEC-SEC-FND-001-001: MEDIUM / Blocking YES / Original Status OPEN.
+- Remediation SEC-SEC-FND-001-001 completed.
+- Independent focused Security re-review: PASS.
+- SEC-SEC-FND-001-001: RESOLVED; không reopen.
+- Current independent QA Review: FAIL.
+- QA-SEC-FND-001-001: MEDIUM / Blocking YES / Original/Current Status OPEN.
+- Current unresolved findings: QA-SEC-FND-001-001 only.
+
+Remediation tập trung:
+- normalized_sensitive_key nhận diện access-key/access_key/accessKey,
+  AWS_ACCESS_KEY_ID, credential và credentials trên cùng assignment-key
+  boundary hiện hữu.
+- OBJECT_STORAGE_ACCESS_KEY và OBJECT_STORAGE_SECRET_KEY phù hợp Backend
+  Technical Specification v1.3; password, client secret, API key, token và
+  private key behavior được giữ nguyên.
+- YAML, properties, env-style và JSON tiếp tục dùng chung parser;
+  scanner không tìm arbitrary prose chứa "credential".
+- Boolean credential control như persist-credentials: false/true được coi
+  là non-secret scalar; regression test bảo vệ không false-positive.
+- Finding rendering chỉ có finding type, path, line và normalized key;
+  discovered value không xuất hiện trong findings/stdout/stderr.
+
+False-negative/redaction evidence:
+- aws-access-key YAML: DETECTED as aws_access_key.
+- cloud.access-key properties: DETECTED as cloud_access_key.
+- AWS_ACCESS_KEY_ID env assignment: DETECTED as aws_access_key_id.
+- service-credential YAML: DETECTED as service_credential.
+- JSON accessKey: DETECTED as access_key.
+- JSON credential: DETECTED as credential.
+- Mixed/case-insensitive ACCESS_KEY: DETECTED as access_key.
+- Synthetic previous-false-negative probes: 7/7 DETECTED.
+- Synthetic credential value absent from finding/stdout/stderr rendering:
+  CREDENTIAL_REDACTION_CHECK=PASS.
+
+TEST gate:
+- Focused secret audit regression tests: 21/21 PASS.
+- Secret + CI workflow audit regression tests: 34/34 PASS.
+- python tools/secret_audit.py: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- py_compile applicable Python tools/tests: PASS.
+- Unit selector: 45/45 PASS.
+- PostgreSQL integration selector: 33/33 PASS; PostgreSQL 16.15 và Flyway
+  V1 → V3 PASS.
+- OpenAPI selector: 11/11 PASS.
+- Package: PASS.
+- Maven clean verify: 89/89 PASS; failure 0, error 0, skipped 0.
+- baseline_audit: PASS.
+
+Contract/scope impact:
+- API/OpenAPI, database/Flyway, clients và product behavior: NONE.
+- Git-history scanning, gitleaks, auth, CORS, rate-limit và security headers:
+  NOT IMPLEMENTED.
+- Dependency addition: NONE.
+
+Trạng thái dừng:
+- SEC-FND-001 giữ IN_PROGRESS.
+- SEC-SEC-FND-001-001 giữ RESOLVED theo prior independent SR re-review.
+- QA-SEC-FND-001-001 giữ OPEN pending independent focused QAR re-review.
+- QAR PASS/RESOLVED: NOT CLAIMED.
+- Không thực hiện hoặc claim Security re-review mới sau remediation QA này.
+- Actual remote CI cho current uncommitted diff: NOT RUN / NOT CLAIMED.
+- Finalize/commit/push/merge/PR/baseline-tag mutation: NONE.
+```
+
+## SEC-FND-001 — REVIEWER EVIDENCE SYNC — 2026-09-16
+
+```text
+Chế độ workflow: GOV009_DIRECT_MAIN
+Thao tác: đồng bộ independent reviewer evidence đã được cung cấp; không tự review.
+
+Reviewer chronology được bảo toàn:
+- Initial independent Security Review: FAIL.
+- SEC-SEC-FND-001-001: MEDIUM / Blocking YES / Original Status OPEN.
+- Remediation SEC-SEC-FND-001-001 completed.
+- Supplied independent focused Security re-review: PASS.
+- SEC-SEC-FND-001-001: RESOLVED; historical FAIL/OPEN evidence retained.
+- Independent QA Review: FAIL.
+- QA-SEC-FND-001-001: MEDIUM / Blocking YES / Original/Current Status OPEN.
+- Remediation QA-SEC-FND-001-001 completed.
+- Independent focused QA re-review: NOT SUPPLIED / NOT CLAIMED.
+
+Canonical reviewer state sau đồng bộ:
+- SR = PASS theo supplied independent focused Security re-review.
+- QAR = FAIL.
+- SEC-SEC-FND-001-001 = RESOLVED.
+- QA-SEC-FND-001-001 = OPEN.
+- Unresolved findings = QA-SEC-FND-001-001 only.
+
+Task/repository state được giữ nguyên:
+- SEC-FND-001 = IN_PROGRESS.
+- Branch = main.
+- Actual remote CI cho current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Finalize/DONE/commit/push/merge/PR/baseline-tag mutation = NONE.
+- Bước reviewer còn lại: independent focused QAR re-review cho QA-SEC-FND-001-001.
+```
+
+## SEC-FND-001 — FINAL INDEPENDENT REVIEWER EVIDENCE SYNC — 2026-09-16
+
+```text
+Chế độ workflow: GOV009_DIRECT_MAIN
+Thao tác: đồng bộ completed independent reviewer reports do owner cung cấp;
+không tự review và không tạo reviewer result.
+
+Security chronology:
+- Initial SR = FAIL.
+- SEC-SEC-FND-001-001 = MEDIUM / Blocking YES / Original Status OPEN.
+- Remediation completed.
+- Independent focused Security re-review = PASS.
+- SEC-SEC-FND-001-001 = RESOLVED.
+- Security Reviewer ghi đúng ranh giới thẩm quyền: tại thời điểm Security
+  re-review, QA-SEC-FND-001-001 vẫn thuộc QA Reviewer và chưa được SR resolve.
+- New Security findings = NONE.
+
+QA chronology:
+- Initial QAR = FAIL.
+- QA-SEC-FND-001-001 = MEDIUM / Blocking YES / Original Status OPEN.
+- Remediation completed.
+- Later authoritative independent focused QA re-review = PASS.
+- QA-SEC-FND-001-001 = RESOLVED.
+- New QA findings = NONE.
+
+Supplied independent validation evidence:
+- Secret/CI workflow regression suite = 34/34 PASS.
+- Synthetic access-key/credential probes = PASS; formerly missed categories
+  are detected and reported values remain redacted.
+- secret_audit, ci_workflow_audit, baseline_audit và py_compile = PASS.
+- Maven clean verify = 89/89 PASS; failures 0, errors 0.
+- PostgreSQL 16.15 và Flyway V1 → V3 execution = PASS.
+- git diff --check, cached diff, untracked whitespace và baseline-tag
+  integrity = PASS.
+
+Final canonical reviewer state:
+- SR = PASS.
+- QAR = PASS.
+- SEC-SEC-FND-001-001 = RESOLVED.
+- QA-SEC-FND-001-001 = RESOLVED.
+- Unresolved findings = NONE.
+
+Task/repository state được giữ nguyên:
+- SEC-FND-001 = IN_PROGRESS.
+- Branch = main.
+- HEAD == origin/main = f836f741cd741698ed96894c64025b6b7f1bb7ff.
+- Actual remote CI cho current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Finalize/DONE/commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## SEC-FND-001 — FINALIZATION — 2026-09-16
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Finalization gates:
+- Task/owner/priority before transition: SEC-FND-001 / CBL / P0 /
+  IN_PROGRESS.
+- Dependency BE-FND-003 = DONE.
+- Acceptance = PASS: production datasource credentials use required environment
+  bindings; repository/config secret audit is redacted and enforced in CI.
+- Required reviewers: SR = PASS; QAR = PASS.
+- SEC-SEC-FND-001-001 = RESOLVED; historical SR FAIL, MEDIUM,
+  Blocking YES and Original Status OPEN preserved.
+- QA-SEC-FND-001-001 = RESOLVED; historical QAR FAIL, MEDIUM,
+  Blocking YES and Original Status OPEN preserved.
+- Unresolved findings = NONE.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED;
+  under post-CI GOV-009 direct-main workflow it is the repository-health gate
+  after final commit/push, not a pre-DONE task gate.
+
+Final validation:
+- Maven clean verify = PASS; 89/89 tests, failures 0, errors 0, skipped 0.
+- PostgreSQL 16.15 Testcontainers and Flyway V1 → V3 = PASS.
+- Secret/CI workflow audit regression suite = 34/34 PASS.
+- secret_audit, ci_workflow_audit, baseline_audit and py_compile = PASS.
+- git diff --check and cached diff check = PASS.
+- Scope, untracked whitespace, conflict-marker, generated-file and
+  secret/private-key audits = PASS.
+- Baseline tags local/remote, annotated objects and peeled targets = PASS.
+- Staged changes = NONE.
+
+Lifecycle and milestone transition:
+- SEC-FND-001: IN_PROGRESS → DONE.
+- M1 execution progress: 19/29 (65.5%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- API/OpenAPI, database/Flyway schema, clients and product behavior = NONE.
+- No later-task, V2/V3 or dependency addition.
+
+Stop state:
+- Branch = main.
+- HEAD == origin/main = f836f741cd741698ed96894c64025b6b7f1bb7ff.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next step is the separate Git publication workflow for one final
+  SEC-FND-001-scoped commit and fast-forward push to main; repository health
+  becomes CI_PENDING until required remote CI completes.
 ```

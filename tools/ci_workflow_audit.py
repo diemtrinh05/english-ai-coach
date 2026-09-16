@@ -135,9 +135,10 @@ def audit() -> list[str]:
         "Install audit dependencies": ["--requirement requirements-dev.txt"],
         "Baseline audit": ["python tools/baseline_audit.py"],
         "Build and static checks": [
-            "python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py tools/test_ci_workflow_audit.py",
-            "python -m unittest tools.test_ci_workflow_audit",
+            "python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py tools/secret_audit.py tools/test_ci_workflow_audit.py tools/test_secret_audit.py",
+            "python -m unittest tools.test_ci_workflow_audit tools.test_secret_audit",
             "python tools/ci_workflow_audit.py",
+            "python tools/secret_audit.py",
             "clean test-compile -DskipTests",
         ],
         "OpenAPI contract tests": ["-Dtest=OpenApiContractHarnessTests test"],

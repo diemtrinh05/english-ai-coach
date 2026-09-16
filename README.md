@@ -125,6 +125,33 @@ java -jar backend/target/english-ai-coach-backend-0.0.1-SNAPSHOT.jar
 
 Flyway ghi version đã apply vào `flyway_schema_history`. Việc seed reference data, bổ sung performance/partial indexes, repository và Testcontainers harness thuộc các backlog task kế tiếp.
 
+## Cấu hình và secret production
+
+Profile `prod` không có credential mặc định trong source. Trước khi chạy với
+`SPRING_PROFILES_ACTIVE=prod`, môi trường triển khai phải cung cấp:
+
+```text
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+```
+
+Secret manager của nền tảng triển khai có thể inject trực tiếp các biến môi
+trường này. Không dùng `.env` local làm nguồn secret production và không thêm
+fallback password vào `application-prod.yml`.
+
+Các secret được bổ sung bởi task sau như JWT signing secret, OAuth client
+secret, LLM/TTS key hoặc FCM credential cũng phải được inject từ environment
+hoặc secret manager. Không ghi giá trị secret, token hoặc database credential
+vào log, exception message hay execution evidence.
+
+Kiểm tra baseline trước khi publish:
+
+```bash
+python tools/secret_audit.py
+python -m unittest tools.test_secret_audit
+```
+
 ## JPA base conventions
 
 BE-FND-004 bổ sung Spring Data JPA/Hibernate và các convention nền tảng sau:

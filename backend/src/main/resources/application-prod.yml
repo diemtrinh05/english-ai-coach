@@ -1,5 +1,10 @@
-# Profile prod dành chỗ cho override được phê duyệt; hiện không thay đổi default baseline.
+# Profile prod chỉ nhận thông tin kết nối nhạy cảm từ môi trường triển khai.
+# Không thêm fallback chứa credential vào file được source control quản lý.
 spring:
   config:
     activate:
       on-profile: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}

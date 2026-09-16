@@ -114,6 +114,28 @@ class CiWorkflowAuditTests(unittest.TestCase):
 
         self.assertTrue(any(issue.startswith("GATE_ORDER_DRIFT:") for issue in issues))
 
+    def test_rejects_missing_secret_audit(self) -> None:
+        workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8").replace(
+            "          python tools/secret_audit.py\n",
+            "",
+            1,
+        )
+
+        issues = self.audit_text(workflow)
+
+        self.assertTrue(any(issue.startswith("COMMAND_DRIFT:") for issue in issues))
+
+    def test_rejects_missing_secret_audit_tests(self) -> None:
+        workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8").replace(
+            " tools.test_secret_audit",
+            "",
+            1,
+        )
+
+        issues = self.audit_text(workflow)
+
+        self.assertTrue(any(issue.startswith("COMMAND_DRIFT:") for issue in issues))
+
     @staticmethod
     def with_required_job_permissions(permission: str) -> str:
         workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8")
