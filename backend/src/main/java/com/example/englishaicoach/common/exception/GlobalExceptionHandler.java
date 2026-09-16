@@ -1,6 +1,5 @@
 package com.example.englishaicoach.common.exception;
 
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,16 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.example.englishaicoach.common.clock.BusinessTimeProvider;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final BusinessTimeProvider timeProvider;
+
+    public GlobalExceptionHandler(BusinessTimeProvider timeProvider) {
+        this.timeProvider = timeProvider;
+    }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(
@@ -179,7 +186,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request,
             List<Map<String, Object>> details) {
         ApiErrorResponse body = new ApiErrorResponse(
-                Instant.now(),
+                timeProvider.now(),
                 status.value(),
                 code,
                 message,

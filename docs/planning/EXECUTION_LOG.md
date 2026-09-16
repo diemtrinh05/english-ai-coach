@@ -348,13 +348,15 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-15 | BE-FND-008 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-BE-FND-008-001` RESOLVED; the loser deterministically reaches the real PostgreSQL insert/lock path, receives `inserted=false`, replays the winner response, commits exactly one record and one mutation, and does not return 500; new QA findings: NONE; QAR=PASS. Historical QAR FAIL and Original Status OPEN remain preserved. |
 | 2026-09-16 | BE-FND-009 | Database Reviewer | PASS | Independent Database review verified canonical BIGINT/JPA Long `@Version` mappings for `user_vocabulary_progress` and `streaks`, real PostgreSQL stale-write rejection, preserved winner state, unchanged schema/Flyway and fresh V1 → V2 → V3 validation; Database findings: NONE; DBR=PASS. |
 | 2026-09-16 | BE-FND-009 | QA Reviewer | PASS | Independent QA review verified canonical HTTP 409 + `CONCURRENT_UPDATE` mapping for Jakarta/Spring optimistic-lock exceptions, real stale-version conflict without silent overwrite, 13/13 focused and 84/84 full regression PASS; QA findings: NONE; QAR=PASS. |
+| 2026-09-16 | BE-FND-010 | Architecture Reviewer | PASS | Independent Architecture review verified constructor-injected `Clock`, UTC composition-root wiring, user-profile-timezone local-day conversion, removal of direct production wall-clock calls, valid dependency direction and absence of scope/contract drift; Architecture findings: NONE; AR=PASS. |
+| 2026-09-16 | BE-FND-010 | QA Reviewer | PASS | Independent QA review verified injectable/fixed `Clock`, explicit `user_profiles.timezone` day boundaries, server-zone independence, invalid-timezone rejection, exact error-envelope timestamp and 29/29 focused plus 89/89 full regression PASS; QA findings: NONE; QAR=PASS. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 17 |    29 |              58.6% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 18 |    29 |              62.1% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -4549,6 +4551,239 @@ Git/publication stop state:
   fcc9544fdb8602b08a34f22a080b686e62b93a2b.
 - Actual remote CI for this uncommitted finalized task diff: NOT RUN /
   NOT CLAIMED; the observed Required CI applies only to unchanged origin/main.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Next step: create the one final task-scoped commit, then fast-forward push
+  main through the separate Git workflow; repository health becomes CI_PENDING
+  after publication until Required CI completes.
+```
+
+## BE-FND-010 — PLAN — 2026-09-16
+
+```text
+Command boundary: execute (PLAN → IMPLEMENT → TEST)
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main; clean worktree before PLAN.
+- HEAD == main == origin/main == remote refs/heads/main:
+  a5a9db9a3e1ae844c1ae007efc8c06603e04ea9d.
+- Git operation in progress: NONE; other active direct-main task: NONE.
+- BE-FND-010 owner/priority/status: CBL / P0 / TODO.
+- Dependency BE-FND-003: DONE.
+- CI-FND-001 is DONE/effective; PRE_CI permanently expired.
+- Live Required CI run 35048850199 for the exact origin/main SHA:
+  completed / success; repository health = HEALTHY.
+- Required reviewers: Architecture Reviewer and QA Reviewer.
+
+Canonical sources and decisions:
+- Technical Specification v1.2 Section 19 requires backend-authoritative time
+  and injectable java.time.Clock for deterministic tests.
+- Backend Technical Specification v1.3 Sections 91-93 and 164 require UTC
+  internal time, conversion by user profile timezone, today(userTimezone) and
+  fixed/injectable Clock testing.
+- Database Schema v1.6 defines user_profiles.timezone as VARCHAR(50) NOT NULL.
+- SRS v1.2 requires Daily Plan and streak local-day boundaries to use
+  user_profiles.timezone rather than server timezone.
+
+Scope:
+- Register a production UTC Clock bean for constructor injection.
+- Add a small common clock abstraction that derives an Instant from the
+  injected Clock and a LocalDate from the supplied user_profiles.timezone.
+- Remove the remaining production direct Instant.now() call from the common
+  error-envelope path by using the shared injectable time abstraction.
+- Add isolated fixed-clock and Spring bean-wiring tests, including two user
+  timezones that resolve to different local dates at the same instant.
+
+Explicitly out of scope:
+- Daily Plan, SRS, streak, token or notification business implementations.
+- UserProfile entity/repository/API, timezone update validation or persistence.
+- Database/Flyway, API/OpenAPI, client or scheduling changes.
+- Retry policy, DST scheduling algorithms, later-task/V2-V3 behavior or
+  unrelated refactoring.
+- Commit, push, merge, PR or baseline-tag mutation.
+
+PLAN transition: BE-FND-010 TODO → IN_PROGRESS.
+```
+
+## BE-FND-010 — IMPLEMENT / TEST — 2026-09-16
+
+```text
+Implementation:
+- Added a production UTC java.time.Clock bean and constructor-injected
+  BusinessTimeProvider.
+- BusinessTimeProvider now supplies backend-authoritative Instant values and
+  derives local dates exclusively from the supplied user_profiles.timezone.
+- GlobalExceptionHandler now obtains canonical envelope timestamps through
+  the injected provider; no production direct Instant.now()/LocalDate.now()
+  call remains.
+- Added isolated fixed-clock, timezone-boundary and Spring bean-wiring tests.
+
+Acceptance evidence:
+- Injectable Clock: PASS; applicationClock is UTC and BusinessTimeProvider is
+  resolved through Spring constructor injection.
+- Fixed-clock determinism: PASS; the exact test instant is preserved.
+- User timezone local-day rule: PASS; the same instant resolves to 2026-09-17
+  for Asia/Ho_Chi_Minh and 2026-09-16 for America/New_York.
+- Server/default Clock zone independence: PASS; local-day calculation uses the
+  explicit user profile timezone, not the Clock/server zone.
+- Invalid timezone identifiers fail closed through ZoneId validation.
+
+Validation:
+- Focused BusinessTimeProviderTests, GlobalExceptionHandlerTests and
+  ApiConventionTests: PASS — 29/29; failures 0; errors 0; skipped 0.
+- Maven clean verify: PASS — 89/89; failures 0; errors 0; skipped 0.
+- Unit selector (!*IntegrationTests,!OpenApiContractHarnessTests): PASS —
+  45/45.
+- PostgreSQL integration selector (*IntegrationTests): PASS — 33/33.
+- OpenAPI contract selector: PASS — 11/11.
+- Package/repackage: PASS.
+- PostgreSQL 16.15/Testcontainers, Flyway V1 → V2 → V3 and Hibernate
+  validation: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python tools/baseline_audit.py: PASS.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check: PASS.
+- Scope, untracked-whitespace, conflict-marker, secret/private-key,
+  generated-file and baseline-tag integrity audits: PASS; findings 0.
+
+Contract/scope impact:
+- API/OpenAPI: NONE.
+- Database/Flyway: NONE; user_profiles.timezone contract is consumed as the
+  authoritative timezone source but no persistence layer is introduced.
+- Clients: NONE.
+- Migration: NONE.
+- Backward compatibility: canonical error-envelope shape and status/code
+  behavior are unchanged; only timestamp acquisition is injectable.
+- Unrelated/later-task/V2-V3 scope: NONE.
+
+Lifecycle/review stop state:
+- BE-FND-010 remains IN_PROGRESS after PLAN → IMPLEMENT → TEST.
+- Architecture Reviewer and QA Reviewer have not yet reviewed this task.
+- Unresolved implementation findings: NONE; reviewer findings: NOT YET
+  DETERMINED.
+- Actual remote CI for the current uncommitted diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Next independent gates: Architecture Reviewer, then QA Reviewer.
+```
+
+## BE-FND-010 — INDEPENDENT REVIEWER EVIDENCE SYNC — 2026-09-16
+
+```text
+Operation boundary: evidence synchronization only; no self-review.
+Workflow mode: GOV009_DIRECT_MAIN
+Task state: BE-FND-010 remains IN_PROGRESS.
+Branch/HEAD: main / a5a9db9a3e1ae844c1ae007efc8c06603e04ea9d
+HEAD == origin/main at both independent review points.
+
+Independent Architecture Review:
+- Result: PASS; AR = PASS.
+- Architecture findings: NONE.
+- Verified constructor-injected java.time.Clock, Clock.systemUTC() wiring at
+  the composition root and BusinessTimeProvider independence from Spring,
+  persistence, controllers and domain repositories.
+- Verified today(userProfileTimezone) uses the explicit
+  user_profiles.timezone value rather than server/default Clock timezone.
+- Verified GlobalExceptionHandler uses the common time abstraction and no
+  production direct Instant.now()/LocalDate.now()/system-time call remains.
+- Verified no dependency cycle, business-rule leakage, API/OpenAPI, database,
+  Flyway, client, Daily Plan, SRS, streak, scheduler or notification scope
+  change.
+- Independent validation reported focused 29/29 and Maven clean verify 89/89
+  PASS, baseline/CI/py_compile/diff/whitespace/conflict/secret/tag guards PASS.
+- Reviewer boundary preserved: Architecture Reviewer did not claim QAR PASS.
+
+Independent QA Review:
+- Result: PASS; QAR = PASS.
+- QA findings: NONE.
+- Verified production UTC Clock bean and constructor injection, exact fixed
+  instant behavior and explicit timezone conversion.
+- Verified one instant maps to 2026-09-17 for Asia/Ho_Chi_Minh and 2026-09-16
+  for America/New_York, and server/Clock zone cannot override the supplied
+  user profile timezone.
+- Verified invalid timezone rejection, fixed error-envelope timestamp and
+  absence of direct production wall-clock calls.
+- Focused tests: 29/29 PASS; Maven clean verify: 89/89 PASS; PostgreSQL 16.15,
+  Flyway V1 → V2 → V3, Hibernate validation, package, baseline/CI audits,
+  CI audit regressions 11/11 and hygiene guards: PASS.
+- Reviewer boundary preserved: QA Reviewer did not claim AR PASS.
+
+Synchronized canonical reviewer state:
+- Required reviewers: AR, QAR.
+- AR = PASS.
+- QAR = PASS.
+- Reviewer findings: NONE.
+- Unresolved findings: NONE.
+- Acceptance evidence: COMPLETE.
+
+Required unchanged stop state:
+- BE-FND-010 remains IN_PROGRESS; finalization is NOT PERFORMED.
+- Actual remote CI for the current uncommitted diff: NOT RUN / NOT CLAIMED.
+  Required CI run 35048850199 applies only to unchanged origin/main at the
+  admission/review baseline.
+- Product code/tests/API/OpenAPI/database/Flyway/clients: NOT MODIFIED by this
+  evidence synchronization operation.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+```
+
+## BE-FND-010 — FINALIZATION — 2026-09-16
+
+```text
+Command boundary: finalize
+Workflow mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Closure prerequisites:
+- Task/owner/priority: BE-FND-010 / CBL / P0.
+- Dependency BE-FND-003: DONE.
+- Required reviewers: AR, QAR.
+- Independent Architecture Reviewer: PASS; Architecture findings NONE.
+- Independent QA Reviewer: PASS; QA findings NONE.
+- Unresolved findings: NONE.
+- Acceptance: PASS — business time uses injectable Clock, local-day uses the
+  supplied user_profiles.timezone and fixed-clock tests prove deterministic
+  timezone behavior independent of server/default Clock zone.
+- CI-FND-001 is DONE/effective; PRE_CI is permanently expired.
+- Required CI run 35048850199 for unchanged origin/main SHA
+  a5a9db9a3e1ae844c1ae007efc8c06603e04ea9d: completed / success at task
+  admission and review baseline.
+- Actual remote CI for this uncommitted task diff: NOT RUN / NOT CLAIMED, as
+  required by the direct-main pre-publication lifecycle.
+
+Final validation:
+- Maven clean verify: PASS — 89/89; failures 0; errors 0; skipped 0.
+- PostgreSQL 16.15/Testcontainers, Flyway V1 → V2 → V3, Hibernate
+  validation and package/repackage: PASS.
+- Focused tests recorded by implementation and independent reviewers: 29/29
+  PASS.
+- python tools/baseline_audit.py: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python -m unittest -v tools.test_ci_workflow_audit: PASS — 11/11.
+- python -m py_compile applicable audit files: PASS.
+- git diff --check and cached diff check: PASS.
+- Direct production wall-clock call audit: PASS; findings 0.
+- Scope, untracked-whitespace, conflict-marker, secret/private-key,
+  generated-file and baseline-tag integrity audits: PASS; findings 0.
+- Active PostgreSQL/Testcontainers/Ryuk containers after validation: NONE.
+
+Lifecycle and milestone transition:
+- BE-FND-010: IN_PROGRESS → DONE.
+- M1 execution progress: 18/29 (62.1%); milestone remains IN_PROGRESS.
+
+Contract/scope impact:
+- API/OpenAPI: NONE; canonical error-envelope shape/status/code unchanged.
+- Database/Flyway: NONE; user_profiles.timezone contract is consumed without
+  persistence or migration changes.
+- Clients: NONE.
+- Security/business rules: NONE.
+- Backward compatibility: PASS; timestamp values remain Instant-based while
+  their source is now injectable and deterministic.
+- Unrelated/later-task/V2-V3 scope: NONE.
+
+Git/publication stop state:
+- Branch: main; HEAD and origin/main remain
+  a5a9db9a3e1ae844c1ae007efc8c06603e04ea9d.
 - Commit/push/merge/PR/baseline-tag mutation: NONE.
 - Next step: create the one final task-scoped commit, then fast-forward push
   main through the separate Git workflow; repository health becomes CI_PENDING

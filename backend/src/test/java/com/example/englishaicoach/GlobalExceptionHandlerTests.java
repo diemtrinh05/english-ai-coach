@@ -9,6 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.englishaicoach.common.clock.BusinessTimeProvider;
 import com.example.englishaicoach.common.exception.ApiErrorCodes;
 import com.example.englishaicoach.common.exception.ApiException;
 import com.example.englishaicoach.common.exception.ConcurrentUpdateException;
@@ -32,12 +36,15 @@ import com.example.englishaicoach.common.exception.IdempotencyKeyReuseException;
 
 class GlobalExceptionHandlerTests {
 
+    private static final Instant TEST_NOW = Instant.parse("2026-09-16T12:34:56Z");
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new TestController())
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(new BusinessTimeProvider(
+                        Clock.fixed(TEST_NOW, ZoneOffset.UTC))))
                 .build();
     }
 
@@ -47,7 +54,7 @@ class GlobalExceptionHandlerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.timestamp").value(TEST_NOW.toString()))
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.code").value(ApiErrorCodes.VALIDATION_ERROR))
                 .andExpect(jsonPath("$.message").value("Yêu cầu không hợp lệ."))

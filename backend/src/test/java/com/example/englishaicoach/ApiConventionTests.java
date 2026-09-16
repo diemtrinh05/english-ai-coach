@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.englishaicoach.common.clock.BusinessTimeProvider;
 import com.example.englishaicoach.common.exception.ApiErrorCodes;
 import com.example.englishaicoach.common.exception.GlobalExceptionHandler;
 import com.example.englishaicoach.common.mapper.EntityResponseMapper;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.RecordComponent;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +54,8 @@ class ApiConventionTests {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new ConventionController())
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(
+                        new BusinessTimeProvider(Clock.systemUTC())))
                 .build();
     }
 
