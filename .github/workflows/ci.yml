@@ -45,6 +45,13 @@ jobs:
           cache: maven
           cache-dependency-path: backend/pom.xml
 
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: admin-web/package-lock.json
+
       - name: Build and static checks
         run: |
           python -m py_compile tools/baseline_audit.py tools/ci_workflow_audit.py tools/secret_audit.py tools/test_ci_workflow_audit.py tools/test_secret_audit.py
@@ -52,6 +59,15 @@ jobs:
           python tools/ci_workflow_audit.py
           python tools/secret_audit.py
           sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml clean test-compile -DskipTests
+
+      - name: Admin Web validation
+        working-directory: admin-web
+        run: |
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm run test:run
+          npm run build
 
       - name: Unit tests
         run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -Dtest='!*IntegrationTests,!OpenApiContractHarnessTests' test

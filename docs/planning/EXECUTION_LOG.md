@@ -283,6 +283,8 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-16 | SEC-FND-001 | RESOLVED | `SEC-SEC-FND-001-001` — historical Security Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused Security re-review PASS confirmed the remediation; final finding Status: RESOLVED. |
 | 2026-09-16 | SEC-FND-001 | OPEN | `QA-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Secret detection missed access-key and credential categories, including object-storage credential names. | Added access-key, `AWS_ACCESS_KEY_ID`, credential/credentials coverage and redaction regressions; finding remains OPEN pending independent focused QA re-review. |
 | 2026-09-16 | SEC-FND-001 | RESOLVED | `QA-SEC-FND-001-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused QA re-review PASS confirmed access-key/credential detection across YAML, properties, env-style and JSON, preserved placeholder/boolean-control behavior and redacted output; final finding Status: RESOLVED; new QA findings: NONE. |
+| 2026-09-17 | ADM-FND-001 | OPEN | `QA-ADM-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Required CI did not validate `admin-web`, so a broken Linux frontend could pass the required workflow. | Added fail-closed Admin Web install/lint/typecheck/component-test/production-build validation to the existing Required CI job and regression-protected the contract; remediation is complete, but the finding remains OPEN pending independent focused QA re-review. |
+| 2026-09-17 | ADM-FND-001 | RESOLVED | `QA-ADM-FND-001-001` — historical QA Reviewer FAIL preserved; Severity: MEDIUM; Blocking: YES; Original Status: OPEN. | Supplied independent focused QA re-review PASS confirmed fail-closed Admin Web validation in Required CI, audit regression protection and no regression; final finding Status: RESOLVED; new QA findings: NONE. |
 
 #### Review result log
 
@@ -358,13 +360,16 @@ If a proposed decision would change an approved contract, do not record it as an
 | 2026-09-16 | SEC-FND-001 | Security Reviewer | PASS | Supplied independent focused Security re-review confirmed `SEC-SEC-FND-001-001` RESOLVED. Historical Security FAIL and Original Status OPEN remain preserved. |
 | 2026-09-16 | SEC-FND-001 | QA Reviewer | FAIL | Historical independent QA review: `QA-SEC-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Access-key and credential categories were not fully detected; the finding remains OPEN pending independent focused QA re-review. |
 | 2026-09-16 | SEC-FND-001 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-SEC-FND-001-001` RESOLVED; required probes and redaction regressions PASS, full backend regression 89/89 PASS, new QA findings: NONE; QAR=PASS. Historical QA FAIL and Original Status OPEN remain preserved. |
+| 2026-09-17 | ADM-FND-001 | QA Reviewer | FAIL | Historical independent QA review: `QA-ADM-FND-001-001` — Severity: MEDIUM; Blocking: YES; Original Status: OPEN. Required CI omitted Linux Admin Web validation. Focused remediation is complete; independent focused QA re-review is required and the finding remains OPEN. |
+| 2026-09-17 | ADM-FND-001 | Architecture Reviewer | PASS | Supplied independent Architecture Review inspected the full tracked and untracked current-task diff after remediation; architecture findings: NONE; unresolved Architecture findings: NONE; AR=PASS. Its statement that `QA-ADM-FND-001-001` was still OPEN is preserved as the correct historical snapshot at review time and does not resolve or reopen the QA-owned finding. |
+| 2026-09-17 | ADM-FND-001 | QA Reviewer | PASS | Supplied independent focused QA re-review confirmed `QA-ADM-FND-001-001` RESOLVED; Required CI Admin Web gate and regression protections PASS; new QA findings: NONE; unresolved QA findings: NONE; QAR=PASS. Historical QAR FAIL and Original Status OPEN remain preserved. |
 
 #### Milestone status
 
 | Milestone                                | Execution complete | Total | Execution progress | DoD status  |
 | ---------------------------------------- | -----------------: | ----: | -----------------: | ----------- |
 | M0 — Execution Governance                |                  7 |     7 |               100% | PASS        |
-| M1 — Foundation Ready                    |                 19 |    29 |              65.5% | IN_PROGRESS |
+| M1 — Foundation Ready                    |                 20 |    29 |              69.0% | IN_PROGRESS |
 | M2 — Identity & Catalog                  |                  0 |    21 |                 0% | NOT_STARTED |
 | M3 — First Vertical Slice — Learning/SRS |                  0 |    16 |                 0% | NOT_STARTED |
 | M4                                       |                  0 |    14 |                 0% | NOT_STARTED |
@@ -5174,4 +5179,287 @@ Stop state:
 - Next step is the separate Git publication workflow for one final
   SEC-FND-001-scoped commit and fast-forward push to main; repository health
   becomes CI_PENDING until required remote CI completes.
+```
+
+## ADM-FND-001 — PLAN — 2026-09-17
+
+```text
+Phạm vi lệnh: execute (PLAN → IMPLEMENT → TEST)
+Chế độ workflow: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch: main; worktree sạch trước PLAN.
+- HEAD == main == origin/main:
+  17200d22182ebd793c09414ebcdf2394e33ad37a.
+- Git operation đang chạy: NONE; direct-main task khác đang active: NONE.
+- ADM-FND-001 owner/priority/status trước transition: AFL / P0 / TODO.
+- Dependency GOV-006: DONE.
+- CI-FND-001: DONE/effective; PRE_CI đã hết hiệu lực vĩnh viễn.
+- Required CI run 35102910449 cho đúng origin/main SHA: completed / success;
+  repository health = HEALTHY.
+- Required reviewers: Architecture Reviewer và QA Reviewer.
+
+Canonical sources và phạm vi:
+- Admin Web dùng React + TypeScript + Vite, là SPA riêng gọi Spring Boot REST
+  API; không dùng Thymeleaf và không truy cập PostgreSQL/LLM trực tiếp.
+- Structure tuân theo Admin Web Technical Specification v1.1 với app,
+  components, features, services, hooks, types, utils và constants.
+- UI V1 dùng vi-VN; visible copy đi qua centralized typed Vietnamese messages
+  module; không thêm i18n framework hoặc locale switcher.
+- Bootstrap bao gồm project/tooling, theme/design tokens tối thiểu, accessible
+  application shell placeholder và smoke/unit coverage đủ chứng minh build.
+
+Explicit out of scope:
+- HTTP/API client, auth interceptor, query/mutation foundation và canonical
+  API error parsing của ADM-FND-002.
+- Admin authentication/route guard business flow của ADM-AUTH-001.
+- Dashboard statistics, feature CRUD, backend/API/OpenAPI/database/Flyway,
+  client-side business algorithms, V2 và AI CEFR Suggestion.
+- Commit, push, merge, PR hoặc baseline-tag mutation.
+
+PLAN transition: ADM-FND-001 TODO → IN_PROGRESS.
+```
+
+## ADM-FND-001 — IMPLEMENT / TEST — 2026-09-17
+
+```text
+Phạm vi lệnh: execute (PLAN → IMPLEMENT → TEST)
+Chế độ workflow: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-001 / IN_PROGRESS
+
+Implementation:
+- Bootstrap admin-web bằng React 19 + TypeScript strict + Vite; npm lockfile là
+  package-manager authority và clean npm ci có thể tái lập.
+- Bổ sung composition root, provider, React Router wiring tối thiểu, typed
+  Vietnamese message catalog, theme/design tokens và responsive accessible
+  Admin shell placeholder theo Admin Tech/UI/High-Fidelity.
+- Bổ sung Vitest + Testing Library component coverage, ESLint, typecheck,
+  production build scripts, package hygiene và tài liệu run/architecture.
+- Không thêm API client, query/mutation, auth interceptor/route guard business
+  behavior, backend/API/OpenAPI/database/Flyway hoặc feature logic task sau.
+
+Validation chronology được bảo toàn:
+- Lần install/gate đầu tự nâng dependency ranges lên package artifacts thiếu
+  react/jsx-runtime và Babel module: lint/test/build FAIL.
+- Sau khi khóa các runtime/tooling package cần thiết và cài lại, component test
+  phát hiện DOM cleanup thiếu giữa hai test: 1/2 FAIL; đã bổ sung cleanup trong
+  test setup, không thay đổi production behavior.
+- Clean-install final gate: npm ci PASS; 259 packages; 0 vulnerabilities.
+- npm run lint: PASS.
+- npm run typecheck: PASS.
+- npm run test:run: PASS — 1 file, 2/2 tests.
+- npm run build: PASS; Vite production assets tạo thành công trong dist.
+- npm audit --audit-level=high: PASS — 0 vulnerabilities.
+
+Repository audits/guards:
+- python tools/baseline_audit.py: PASS.
+- python tools/ci_workflow_audit.py: PASS.
+- python tools/secret_audit.py: PASS.
+- Audit regression suite: PASS — 34/34.
+- git diff --check và git diff --cached --check: PASS.
+- Untracked whitespace, conflict marker, secret/private-key, scope và
+  generated-file checks: PASS.
+- node_modules và dist: ignored, không tracked.
+- Baseline tag annotated objects/peeled targets: unchanged.
+
+Acceptance/impact:
+- SPA production build: PASS.
+- Structure theo Admin Web Technical Specification v1.1: PASS.
+- Không Thymeleaf/direct DB/direct LLM: PASS.
+- Centralized typed Vietnamese messages và lang=vi: PASS.
+- API/OpenAPI/database/Flyway/backend/mobile contract impact: NONE.
+- Dependency addition chỉ phục vụ React/Vite/router/lint/test foundation;
+  không có production vulnerability theo npm audit.
+- Later-task/V2 leakage: NONE.
+
+Required stop state:
+- ADM-FND-001 giữ IN_PROGRESS; chưa REVIEW/finalize/DONE.
+- Independent Architecture Reviewer: NOT RUN.
+- Independent QA Reviewer: NOT RUN.
+- Unresolved reviewer findings: NONE RECORDED; không tự tạo review result.
+- Actual remote CI cho current uncommitted diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+- Bước tiếp theo: independent Architecture Reviewer và QA Reviewer kiểm tra
+  toàn bộ tracked + untracked current-task changes.
+```
+
+## ADM-FND-001 — REMEDIATION QA-ADM-FND-001-001 — 2026-09-17
+
+```text
+Phạm vi lệnh: remediate QA-ADM-FND-001-001 only
+Chế độ workflow: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-001 / IN_PROGRESS
+
+Chronology được bảo toàn:
+- Historical QAR result: FAIL.
+- QA-ADM-FND-001-001: MEDIUM / Blocking YES / OPEN.
+- Không tự review, không ghi QAR/AR PASS và không chuyển finding sang RESOLVED.
+
+Remediation:
+- Required CI hiện hữu trên ubuntu-latest bổ sung actions/setup-node được pin
+  immutable SHA, cache npm theo admin-web/package-lock.json và không thay đổi
+  permissions contents: read hoặc checkout persist-credentials: false.
+- Chọn Node major 24 và npm major 11 từ metadata/toolchain canonical của
+  admin-web; package.json ghi packageManager npm@11.19.0, engines Node >=24 <25
+  và npm >=11 <12; package-lock v3 đã đồng bộ.
+- Cùng job Required CI chạy fail-closed trong working-directory admin-web:
+  npm ci; npm run lint; npm run typecheck; npm run test:run; npm run build.
+- Không dùng continue-on-error; lỗi ở bất kỳ lệnh nào làm Required CI fail.
+- Không thay đổi hoặc làm yếu baseline, secret audit, backend build/static,
+  Unit, PostgreSQL integration, OpenAPI contract hoặc Package gate.
+- ci_workflow_audit kiểm tra package metadata, pinned setup-node, Node version,
+  npm cache/lockfile, explicit admin-web working directory, không
+  continue-on-error và đúng toàn bộ command sequence.
+- Regression tests chứng minh audit fail khi thiếu setup-node, dùng action
+  không pin SHA, sai Node version, thiếu working-directory, bật
+  continue-on-error, hoặc xóa/làm yếu từng Admin Web command bằng `|| true`.
+
+Admin Web validation:
+- npm ci: PASS — 259 packages; 0 vulnerabilities.
+- npm run lint: PASS.
+- npm run typecheck: PASS.
+- npm run test:run: PASS — 1 file, 2/2 tests.
+- npm run build: PASS — production build generated successfully.
+- npm audit --audit-level=high: PASS — 0 vulnerabilities.
+
+Repository/CI-equivalent validation:
+- py_compile cho toàn bộ audit scripts/tests áp dụng: PASS.
+- baseline_audit, ci_workflow_audit và secret_audit: PASS.
+- CI workflow + secret audit regression suite: PASS — 40/40.
+- Maven clean test-compile: PASS.
+- Unit tests: PASS — 45/45.
+- PostgreSQL integration tests: PASS — 33/33 trên PostgreSQL 16.15 với
+  Flyway V1 → V3.
+- OpenAPI contract tests: PASS — 11/11.
+- Maven package: PASS.
+
+Impact/scope:
+- CI files changed: .github/workflows/ci.yml, tools/ci_workflow_audit.py,
+  tools/test_ci_workflow_audit.py; Admin metadata/lockfile synchronized.
+- API/OpenAPI, database/Flyway, backend product behavior, Android và V2: NONE.
+- ADM-FND-002, ADM-AUTH-001 và Admin business features: NOT TOUCHED.
+- node_modules và dist remain ignored/untracked.
+
+Required stop state:
+- ADM-FND-001 remains IN_PROGRESS.
+- QA-ADM-FND-001-001 remains OPEN pending independent focused QA re-review.
+- Actual remote CI for current uncommitted diff: NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation: NONE.
+```
+
+## ADM-FND-001 — REVIEWER EVIDENCE SYNCHRONIZATION — 2026-09-17
+
+```text
+Operation: synchronize independent reviewer evidence
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-001 / IN_PROGRESS
+Branch: main
+Reviewer baseline: HEAD == origin/main ==
+17200d22182ebd793c09414ebcdf2394e33ad37a
+
+Authoritative evidence supplied by the repository owner:
+- Independent Architecture Review: PASS; Architecture findings = NONE;
+  unresolved Architecture findings = NONE; recommendation APPROVE.
+- Independent focused QA re-review: PASS; QA-ADM-FND-001-001 = RESOLVED;
+  new QA findings = NONE; recommendation APPROVE.
+
+Chronology preserved exactly:
+1. Initial QAR = FAIL.
+2. QA-ADM-FND-001-001 = MEDIUM / Blocking YES / Original Status OPEN.
+3. Remediation added fail-closed Admin Web validation to Required CI.
+4. Independent Architecture Review = PASS with Architecture findings NONE.
+   Its statement that QA-ADM-FND-001-001 remained OPEN was the correct
+   historical snapshot before focused QAR re-review; AR did not own QA
+   finding resolution.
+5. Later authoritative focused QAR re-review = PASS.
+6. QA-ADM-FND-001-001 final Status = RESOLVED.
+7. New QA findings = NONE.
+
+Canonical reviewer state after chronological synchronization:
+- AR = PASS.
+- QAR = PASS.
+- QA-ADM-FND-001-001 = RESOLVED.
+- Architecture findings = NONE.
+- Unresolved QA findings = NONE.
+- Unresolved findings = NONE.
+
+Synchronization boundary:
+- Reviewer reports were not rewritten and no reviewer result was invented.
+- No application, CI, audit or package implementation was changed by this
+  synchronization operation.
+- ADM-FND-001 remains IN_PROGRESS; no finalization or DONE transition.
+- Actual remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## ADM-FND-001 — FINALIZATION — 2026-09-17
+
+```text
+Operation: finalize
+Mode: GOV009_DIRECT_MAIN
+Branch: main
+Pre-finalization task state: IN_PROGRESS
+Dependency GOV-006: DONE
+HEAD == origin/main: 17200d22182ebd793c09414ebcdf2394e33ad37a
+Git operation in progress: NONE; staged files: NONE
+
+Reviewer gates and chronology:
+- Required reviewers: Architecture Reviewer and QA Reviewer.
+- AR = PASS; Architecture findings = NONE; unresolved Architecture findings =
+  NONE.
+- Historical QAR = FAIL and QA-ADM-FND-001-001 Original Status OPEN remain
+  preserved.
+- Remediation added fail-closed Admin Web validation to Required CI.
+- Independent focused QAR re-review = PASS.
+- QA-ADM-FND-001-001 final Status = RESOLVED; new QA findings = NONE.
+- Unresolved findings = NONE.
+
+Acceptance verification:
+- React + TypeScript + Vite Admin SPA production build = PASS.
+- Module structure follows Admin Web Technical Specification v1.1 = PASS.
+- No Thymeleaf, direct PostgreSQL/LLM access or backend-owned client business
+  algorithm = PASS.
+- Centralized typed Vietnamese messages and vi-VN UI foundation = PASS.
+- Required CI validates npm clean install, lint, typecheck, component tests and
+  production build fail-closed on ubuntu-latest = PASS.
+- ADM-FND-002, ADM-AUTH-001, Admin business features, Android and V2 leakage =
+  NONE.
+
+Final validation:
+- npm ci = PASS; 259 packages; 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 2/2 tests.
+- npm run build = PASS.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- baseline_audit, ci_workflow_audit, secret_audit and applicable py_compile =
+  PASS.
+- CI workflow + secret audit regression suite = PASS; 40/40.
+- The first final Maven verify attempt encountered only unavailable local Docker
+  infrastructure; no source assertion failed. Docker Desktop was restored and
+  docker info reported server 29.7.2 before the mandatory rerun.
+- Maven clean verify rerun = PASS; 89/89 tests, failures 0, errors 0, skipped 0;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+- git diff --check and git diff --cached --check = PASS.
+- Untracked whitespace, conflict-marker, scope, secret/private-key and
+  generated-file audits = PASS.
+- node_modules, dist and build are not tracked; package lock is present.
+- Baseline tag local/remote objects and peeled targets = MATCH.
+
+Contract/impact:
+- API/OpenAPI, database/Flyway, backend behavior, Android and Flutter impact =
+  NONE.
+- Migration = NONE; backward compatibility = PASS.
+
+Lifecycle and milestone transition:
+- ADM-FND-001: IN_PROGRESS → DONE.
+- M1 execution progress: 20/29 (69.0%); milestone remains IN_PROGRESS.
+
+Stop state:
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next authorized operation is the separate Git publication workflow for one
+  final ADM-FND-001-scoped commit and fast-forward push to main; repository
+  health becomes CI_PENDING until required remote CI completes.
 ```
