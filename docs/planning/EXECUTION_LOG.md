@@ -5463,3 +5463,517 @@ Stop state:
   final ADM-FND-001-scoped commit and fast-forward push to main; repository
   health becomes CI_PENDING until required remote CI completes.
 ```
+
+## ADM-FND-002 — PLAN — 2026-09-17
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST)
+Mode: GOV009_DIRECT_MAIN
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH
+
+Admission evidence:
+- Branch = main; worktree clean before PLAN; staged/untracked changes = NONE.
+- HEAD == main == origin/main:
+  72b95ad7f8533d2417fc179ad3fe657d8118baf9.
+- Git operation in progress = NONE; other active direct-main task = NONE.
+- ADM-FND-002 owner/priority/status before transition = AFL / P0 / TODO.
+- Dependency ADM-FND-001 = DONE and published on origin/main.
+- Required CI run 35226965813 for the exact origin/main SHA completed with
+  conclusion success; repository health = HEALTHY.
+- Required reviewers = Security Reviewer and QA Reviewer.
+
+Canonical scope:
+- Centralized typed fetch abstraction using API base `/api/v1`.
+- Canonical ErrorResponse and PaginatedResponse<T> models without inventing
+  endpoint-specific fields.
+- Authorization interceptor foundation through injected session callbacks;
+  serialized 401 refresh and one retry, with session clear on refresh failure.
+- Preserve exact backend error codes, including CONCURRENT_UPDATE and
+  IDEMPOTENCY_KEY_REUSE for 409 handling; 403 remains permission-specific.
+- TanStack Query provider/foundation plus deterministic query/mutation and
+  loading/empty/error feedback patterns.
+
+Explicit out of scope:
+- Complete login/logout/session persistence, token storage, role resolution,
+  auth pages or route guard behavior owned by ADM-AUTH-001.
+- Feature endpoint services, CRUD screens, dashboard data or business flows.
+- Backend/API/OpenAPI/database/Flyway/Android/V2 changes.
+- Commit, push, merge, PR or baseline-tag mutation.
+
+PLAN transition: ADM-FND-002 TODO → IN_PROGRESS.
+```
+
+## ADM-FND-002 — IMPLEMENT / TEST — 2026-09-17
+
+```text
+Operation: execute (IMPLEMENT → TEST)
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-002 / IN_PROGRESS
+Branch: main
+Implementation baseline: HEAD == origin/main ==
+72b95ad7f8533d2417fc179ad3fe657d8118baf9
+
+Implementation:
+- Added @tanstack/react-query 5.103.1 with an exact package-lock update and
+  registered QueryClientProvider at the application composition root.
+- Added typed ErrorResponse, PaginatedResponse<T>, query state and mutation
+  state contracts.
+- Added a centralized fetch client with `/api/v1` default base URL, JSON
+  serialization, Bearer token injection, configurable 15-second timeout,
+  canonical error normalization and 204 handling.
+- Added an injected AuthSessionAdapter boundary, serialized concurrent 401
+  refresh, one retry with the refreshed token and session clear on failed or
+  rejected refresh. Token persistence/login/logout/role resolution were not
+  implemented because they belong to ADM-AUTH-001.
+- Preserved 403 and exact 409 codes CONCURRENT_UPDATE and
+  IDEMPOTENCY_KEY_REUSE; the client preserves the V1 body-eventId-only
+  contract and does not invent an idempotency HTTP header.
+- Added shared query/mutation hooks and retry policy: reads retry one time only
+  for network/5xx failures; mutations never retry automatically.
+- Added centralized Vietnamese loading, empty, error, retry and mutation
+  feedback components and deterministic state helpers.
+- Updated Admin Web architecture/README boundaries; no feature endpoint,
+  business screen or backend-owned algorithm was added.
+
+Admin Web validation (Node v24.21.0 / npm 11.19.0):
+- npm ci = PASS; 261 packages installed, 262 audited, 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 6 files, 23/23 tests.
+- npm run build = PASS; Vite production build completed.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- Tests cover authorization header/JSON, serialized 401 refresh, refresh
+  failure/session clear, exact 403 and both canonical 409 codes, timeout,
+  204, mutation non-retry, query retry policy, query/mutation view states and
+  Vietnamese loading/empty/error/mutation feedback.
+
+Repository validation:
+- baseline_audit = PASS; ci_workflow_audit = PASS; secret_audit = PASS.
+- CI workflow/secret audit regression suite = PASS; 40/40.
+- Applicable Python py_compile = PASS.
+- Maven clean verify = PASS; 89/89 tests, failures 0, errors 0, skipped 0;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+- git diff --check, git diff --cached --check and untracked whitespace = PASS.
+- Conflict-marker, scope, secret/private-key and generated-file audits = PASS.
+- node_modules and dist are ignored and not tracked.
+- Baseline tag local/remote objects and peeled targets = MATCH.
+
+Contract/impact:
+- API/OpenAPI, database/Flyway, backend behavior, Android and Flutter impact =
+  NONE.
+- Complete authentication and route-guard behavior remains deferred to
+  ADM-AUTH-001; feature API services and business screens remain deferred to
+  their owning backlog tasks.
+- Migration = NONE; backward compatibility = PASS.
+
+Stop state:
+- ADM-FND-002 remains IN_PROGRESS.
+- Required independent reviewers: SR and QAR; both = NOT RUN.
+- Unresolved reviewer findings = NONE RECORDED (review gates not yet run).
+- Actual remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next step: independent Security Review and QA Review over the full tracked
+  and untracked ADM-FND-002 diff.
+```
+
+## ADM-FND-002 — SECURITY REMEDIATION — 2026-09-17
+
+```text
+Operation: remediate SEC-ADM-FND-002-001
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-002 / IN_PROGRESS
+Branch: main
+Implementation baseline: HEAD == origin/main ==
+72b95ad7f8533d2417fc179ad3fe657d8118baf9
+
+Authoritative finding chronology preserved:
+- Historical independent Security Review = FAIL.
+- SEC-ADM-FND-002-001 = MEDIUM / Blocking YES / Original Status OPEN.
+- QAR = NOT RUN.
+
+Focused remediation:
+- Removed the exported anonymous apiClient singleton that was constructed
+  without an AuthSessionAdapter.
+- createApiClient now requires AuthSessionAdapter at the type boundary; there
+  is no optional or anonymous auth fallback.
+- Added fail-closed runtime composition through
+  configureApiClient(AuthSessionAdapter) followed by getApiClient().
+- getApiClient fails before mandatory auth composition; runtime composition
+  validates the adapter and rejects reconfiguration explicitly.
+- Removed the public skipAuthRefresh request option. The client performs one
+  inline retry only, so feature code cannot opt out of refresh through request
+  options and a repeated 401 cannot start another refresh cycle.
+- AppProviders was intentionally not wired to a fake production adapter. The
+  concrete session/token implementation remains owned by ADM-AUTH-001.
+- AuthSessionAdapter remains the only session boundary; no login/logout UI,
+  token persistence, role resolution, route guard or auth screen was added.
+
+Public/runtime-path regression evidence:
+- No apiClient singleton export and getApiClient before configuration = PASS.
+- Invalid adapter and second configuration are rejected = PASS.
+- Synthetic adapter Bearer token is attached by getApiClient runtime path =
+  PASS.
+- Two concurrent 401 operations share exactly one refresh, wait for it and
+  each retry exactly once with the refreshed token = PASS.
+- Refresh rejection calls clearSession once, returns canonical 401 and does
+  not loop = PASS.
+- Retried 401 calls clearSession once after two total fetches and does not open
+  a second refresh cycle = PASS.
+- 403 preserves FORBIDDEN semantics without refresh or session clear = PASS.
+- Existing exact CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE parsing, body
+  eventId-only contract, mutation non-retry and safe feedback behavior remain
+  covered and PASS.
+
+Validation (Node v24.21.0 / npm 11.19.0):
+- npm ci = PASS; 261 packages installed, 262 audited, 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 7 files, 30/30 tests.
+- npm run build = PASS.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- CI workflow/secret audit regression suite = PASS; 40/40.
+- Applicable Python py_compile = PASS.
+- Maven clean verify = PASS; 89/89 tests, failures 0, errors 0, skipped 0;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+
+Stop state:
+- ADM-FND-002 remains IN_PROGRESS.
+- SEC-ADM-FND-002-001 remains OPEN pending independent focused Security
+  re-review; this remediation does not self-resolve the finding.
+- Historical Security Review remains FAIL until authoritative focused
+  re-review evidence is supplied and synchronized.
+- QAR remains NOT RUN.
+- Actual remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## ADM-FND-002 — QA REMEDIATION — 2026-09-17
+
+```text
+Operation: remediate QA-ADM-FND-002-001
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-002 / IN_PROGRESS
+Branch: main
+Implementation baseline: HEAD == origin/main ==
+72b95ad7f8533d2417fc179ad3fe657d8118baf9
+
+Authoritative chronology preserved:
+- Historical independent Security Review = FAIL.
+- SEC-ADM-FND-002-001 = MEDIUM / Blocking YES / Status OPEN.
+- Its fail-closed public/runtime composition remediation remains present and
+  is not marked resolved by this operation.
+- Historical independent QAR = FAIL.
+- QA-ADM-FND-002-001 = MEDIUM / Blocking YES / Original Status OPEN.
+
+Focused QA remediation:
+- Each authenticated HTTP attempt now retains the exact requestToken attached
+  to that original attempt.
+- On 401, the client reads the current token from AuthSessionAdapter. If it
+  differs from requestToken, the failed request is stale and retries once with
+  the current token without starting another refresh.
+- If the current token still equals requestToken, the request creates or joins
+  the shared refreshPromise. No delay, debounce, sleep or cooldown is used.
+- A missing retry token clears the session and fails cleanly. A retried 401
+  clears the session and stops without opening another refresh cycle.
+- Existing mandatory AuthSessionAdapter factory/runtime composition, no
+  anonymous singleton, 403 behavior, exact 409 codes, body-eventId-only
+  contract and TanStack mutation non-retry policy remain unchanged.
+
+Deterministic public/runtime-path regression evidence:
+- Pending concurrent 401 requests still join one refresh and both retry with
+  the same refreshed token = PASS.
+- New staggered-401 test starts A and B with old-token behind independent
+  deferred response barriers. A is released first, refreshes once and retries
+  with refreshed-1; only after A completes is B's original 401 released.
+- B detects requestToken old-token != current token refreshed-1, skips refresh
+  and retries with refreshed-1.
+- Staggered result: refreshAccessToken calls = 1; total fetches = 4; A retry
+  Authorization = Bearer refreshed-1; B retry Authorization = Bearer
+  refreshed-1.
+- Refresh failure, repeated 401 session clear, 403 no-refresh, exact
+  CONCURRENT_UPDATE/IDEMPOTENCY_KEY_REUSE and no idempotency HTTP header remain
+  covered and PASS.
+- Security public composition tests remain PASS: no unauthenticated singleton,
+  fail closed before configuration, mandatory adapter, Bearer injection and
+  explicit no-reconfiguration behavior.
+
+Validation (Node v24.21.0 / npm 11.19.0):
+- npm ci = PASS; 261 packages installed, 262 audited, 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 7 files, 31/31 tests.
+- npm run build = PASS.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- CI workflow/secret audit regression suite = PASS; 40/40.
+- Applicable Python py_compile = PASS.
+- Maven clean verify = PASS; 89/89 tests, failures 0, errors 0, skipped 0;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+
+Stop state:
+- ADM-FND-002 remains IN_PROGRESS.
+- SEC-ADM-FND-002-001 remains OPEN pending independent focused Security
+  re-review.
+- QA-ADM-FND-002-001 remains OPEN pending independent focused QA re-review.
+- Historical SR and QAR remain FAIL; no reviewer result was self-issued.
+- Actual remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## ADM-FND-002 — SECURITY REMEDIATION SEC-ADM-FND-002-002 — 2026-09-18
+
+```text
+Operation: remediate SEC-ADM-FND-002-002
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-002 / IN_PROGRESS
+Branch: main
+Implementation baseline: HEAD == origin/main ==
+72b95ad7f8533d2417fc179ad3fe657d8118baf9
+
+Authoritative reviewer chronology preserved:
+- Initial independent SR = FAIL.
+- SEC-ADM-FND-002-001 was originally OPEN, was remediated, and the later
+  focused Security re-review confirmed it RESOLVED. It is not reopened.
+- That Security re-review = FAIL because it introduced the new finding
+  SEC-ADM-FND-002-002 = HIGH / Blocking YES / Status OPEN.
+- Historical QAR = FAIL; QA-ADM-FND-002-001 = MEDIUM / Blocking YES / OPEN
+  after its remediation and remains pending independent focused QAR re-review.
+
+Focused security remediation:
+- AuthSessionAdapter now exposes an immutable AuthSessionSnapshot containing
+  accessToken plus sessionGeneration. Refresh may replace the token while
+  preserving generation; logout/login/account switch/session replacement must
+  produce a new generation in the future concrete ADM-AUTH-001 adapter.
+- Every HTTP attempt captures both the exact token sent and its generation.
+  A delayed 401 from an obsolete generation fails with internal
+  ApiSessionChangedError and cannot refresh, retry, attach the replacement
+  token, or clear the replacement session.
+- Same-generation stale 401 behavior is preserved: if another request already
+  changed the token, retry once with that token without a second refresh.
+- Refresh operations are coordinated by a promise map keyed by generation, so
+  concurrent requests in one session share exactly one refresh while a new
+  session cannot join the old session's refresh.
+- After refresh completion or failure, and after a retried 401, generation is
+  checked again. refreshAccessToken(expectedGeneration) and
+  clearSession(expectedGeneration) preserve the adapter boundary and require
+  conditional mutation by the future concrete adapter.
+- ApiSessionChangedError is frontend-internal, is not a backend error code,
+  and maps to a centralized Vietnamese retry message without token or session
+  identifier exposure.
+- No login/logout UI, persistence, role resolution, protected route, route
+  guard, production auth storage, backend/API/database/Android/Flutter/V2
+  behavior was added.
+
+Deterministic public/runtime-path regression evidence:
+- Same G1 concurrent 401 requests share one refresh and both retry once with
+  the same refreshed token while generation remains G1 = PASS.
+- Staggered G1 401 responses preserve the QA remediation: A refreshes once;
+  delayed B detects the same generation plus changed token, skips refresh and
+  retries with refreshed-1 = PASS.
+- A held G1/token-A mutation followed by G2/token-B replacement and delayed
+  old 401 performs one HTTP attempt only; token-B is never attached; refresh
+  and clearSession are not called; internal session-changed failure = PASS.
+- Logout/new unauthenticated generation while an old request is pending does
+  not retry, refresh, clear, or revive the old session = PASS.
+- Session replacement while G1 refresh is pending is covered for both refresh
+  success and failure; the old request is not retried, G2 is not cleared, and
+  the conditional adapter cannot overwrite G2 = PASS.
+- A G2 request does not join the pending G1 refresh and receives its own
+  generation-qualified refresh = PASS.
+- Same-generation retry 401 clears only G1 and creates no second refresh;
+  403 preserves permission semantics without refresh/clear = PASS.
+- Exact CONCURRENT_UPDATE, IDEMPOTENCY_KEY_REUSE, body eventId-only behavior,
+  absence of any invented idempotency HTTP header, fail-closed runtime
+  composition and no anonymous singleton remain covered and PASS.
+
+Validation (Node v24.21.0 / npm 11.19.0):
+- npm ci = PASS; 261 packages installed, 262 audited, 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 7 files, 37/37 tests.
+- npm run build = PASS; Vite production build completed.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- CI workflow/secret audit regression suite = PASS; 40/40.
+- Applicable Python py_compile = PASS.
+- Initial backend verify attempt could not reach a stopped Docker daemon;
+  after Docker Desktop became ready, Maven clean verify = PASS; 89/89 tests,
+  failures 0, errors 0, skipped 0; PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+
+Stop state:
+- ADM-FND-002 remains IN_PROGRESS.
+- SEC-ADM-FND-002-001 = RESOLVED by the authoritative focused Security
+  re-review and was not reopened.
+- SEC-ADM-FND-002-002 remains OPEN pending independent focused Security
+  re-review; this remediation does not self-resolve the finding.
+- QA-ADM-FND-002-001 remains OPEN pending independent focused QAR re-review.
+- Current SR and QAR remain FAIL; no reviewer result was self-issued.
+- Actual remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## ADM-FND-002 — INDEPENDENT REVIEWER EVIDENCE SYNC — 2026-09-18
+
+```text
+Operation: synchronize independent reviewer evidence
+Mode: GOV009_DIRECT_MAIN
+Task/status: ADM-FND-002 / IN_PROGRESS
+Branch: main
+Reviewer base: HEAD == origin/main ==
+72b95ad7f8533d2417fc179ad3fe657d8118baf9
+
+Authoritative evidence used:
+- Final focused Security re-review supplied by the project owner: PASS;
+  SEC-ADM-FND-002-002 = RESOLVED; new Security findings = NONE.
+- Final focused QAR re-review supplied by the project owner: PASS;
+  QA-ADM-FND-002-001 = RESOLVED; new QA findings = NONE.
+- Synchronization is evidence recording only. No implementation or reviewer
+  conclusion was created by the Admin Frontend Lead.
+
+Security chronology preserved:
+1. Initial independent Security Review = FAIL.
+2. SEC-ADM-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+3. Focused remediation for SEC-ADM-FND-002-001 completed.
+4. Security re-review confirmed SEC-ADM-FND-002-001 = RESOLVED.
+5. The same Security re-review remained FAIL because it introduced
+   SEC-ADM-FND-002-002 = HIGH / Blocking YES / OPEN.
+6. Focused remediation for SEC-ADM-FND-002-002 completed.
+7. Final focused Security re-review = PASS.
+8. SEC-ADM-FND-002-002 = RESOLVED.
+9. New Security findings = NONE.
+
+QA chronology preserved:
+1. Initial independent QAR = FAIL.
+2. QA-ADM-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+3. Focused QA remediation completed.
+4. Later Security remediation changed the same 401/session logic.
+5. Final focused QAR re-review on the final worktree = PASS.
+6. QA-ADM-FND-002-001 = RESOLVED.
+7. New QA findings = NONE.
+
+Cross-review authority resolution:
+- The final QAR report contains a historical snapshot stating that
+  SEC-ADM-FND-002-002 remained OPEN and explicitly does not claim Security
+  Reviewer authority.
+- The separate, later authoritative final Security re-review owns that
+  finding and confirms SEC-ADM-FND-002-002 = RESOLVED and SR = PASS.
+- Therefore the stale cross-review snapshot does not reopen the Security
+  finding. Likewise, Security Reviewer evidence does not determine the QA
+  finding status.
+
+Synchronized canonical reviewer state:
+- SR = PASS.
+- QAR = PASS.
+- SEC-ADM-FND-002-001 = RESOLVED.
+- SEC-ADM-FND-002-002 = RESOLVED.
+- QA-ADM-FND-002-001 = RESOLVED.
+- New Security findings = NONE.
+- New QA findings = NONE.
+- Unresolved findings = NONE.
+
+Reviewer validation evidence recorded:
+- Admin Web tests = PASS; 7 files, 37/37 tests.
+- npm lint, typecheck and production build = PASS.
+- npm audit = PASS; 0 vulnerabilities.
+- Maven clean verify from final QAR validation = PASS; 89/89 tests;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+- Audit regression suite = PASS; 40/40.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- Applicable Python py_compile = PASS.
+- Diff, cached diff, untracked whitespace, conflict-marker, generated-file
+  and scope guards = PASS.
+- Baseline tag object and peeled-target integrity = PASS.
+
+Stop state after synchronization:
+- ADM-FND-002 remains IN_PROGRESS; this operation does not finalize or mark
+  the task DONE.
+- Required reviewer gates SR and QAR are synchronized as PASS.
+- Unresolved findings = NONE.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next authorized lifecycle operation, if requested separately, is finalize
+  ADM-FND-002 after rechecking all finalization gates.
+```
+
+## ADM-FND-002 — FINALIZATION — 2026-09-18
+
+```text
+Operation: finalize
+Mode: GOV009_DIRECT_MAIN
+Branch: main
+Pre-finalization task state: IN_PROGRESS
+Dependency ADM-FND-001: DONE
+HEAD == origin/main: 72b95ad7f8533d2417fc179ad3fe657d8118baf9
+Git operation in progress: NONE; staged files: NONE
+
+Reviewer gates and chronology:
+- Required reviewers: Security Reviewer and QA Reviewer.
+- Initial SR = FAIL; SEC-ADM-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+- First Security remediation completed; focused Security re-review confirmed
+  SEC-ADM-FND-002-001 = RESOLVED but remained FAIL due the new finding
+  SEC-ADM-FND-002-002 = HIGH / Blocking YES / OPEN.
+- Second Security remediation completed; final focused Security re-review =
+  PASS; SEC-ADM-FND-002-002 = RESOLVED; new Security findings = NONE.
+- Initial QAR = FAIL; QA-ADM-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+- QA remediation completed, then the final Security remediation changed the
+  same 401/session logic. Final focused QAR re-review on the final worktree =
+  PASS; QA-ADM-FND-002-001 = RESOLVED; new QA findings = NONE.
+- The QAR report's older SEC-ADM-FND-002-002 OPEN snapshot does not reopen a
+  Security finding resolved by the authoritative later Security re-review.
+- Final reviewer state: SR = PASS; QAR = PASS; unresolved findings = NONE.
+
+Acceptance verification:
+- Typed ErrorResponse, PaginatedResponse<T>, query state and mutation state
+  contracts = PASS.
+- Centralized fetch client provides base URL, Bearer injection, JSON handling,
+  timeout, canonical error parsing and fail-closed runtime composition = PASS.
+- AuthSessionAdapter requires accessToken plus immutable sessionGeneration;
+  no anonymous runtime singleton or unsafe reconfiguration path exists = PASS.
+- Same-session concurrent and staggered 401 handling serializes refresh and
+  retries each request at most once with the correct refreshed token = PASS.
+- Cross-session delayed 401 and refresh completion/failure cannot replay an
+  old operation with replacement credentials or clear the new session = PASS.
+- 403 permission semantics, exact CONCURRENT_UPDATE and
+  IDEMPOTENCY_KEY_REUSE handling, body-eventId-only contract and mutation
+  non-retry policy = PASS.
+- Shared loading, empty, error and mutation feedback patterns use centralized
+  Vietnamese messages = PASS.
+- Complete ADM-AUTH-001 login/logout/storage/role/route-guard behavior, Admin
+  business features, backend/API/database/Android/Flutter/V2 leakage = NONE.
+
+Final validation (Node v24.21.0 / npm 11.19.0):
+- npm ci = PASS; 261 packages installed, 262 audited, 0 vulnerabilities.
+- npm run lint = PASS.
+- npm run typecheck = PASS.
+- npm run test:run = PASS; 7 files, 37/37 tests.
+- npm run build = PASS; Vite production build completed.
+- npm audit --audit-level=high = PASS; 0 vulnerabilities.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- CI workflow/secret audit regression suite = PASS; 40/40.
+- Applicable Python py_compile = PASS.
+- Maven clean verify = PASS; 89/89 tests, failures 0, errors 0, skipped 0;
+  PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+- git diff --check and git diff --cached --check = PASS.
+- Untracked whitespace, conflict-marker, scope, secret/private-key and
+  generated-file audits = PASS.
+- node_modules, dist, build and backend target outputs are not tracked;
+  canonical package lock is present.
+- Baseline tag local/remote objects and peeled targets = MATCH.
+
+Contract/impact:
+- API/OpenAPI, database/Flyway, backend behavior, Android and Flutter impact =
+  NONE.
+- Migration = NONE; backward compatibility = PASS.
+
+Lifecycle and milestone transition:
+- ADM-FND-002: IN_PROGRESS → DONE.
+- M1 execution progress: 21/29 (72.4%); milestone remains IN_PROGRESS.
+
+Stop state:
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next authorized operation is the separate Git publication workflow for one
+  final ADM-FND-002-scoped commit and fast-forward push to main; repository
+  health becomes CI_PENDING until required remote CI completes.
+```

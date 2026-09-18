@@ -25,7 +25,17 @@ Production build được tạo tại `dist/`. Thư mục này và `node_modules
 
 ## Ranh giới foundation
 
-Task `ADM-FND-001` chỉ tạo project/tooling, theme tokens, router tối thiểu,
-accessible Admin shell placeholder và test nền tảng. HTTP client, auth
-interceptor, query/mutation, canonical API error mapping và route guard thuộc
-các task tiếp theo; foundation này không gọi API, PostgreSQL hoặc LLM.
+Task `ADM-FND-001` tạo project/tooling, theme tokens, router tối thiểu,
+accessible Admin shell placeholder và test nền tảng. `ADM-FND-002` bổ sung
+centralized fetch client, injected auth-session boundary, serialized 401
+refresh, canonical 403/409 error preservation, TanStack Query và feedback
+state dùng chung. Runtime client fail closed: `configureApiClient` bắt buộc
+nhận `AuthSessionAdapter` trước khi feature service có thể gọi
+`getApiClient`; không có anonymous singleton hoặc fallback không auth.
+Mỗi authenticated attempt giữ cả token đã gửi và `sessionGeneration`. Client
+chỉ dùng token mới để retry khi generation không đổi; request thuộc generation
+cũ bị hủy nội bộ và không được replay dưới session thay thế.
+
+Complete login/logout, browser token storage, role resolution và route guard
+business flow thuộc `ADM-AUTH-001`. Feature endpoint services và CRUD screens
+thuộc các task feature; Admin Web không gọi PostgreSQL hoặc LLM trực tiếp.
