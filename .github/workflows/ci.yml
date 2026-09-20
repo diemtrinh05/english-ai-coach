@@ -69,6 +69,9 @@ jobs:
           npm run test:run
           npm run build
 
+      - name: Android validation
+        run: sh ./android/gradlew --no-daemon -p android lintDebug testDebugUnitTest assembleDebug assembleRelease
+
       - name: Unit tests
         run: sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml -Dtest='!*IntegrationTests,!OpenApiContractHarnessTests' test
 

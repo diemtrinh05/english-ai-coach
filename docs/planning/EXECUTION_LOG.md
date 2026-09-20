@@ -5977,3 +5977,363 @@ Stop state:
   final ADM-FND-002-scoped commit and fast-forward push to main; repository
   health becomes CI_PENDING until required remote CI completes.
 ```
+
+## AND-FND-001 — EXECUTE — 2026-09-18
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST → STOP)
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: AND-FND-001 / AFL / P0
+Dependency: GOV-006 = DONE
+Required reviewers: Architecture Reviewer, QA Reviewer
+
+PLAN / admission:
+- Branch: main; clean worktree before PLAN; Git operation in progress: NONE.
+- HEAD == origin/main == 4ea598e6f9a37ba58242a20e75251628fbf6fa4a
+  after fetch.
+- Other active direct-main task: NONE; task status before PLAN: TODO.
+- CI mode: ACTUAL_CI_REPOSITORY_HEALTH.
+- Required CI run 35321926674 for the exact origin/main SHA completed with
+  conclusion success; repository health = HEALTHY.
+- Canonical task, acceptance, required tests, scope/out-of-scope, Android
+  v1.1 baseline and reviewer mapping were resolved without contradiction.
+- Lifecycle transition: AND-FND-001 TODO → IN_PROGRESS.
+
+Implementation:
+- Added the Android Java V1 project under android/ with the official Gradle
+  wrapper, one app module, debug/release build types and Java 17 source/target.
+- Toolchain: AGP 8.13.2, Gradle 8.13, compileSdk/targetSdk 36, minSdk 26;
+  wrapper JAR and Gradle distribution SHA-256 values are pinned and audited.
+- Added a minimal XML/ViewBinding app shell with MainActivity → AppViewModel →
+  AppUiState lifecycle-safe observation; no network/database work on UI thread.
+- Added canonical core/data/domain/feature package boundary skeleton through
+  package-info.java files without implementing future business features.
+- Added centralized Vietnamese V1 strings.xml, shared color/dimension/theme
+  resources and accessibility contentDescription for the app logo.
+- Added one local ViewModel unit test.
+- Required CI now runs Android lint, unit tests and debug/release assemble;
+  ci_workflow_audit rejects removed/weakened Android gates and altered Gradle
+  wrapper/distribution checksums.
+- Out-of-scope behavior not added: Retrofit/OkHttp/auth/token/error/eventId,
+  navigation/connectivity, business features, offline mutation/sync, backend
+  algorithms, direct AI access, Flutter/V2 behavior.
+
+Android validation:
+- Initial local attempt with host-default JDK 25 failed before compilation
+  because Gradle 8.13 does not support class-file major version 69.
+- Rerun used portable Temurin JDK 21.0.12.1, matching Required CI's Java 21;
+  no system Java configuration or repository-local SDK path was changed.
+- gradlew clean lintDebug testDebugUnitTest assembleDebug assembleRelease =
+  PASS; 97 actionable tasks, 96 executed, 1 up-to-date.
+- Android unit tests = PASS; lintDebug = PASS; assembleDebug = PASS;
+  assembleRelease = PASS.
+- installDebug = PASS on Medium_Phone AVD, Android 16 / API 36;
+  package com.example.englishaicoach.debug version 1.0-debug installed.
+- MainActivity cold launch = PASS and became topResumedActivity; UI hierarchy
+  exposed the Vietnamese text "Nền tảng Android đã sẵn sàng" and localized
+  logo content description.
+- The emulator initially showed Pixel Launcher/System UI ANR dialogs while
+  starting with software rendering; after dismissing the emulator-system
+  dialog, the app process/activity and rendered UI were healthy. This was not
+  an application ANR or test failure.
+
+Repository validation:
+- Python py_compile = PASS.
+- CI workflow/secret audit regression suite = PASS; 45/45 tests.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- Admin Web lint/typecheck/test/build/npm audit = PASS; 7 files, 37/37 tests,
+  0 vulnerabilities.
+- First Maven verify attempt failed only because Docker daemon was stopped;
+  no source failure was observed. Docker Desktop 29.7.2 was started and the
+  exact Maven clean verify rerun = PASS; 89/89 tests, failures 0, errors 0,
+  skipped 0; PostgreSQL 16.15 and Flyway V1 → V3 PASS.
+- git diff/cached diff, untracked whitespace, conflict-marker, scope,
+  secret/private-key and generated-file guards = PASS.
+- .gradle/, build/, app/build/, APK/AAB, local.properties and other generated
+  or machine-local outputs are not tracked.
+- Local/remote immutable baseline tag objects and peeled targets = MATCH.
+
+Contract and impact:
+- Change: Android Java MVVM bootstrap plus mandatory Android CI coverage.
+- Why: satisfy AND-FND-001 and prevent Required CI from skipping Android.
+- Affected documents: MASTER_BACKLOG and EXECUTION_LOG only.
+- API/OpenAPI, database/Flyway, backend behavior and Flutter = NONE.
+- Migration = NONE; backward compatibility = PASS.
+
+Stop state:
+- AND-FND-001 remains IN_PROGRESS after PLAN → IMPLEMENT → TEST.
+- Independent Architecture Review = NOT RUN.
+- Independent QA Review = NOT RUN.
+- Unresolved reviewer findings = NONE recorded; reviewer gates are pending.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next required boundary: independent Architecture Reviewer and QA Reviewer
+  inspect all tracked and untracked current-task changes.
+```
+
+## AND-FND-001 — ARCHITECTURE REMEDIATION — 2026-09-20
+
+```text
+Operation: remediate blocking Architecture finding only
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+Historical reviewer chronology:
+1. Architecture Review = FAIL.
+2. ARCH-AND-FND-001-001 = MEDIUM / Blocking YES / OPEN.
+3. Remediation performed; finding remains OPEN pending independent focused
+   Architecture re-review.
+
+Finding remediation:
+- Changed the V1 application theme parent from
+  Theme.Material3.DayNight.NoActionBar to Theme.Material3.Light.NoActionBar.
+- Removed android/app/src/main/res/values-night/themes.xml so no active
+  V1 night-theme override follows the device configuration.
+- Preserved colors, dimensions, styles and themes as reusable resources; no
+  color or sizing token was moved into Java code.
+- Verified AndroidManifest.xml, MainActivity, application sources and resource
+  configuration contain no production AppCompatDelegate, MODE_NIGHT,
+  Theme.Material3.DayNight, uiMode or forceDarkAllowed path that can silently
+  re-enable dark mode.
+- Added ThemeResourceInvariantTest to reject a DayNight parent, an active
+  values-night/themes.xml override, or runtime AppCompatDelegate/MODE_NIGHT
+  control in production Java sources.
+
+Validation chronology:
+- The first unit-test compilation attempt failed because Files.readString is
+  unavailable in the Android unit-test compile API surface. The regression
+  test was changed to Files.readAllBytes with UTF-8; no production behavior
+  was changed by this correction.
+- gradlew clean lintDebug testDebugUnitTest assembleDebug assembleRelease =
+  PASS; 97 actionable tasks, 96 executed, 1 up-to-date.
+- installDebug = PASS on Pixel_8 AVD, Android 17 / API 37.
+- Device light mode: cold launch PASS (TotalTime 1907 ms); Vietnamese shell UI
+  and localized logo content description present.
+- Device dark mode: cold launch PASS (TotalTime 1878 ms); the application
+  remained Light. Sampled app-background pixels matched device light mode at
+  all checked coordinates (#FAFAFF).
+- Device mode was restored to light after verification.
+- Python py_compile = PASS.
+- CI workflow/secret audit regression suite = PASS; 45/45 tests.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+
+Scope and stop state:
+- Remediation is limited to the Android theme resources, a directly related
+  regression test, and this evidence entry.
+- AND-FND-001 remains IN_PROGRESS.
+- Architecture Reviewer state remains FAIL; ARCH-AND-FND-001-001 remains OPEN.
+- QA Reviewer = NOT RUN.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Self-review/finalization/commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## AND-FND-001 — QA REMEDIATION — 2026-09-20
+
+```text
+Operation: remediate blocking QA finding only
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+
+Preserved Architecture chronology/state:
+1. Architecture Review = FAIL.
+2. ARCH-AND-FND-001-001 = MEDIUM / Blocking YES / OPEN.
+3. Architecture remediation is implemented and preserved.
+4. Architecture finding remains OPEN pending independent focused Architecture
+   re-review; it was neither resolved nor reopened by this remediation.
+
+QA chronology:
+1. QA Review = FAIL.
+2. QA-AND-FND-001-001 = MEDIUM / Blocking YES / OPEN.
+3. QA remediation performed; finding remains OPEN pending independent focused
+   QA re-review.
+
+Finding remediation:
+- Updated android/README.md to distinguish Gradle runtime JDK 21 from Android
+  application Java source/target compatibility 17.
+- Documented the execution location as <repository-root>\android and added a
+  portable PowerShell flow that prompts for the developer's actual JDK 21 and
+  Android SDK directories, validates JDK bin\java.exe and Android platform API
+  36, and sets JAVA_HOME, Path and ANDROID_HOME only for the current session.
+- Documented java -version plus gradlew.bat --version verification; Gradle's
+  Launcher JVM/Daemon JVM output is authoritative for the actual Gradle JVM.
+- Documented the exact canonical wrapper validation command. No
+  org.gradle.java.home, local.properties, IDE JDK path, machine-specific path
+  or global host configuration was added.
+- Preserved sourceCompatibility/targetCompatibility JavaVersion.VERSION_17;
+  no build configuration or production runtime implementation changed.
+
+Reproducibility validation chronology:
+- Host default remains JAVA_HOME JDK 25.0.3. gradlew.bat --version reported
+  Launcher JVM 25.0.3 and that environment remains unsupported by the
+  documented repository workflow; global host configuration was not changed.
+- First fresh-session README flow correctly selected Temurin JDK 21 and
+  gradlew.bat --version reported Launcher JVM 21.0.12.1. Canonical validation
+  then stopped before compilation because the fresh session had no
+  ANDROID_HOME. README was corrected to select/validate Android SDK API 36 in
+  the same portable session-local flow.
+- Rerunning the complete documented flow reported java 21.0.12.1, Gradle 8.13,
+  Launcher JVM 21.0.12.1 (Eclipse Adoptium 21.0.12.1+1-LTS), and Daemon JVM
+  using the current JDK 21 JAVA_HOME.
+- gradlew.bat --no-daemon clean lintDebug testDebugUnitTest assembleDebug
+  assembleRelease = PASS; BUILD SUCCESSFUL in 1m 8s; 97 actionable tasks,
+  96 executed, 1 up-to-date.
+- ThemeResourceInvariantTest = PASS; 2 tests, 0 failures, 0 errors, 0 skipped.
+- Existing emulator install/cold-launch evidence remains historical evidence;
+  device validation was not rerun because this remediation changed README only.
+- Python py_compile = PASS.
+- CI workflow/secret audit regression suite = PASS; 45/45 tests.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+
+Scope and stop state:
+- QA remediation changes only android/README.md and this evidence entry.
+- AND-FND-001 remains IN_PROGRESS.
+- Architecture Reviewer remains FAIL; ARCH-AND-FND-001-001 remains OPEN.
+- QA Reviewer remains FAIL; QA-AND-FND-001-001 remains OPEN.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Self-review/finalization/commit/push/merge/PR/baseline-tag mutation = NONE.
+```
+
+## AND-FND-001 — INDEPENDENT REVIEWER EVIDENCE SYNC — 2026-09-20
+
+```text
+Operation: synchronize independent reviewer evidence only
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+Evidence source: owner-supplied actual focused Architecture and QA re-review
+results; synchronization is not a new review or self-review.
+
+Authoritative Architecture chronology:
+1. Initial Architecture Review = FAIL.
+2. ARCH-AND-FND-001-001 = MEDIUM / Blocking YES / OPEN.
+3. Architecture remediation implemented:
+   - V1 theme changed to Theme.Material3.Light.NoActionBar.
+   - values-night/themes.xml removed.
+   - ThemeResourceInvariantTest added.
+4. Focused Architecture re-review = PASS.
+5. ARCH-AND-FND-001-001 = RESOLVED by Architecture Reviewer authority.
+6. New Architecture findings = NONE.
+
+Authoritative Architecture state:
+- Architecture Reviewer = PASS.
+- ARCH-AND-FND-001-001 = RESOLVED.
+- Unresolved Architecture findings = NONE.
+
+Authoritative QA chronology:
+1. Initial QA Review = FAIL.
+2. QA-AND-FND-001-001 = MEDIUM / Blocking YES / OPEN.
+3. QA remediation implemented:
+   - README documents Gradle runtime JDK 21.
+   - Java source/target remains 17.
+   - Portable PowerShell setup documented.
+4. Focused QA re-review = PASS.
+5. QA-AND-FND-001-001 = RESOLVED by QA Reviewer authority.
+6. New QA findings = NONE.
+
+Authoritative QA state:
+- QA Reviewer = PASS.
+- QA-AND-FND-001-001 = RESOLVED.
+- Unresolved QA findings = NONE.
+
+Cross-review authority resolution:
+- The focused QA re-review contains an older cross-review snapshot stating
+  Architecture Reviewer = FAIL and ARCH-AND-FND-001-001 = OPEN.
+- QA does not own Architecture reviewer/finding state. That snapshot predates
+  and cannot override the later authoritative focused Architecture re-review.
+- The later Architecture Reviewer result remains PASS and
+  ARCH-AND-FND-001-001 remains RESOLVED; the finding is not reopened.
+- Architecture Reviewer likewise does not determine QA finding status.
+
+Preserved validation evidence:
+- Android clean, lintDebug, testDebugUnitTest, assembleDebug and
+  assembleRelease = PASS; 97 actionable tasks.
+- Android unit tests = PASS; ThemeResourceInvariantTest = PASS.
+- installDebug = PASS; emulator cold-launch evidence exists.
+- V1 remained Light under both device light and device dark modes.
+- Gradle 8.13 runtime = JDK 21; Java source/target = 17.
+- No machine-specific org.gradle.java.home; local.properties is not tracked.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- Audit regression suite = PASS; 45/45 tests. Python py_compile = PASS.
+- git diff --check and git diff --cached --check = PASS.
+- Generated-file, scope and baseline-tag integrity guards = PASS.
+
+Canonical reviewer/stop state after synchronization:
+- Architecture Reviewer = PASS.
+- QA Reviewer = PASS.
+- ARCH-AND-FND-001-001 = RESOLVED.
+- QA-AND-FND-001-001 = RESOLVED.
+- Unresolved findings = NONE.
+- AND-FND-001 remains IN_PROGRESS; no finalization or DONE transition.
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Implementation mutation/self-review/commit/push/merge/PR/baseline-tag
+  mutation = NONE.
+```
+
+## AND-FND-001 — FINALIZE — 2026-09-20
+
+```text
+Operation: finalize
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: AND-FND-001 / AFL / P0
+Dependency: GOV-006 = DONE
+
+Acceptance and scope:
+- Android Java V1 project builds with the repository Gradle wrapper and the
+  documented JDK 21 runtime; application Java source/target remains 17.
+- Android package/feature structure and MVVM app shell follow the approved
+  Android v1.1 foundation boundary.
+- Vietnamese V1 learner-facing strings are centralized in strings.xml.
+- installDebug and emulator cold-launch evidence exists; the V1 application
+  remained Light in both device light and dark modes.
+- No AND-FND-002 networking/token/error/eventId behavior, AND-FND-003
+  navigation/connectivity behavior, business feature, backend/API/DB, Admin,
+  Flutter or V2/V3 scope was introduced.
+
+Independent reviewer chronology and final state:
+- Initial Architecture Review = FAIL → ARCH-AND-FND-001-001 OPEN →
+  Architecture remediation → focused Architecture re-review PASS →
+  ARCH-AND-FND-001-001 RESOLVED.
+- Initial QA Review = FAIL → QA-AND-FND-001-001 OPEN → QA remediation →
+  focused QA re-review PASS → QA-AND-FND-001-001 RESOLVED.
+- Architecture Reviewer = PASS; QA Reviewer = PASS.
+- New Architecture findings = NONE; new QA findings = NONE.
+- Unresolved findings = NONE.
+- The older Architecture FAIL/OPEN cross-review snapshot in the QA report is
+  stale and does not override the later authoritative Architecture resolution.
+
+Final Android validation (Gradle 8.13 / JDK 21.0.12.1):
+- gradlew.bat --no-daemon clean lintDebug testDebugUnitTest assembleDebug
+  assembleRelease = PASS; BUILD SUCCESSFUL in 46s; 97 actionable tasks,
+  96 executed, 1 up-to-date.
+- Android unit tests = PASS.
+- ThemeResourceInvariantTest = PASS; 2 tests, 0 failures, 0 errors, 0 skipped.
+- Theme.Material3.Light.NoActionBar remains active; no values-night theme
+  override or production night-mode enabling path exists.
+- Existing installDebug, cold-launch and device light/dark runtime evidence
+  remains valid; device validation was not rerun during finalization because
+  no implementation changed after the reviewed remediation.
+
+Final repository validation:
+- Python py_compile = PASS.
+- CI workflow/secret audit regression suite = PASS; 45/45 tests.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- git diff --check and git diff --cached --check = PASS.
+- Untracked whitespace, conflict-marker, scope, secret/private-key and
+  generated/local-file guards = PASS.
+- .gradle/, build/, app/build/, APK/AAB and local.properties are not tracked.
+- Local/remote immutable baseline tag objects and peeled targets = MATCH.
+
+Contract/impact:
+- API/OpenAPI, database/Flyway, backend behavior, Admin Web and Flutter impact
+  = NONE.
+- Migration = NONE; backward compatibility = PASS.
+
+Lifecycle and milestone transition:
+- AND-FND-001: IN_PROGRESS → DONE.
+- M1 execution progress: 22/29 (75.9%); milestone remains IN_PROGRESS.
+
+Stop state:
+- Actual remote CI for the current uncommitted diff = NOT RUN / NOT CLAIMED.
+- Commit/push/merge/PR/baseline-tag mutation = NONE.
+- Next authorized operation is the separate Git publication workflow for one
+  final AND-FND-001-scoped commit and fast-forward push to main; repository
+  health becomes CI_PENDING until required remote CI completes.
+```

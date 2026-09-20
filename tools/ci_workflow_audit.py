@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import hashlib
 import json
 import re
 import sys
@@ -10,6 +11,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "ci.yml"
 ADMIN_PACKAGE_PATH = ROOT / "admin-web" / "package.json"
+ANDROID_WRAPPER_JAR_PATH = ROOT / "android" / "gradle" / "wrapper" / "gradle-wrapper.jar"
+ANDROID_WRAPPER_PROPERTIES_PATH = (
+    ROOT / "android" / "gradle" / "wrapper" / "gradle-wrapper.properties"
+)
 ADMIN_WORKING_DIRECTORY = "admin-web"
 EXPECTED_NODE_VERSION = "24"
 EXPECTED_PACKAGE_MANAGER = "npm@11.19.0"
@@ -20,6 +25,17 @@ EXPECTED_ADMIN_COMMANDS = [
     "npm run test:run",
     "npm run build",
 ]
+EXPECTED_ANDROID_COMMAND = (
+    "sh ./android/gradlew --no-daemon -p android "
+    "lintDebug testDebugUnitTest assembleDebug assembleRelease"
+)
+EXPECTED_ANDROID_WRAPPER_SHA256 = (
+    "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f"
+)
+EXPECTED_ANDROID_DISTRIBUTION = "gradle-8.13-bin.zip"
+EXPECTED_ANDROID_DISTRIBUTION_SHA256 = (
+    "20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78"
+)
 EXPECTED_STEP_NAMES = [
     "Checkout",
     "Setup Python",
@@ -29,6 +45,7 @@ EXPECTED_STEP_NAMES = [
     "Setup Node",
     "Build and static checks",
     "Admin Web validation",
+    "Android validation",
     "Unit tests",
     "PostgreSQL integration tests",
     "OpenAPI contract tests",
@@ -57,6 +74,39 @@ def audit() -> list[str]:
     require(WORKFLOW_PATH.is_file(), "MISSING_WORKFLOW", str(WORKFLOW_PATH))
     if not WORKFLOW_PATH.is_file():
         return issues
+
+    require(
+        ANDROID_WRAPPER_JAR_PATH.is_file(),
+        "MISSING_ANDROID_WRAPPER_JAR",
+        str(ANDROID_WRAPPER_JAR_PATH),
+    )
+    if ANDROID_WRAPPER_JAR_PATH.is_file():
+        wrapper_sha256 = hashlib.sha256(ANDROID_WRAPPER_JAR_PATH.read_bytes()).hexdigest()
+        require(
+            wrapper_sha256 == EXPECTED_ANDROID_WRAPPER_SHA256,
+            "ANDROID_WRAPPER_CHECKSUM",
+            "gradle-wrapper.jar không khớp checksum Gradle 8.13 đã pin",
+        )
+
+    require(
+        ANDROID_WRAPPER_PROPERTIES_PATH.is_file(),
+        "MISSING_ANDROID_WRAPPER_PROPERTIES",
+        str(ANDROID_WRAPPER_PROPERTIES_PATH),
+    )
+    if ANDROID_WRAPPER_PROPERTIES_PATH.is_file():
+        wrapper_properties = ANDROID_WRAPPER_PROPERTIES_PATH.read_text(encoding="utf-8")
+        require(
+            f"distributionUrl=https\\://services.gradle.org/distributions/{EXPECTED_ANDROID_DISTRIBUTION}"
+            in wrapper_properties,
+            "ANDROID_DISTRIBUTION_DRIFT",
+            f"Android wrapper phải dùng {EXPECTED_ANDROID_DISTRIBUTION}",
+        )
+        require(
+            f"distributionSha256Sum={EXPECTED_ANDROID_DISTRIBUTION_SHA256}"
+            in wrapper_properties,
+            "ANDROID_DISTRIBUTION_CHECKSUM",
+            "Android Gradle distribution phải pin checksum chính thức",
+        )
 
     require(ADMIN_PACKAGE_PATH.is_file(), "MISSING_ADMIN_PACKAGE", str(ADMIN_PACKAGE_PATH))
     if ADMIN_PACKAGE_PATH.is_file():
@@ -222,6 +272,23 @@ def audit() -> list[str]:
         admin_commands == EXPECTED_ADMIN_COMMANDS,
         "ADMIN_COMMAND_DRIFT",
         "Admin Web validation phải chạy đúng npm ci, lint, typecheck, test:run và build",
+    )
+
+    android_step = by_name.get("Android validation", {})
+    require(
+        android_step.get("working-directory") is None,
+        "ANDROID_WORKING_DIRECTORY",
+        "Android validation phải gọi wrapper từ repository root",
+    )
+    require(
+        android_step.get("continue-on-error") is None,
+        "ANDROID_CONTINUE_ON_ERROR",
+        "Android validation không được phép continue-on-error",
+    )
+    require(
+        android_step.get("run") == EXPECTED_ANDROID_COMMAND,
+        "ANDROID_COMMAND_DRIFT",
+        "Android validation phải chạy lint, unit test và debug/release assemble qua wrapper",
     )
 
     unit_command = by_name.get("Unit tests", {}).get("run", "")

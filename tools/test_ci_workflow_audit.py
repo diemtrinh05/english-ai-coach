@@ -18,6 +18,7 @@ class CiWorkflowAuditTests(unittest.TestCase):
         self.assertIn("working-directory: admin-web", workflow)
         for command in ci_workflow_audit.EXPECTED_ADMIN_COMMANDS:
             self.assertIn(command, workflow)
+        self.assertIn(ci_workflow_audit.EXPECTED_ANDROID_COMMAND, workflow)
         self.assertEqual([], ci_workflow_audit.audit())
 
     def test_rejects_missing_setup_node(self) -> None:
@@ -80,6 +81,76 @@ class CiWorkflowAuditTests(unittest.TestCase):
         issues = self.audit_text(workflow)
 
         self.assertTrue(any(issue.startswith("ADMIN_CONTINUE_ON_ERROR:") for issue in issues))
+
+    def test_rejects_missing_android_validation(self) -> None:
+        workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8").replace(
+            "      - name: Android validation\n"
+            f"        run: {ci_workflow_audit.EXPECTED_ANDROID_COMMAND}\n\n",
+            "",
+            1,
+        )
+
+        issues = self.audit_text(workflow)
+
+        self.assertTrue(any(issue.startswith("GATE_ORDER_DRIFT:") for issue in issues))
+        self.assertTrue(any(issue.startswith("ANDROID_COMMAND_DRIFT:") for issue in issues))
+
+    def test_rejects_weakened_android_validation(self) -> None:
+        workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8").replace(
+            ci_workflow_audit.EXPECTED_ANDROID_COMMAND,
+            ci_workflow_audit.EXPECTED_ANDROID_COMMAND + " || true",
+            1,
+        )
+
+        issues = self.audit_text(workflow)
+
+        self.assertTrue(any(issue.startswith("ANDROID_COMMAND_DRIFT:") for issue in issues))
+
+    def test_rejects_android_continue_on_error(self) -> None:
+        workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8").replace(
+            "      - name: Android validation\n",
+            "      - name: Android validation\n        continue-on-error: true\n",
+            1,
+        )
+
+        issues = self.audit_text(workflow)
+
+        self.assertTrue(any(issue.startswith("ANDROID_CONTINUE_ON_ERROR:") for issue in issues))
+
+    def test_rejects_modified_android_wrapper_jar(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_directory:
+            wrapper_path = Path(temp_directory) / "gradle-wrapper.jar"
+            wrapper_path.write_bytes(b"modified-wrapper")
+            with patch.object(
+                ci_workflow_audit,
+                "ANDROID_WRAPPER_JAR_PATH",
+                wrapper_path,
+            ):
+                issues = ci_workflow_audit.audit()
+
+        self.assertTrue(any(issue.startswith("ANDROID_WRAPPER_CHECKSUM:") for issue in issues))
+
+    def test_rejects_wrong_android_distribution_checksum(self) -> None:
+        properties = ci_workflow_audit.ANDROID_WRAPPER_PROPERTIES_PATH.read_text(
+            encoding="utf-8"
+        ).replace(
+            ci_workflow_audit.EXPECTED_ANDROID_DISTRIBUTION_SHA256,
+            "0" * 64,
+            1,
+        )
+        with tempfile.TemporaryDirectory() as temp_directory:
+            properties_path = Path(temp_directory) / "gradle-wrapper.properties"
+            properties_path.write_text(properties, encoding="utf-8")
+            with patch.object(
+                ci_workflow_audit,
+                "ANDROID_WRAPPER_PROPERTIES_PATH",
+                properties_path,
+            ):
+                issues = ci_workflow_audit.audit()
+
+        self.assertTrue(
+            any(issue.startswith("ANDROID_DISTRIBUTION_CHECKSUM:") for issue in issues)
+        )
 
     def test_rejects_removed_or_weakened_admin_commands(self) -> None:
         workflow = ci_workflow_audit.WORKFLOW_PATH.read_text(encoding="utf-8")
