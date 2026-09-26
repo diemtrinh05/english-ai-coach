@@ -335,6 +335,7 @@ Response 201:
     "role": "USER"
   },
   "accessToken": "jwt",
+  "refreshToken": "refresh-token",
   "expiresIn": 1800,
   "tokenType": "Bearer"
 }
@@ -364,6 +365,7 @@ Response:
 ```json
 {
   "accessToken": "jwt",
+  "refreshToken": "refresh-token",
   "expiresIn": 1800,
   "tokenType": "Bearer",
   "user": {
@@ -503,6 +505,12 @@ Request:
 ```
 
 Backend validates Google ID Token before login/create account.
+
+Response 200 dùng cùng hợp đồng auth response như login, gồm
+`accessToken`, `refreshToken`, `expiresIn`, `tokenType` và `user`.
+`refreshToken` chỉ được cấp qua auth response được bảo vệ cho client;
+không xuất hiện trong profile/list API hoặc log. Refresh V1 chỉ trả access
+token mới vì refresh-token rotation chưa bắt buộc.
 
 ---
 
@@ -2144,11 +2152,15 @@ Never expose:
 
 ```text
 password_hash
-refresh token plaintext
 AI provider secret
 OAuth client secret
 internal stack traces
 ```
+
+Ngoại lệ duy nhất cho refresh token plaintext là auth response được bảo vệ
+trong §7.1, §7.2 và §7.5 để cấp token cho client. Không trả token này trong
+profile/list API hoặc ghi vào log. Refresh response V1 không trả refresh token
+mới khi rotation chưa được bật.
 
 Admin APIs require:
 

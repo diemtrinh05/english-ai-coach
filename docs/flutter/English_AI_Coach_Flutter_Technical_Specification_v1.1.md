@@ -415,6 +415,10 @@ refresh on 401
 logout on refresh failure
 ```
 
+Shared API/OpenAPI v1.4 auth response cấp `refreshToken` cùng access token
+khi register/login/Google login. Refresh V1 chỉ thay access token; refresh token
+không xuất hiện trong profile/list response hoặc log.
+
 ---
 
 # 17. Concurrent 401 Handling

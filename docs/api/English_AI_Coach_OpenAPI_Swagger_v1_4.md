@@ -1910,9 +1910,13 @@ components:
       - type: object
         required:
         - user
+        - refreshToken
         properties:
           user:
             $ref: '#/components/schemas/AuthUserSummary'
+          refreshToken:
+            type: string
+            description: Issued only in a protected register, login, or Google login response; never returned by profile or list APIs.
     UserResponse:
       $ref: '#/components/schemas/AuthUserSummary'
     UpdateProfileRequest:

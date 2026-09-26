@@ -6337,3 +6337,261 @@ Stop state:
   final AND-FND-001-scoped commit and fast-forward push to main; repository
   health becomes CI_PENDING until required remote CI completes.
 ```
+
+## AND-FND-002 — PLAN — 2026-09-26
+
+```text
+Operation: execute / PLAN
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: AND-FND-002 / AFL / P0
+Admission: main clean; HEAD = origin/main = 60e0f6750073d499148df02e1cf19b09b4843f86;
+AND-FND-001 = DONE; no other direct-main task active or Git operation.
+CI mode: ACTUAL_CI_REPOSITORY_HEALTH; Required CI run 35499357262
+completed success for exact admission SHA; repository health HEALTHY.
+Scope: Android HTTP/token/error/eventId foundation and owner-approved
+auth response contract synchronization across API/OpenAPI/downstream specs.
+Out of scope: auth UI/route business logic, other feature flows, V2,
+backend implementation, database/schema changes.
+Required independent reviewers: Security Reviewer and QA Reviewer.
+Task transition: TODO → IN_PROGRESS. No implementation/test/review/commit/push
+is claimed by this PLAN entry.
+```
+
+## AND-FND-002 — IMPLEMENT / TEST — 2026-09-26
+
+```text
+Operation: execute / IMPLEMENT → TEST → STOP
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+Owner-approved contract decision: auth responses for register/login/Google
+login include refreshToken. V1 refresh response remains access-only; rotation
+is not required. The approval resolved the previously identified missing
+refresh-token delivery contract before implementation.
+
+Implementation:
+- Added Retrofit 2.11.0, OkHttp 4.12.0 and Gson converter in Android Java.
+- Centralized API client and typed auth/refresh response, canonical API error
+  parser preserving HTTP status, CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE.
+- Added AndroidKeyStore AES-GCM encrypted token storage, session manager,
+  call-time session binding, per-exchange session guard, Bearer interceptor,
+  serialized 401 refresh, one retry maximum and old-session protection.
+- Refresh 401 clears only the exact current session; transient refresh/network
+  failure does not erase credentials. 403 does not initiate refresh.
+- Added LogicalEvent helper retaining body eventId for one logical mutation;
+  no extra idempotency HTTP header or automatic mutation retry was added.
+- Added Android unit and device instrumentation coverage plus OpenAPI contract
+  test. No auth UI, route business logic, backend production implementation,
+  database migration or V2 feature was introduced.
+
+Contract/document synchronization:
+- API Specification v1.4, OpenAPI v1.4, Android Technical Spec v1.1, Backend
+  Technical Spec v1.3, Admin Web Technical Spec v1.1 and Flutter Technical
+  Spec v1.1 now describe the approved auth response delivery and V1
+  no-rotation behavior. User/profile/list responses remain without token.
+- Affected API: register/login/Google auth response adds refreshToken;
+  refresh response stays access-only. Database/Flyway: NONE. Migration: NONE.
+  Existing clients accepting extra JSON fields remain compatible; clients
+  requiring refresh can now consume the explicit field.
+
+Validation:
+- Toolchain: Gradle 8.13, Android Gradle Plugin 8.13.2, Gradle JDK
+  21.0.12.1, Java source/target 17, compileSdk/targetSdk 36, minSdk 26.
+- gradlew.bat --no-daemon clean lintDebug testDebugUnitTest assembleDebug
+  assembleRelease = PASS; 97 actionable tasks, 96 executed, 1 up-to-date.
+- Final incremental lintDebug and testDebugUnitTest = PASS; Android unit
+  tests 11/11 (NetworkFoundationTest 8/8).
+- gradlew.bat --no-daemon assembleDebugAndroidTest = PASS.
+- gradlew.bat --no-daemon connectedDebugAndroidTest = PASS on Pixel_8 AVD,
+  Android 17/API 37, emulator-5554; AndroidKeyStore instrumentation 1/1.
+  This task did not require a separate installDebug/cold-launch UI smoke test.
+- backend/mvnw.cmd -Dtest=OpenApiContractHarnessTests test = PASS; 12/12.
+- Python audit regression tests = PASS; 45/45. baseline_audit,
+  ci_workflow_audit and secret_audit = PASS.
+- First audit attempt stopped because the host Python lacked pinned PyYAML;
+  requirements-dev.txt was installed and the audits passed. A later baseline
+  audit flagged a literal forbidden-header name in this evidence text;
+  wording was corrected without changing HTTP code, then audit passed.
+- git diff --check, cached diff check, untracked whitespace/conflict marker,
+  secret/sensitive logging, scope and generated-file guards = PASS.
+- No tracked .gradle/, build/, app/build/, APK/AAB or local.properties.
+- Local and remote immutable baseline tag objects/peeled targets = MATCH.
+
+Stop state:
+- AND-FND-002 remains IN_PROGRESS; independent Security Reviewer and QA
+  Reviewer = NOT RUN; unresolved reviewer findings = NONE recorded.
+- Actual remote CI for the uncommitted change = NOT RUN / NOT CLAIMED.
+- No self-review, finalization, DONE transition, commit, push, PR or tag
+  mutation. Next boundary: independent SR and QAR review the complete tracked
+  and untracked current-task diff.
+```
+
+## AND-FND-002 — SR/QAR REMEDIATION — 2026-09-26
+
+```text
+Operation: remediate authoritative independent reviewer findings only
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+
+Preserved independent review chronology:
+1. Security Reviewer initial result = FAIL.
+2. SEC-AND-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+3. QA Reviewer initial result = FAIL.
+4. QA-AND-FND-002-001 = HIGH / Blocking YES / OPEN.
+5. QA-AND-FND-002-002 = MEDIUM / Blocking YES / OPEN.
+6. Remediation below is implemented; all three findings remain OPEN until
+   each owning independent reviewer performs focused re-review.
+
+Finding remediation:
+- SEC-AND-FND-002-001: Refresh 200 with missing/invalid body and permanent
+  non-success responses terminate only the exact current session. Network
+  IOException and HTTP 408/429/5xx preserve credentials as transient errors.
+  Refresh 401 still clears only the bound session; a later account/session
+  is never erased by an old refresh result.
+- QA-AND-FND-002-001: Refresh uses raw ResponseBody so transport IOException
+  is separated from JSON parsing. Malformed successful JSON or body read
+  failure is contained and clears only the matching session, without an
+  uncaught RuntimeException escaping OkHttp Authenticator.
+- QA-AND-FND-002-002: MockWebServer HTTP tests cover refresh 401 clearing,
+  old-session isolation, malformed/empty 200, permanent 400, transient
+  network and 503, and a second 401 ending with one refresh and no loop.
+  Assertions include session state, route sequence and request count.
+
+Validation chronology:
+- First new unit run failed 6 focused cases because the new test-only
+  Retrofit helper omitted the Gson request converter. The helper was fixed;
+  production auth behavior did not change for that test harness correction.
+- gradlew.bat --no-daemon testDebugUnitTest lintDebug assembleDebug
+  assembleRelease = PASS; 96 actionable tasks, 24 executed, 72 up-to-date.
+  Android unit tests = 18/18 PASS; NetworkFoundationTest = 15/15 PASS.
+- Prior AndroidKeyStore device instrumentation (Pixel_8 AVD/API 37) remains
+  valid because token-store implementation was not changed by remediation.
+- OpenAPI contract test remains valid; API/OpenAPI documents were not changed
+  by remediation.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS; audit regression
+  suite = PASS, 45/45. git diff --check and cached diff check = PASS;
+  untracked whitespace/conflict markers, secret/sensitive logging,
+  generated-file and task-scope guards = PASS. Local/remote immutable
+  baseline tag objects and peeled targets = MATCH.
+
+Stop state:
+- Security Reviewer remains FAIL; SEC-AND-FND-002-001 remains OPEN.
+- QA Reviewer remains FAIL; QA-AND-FND-002-001 and QA-AND-FND-002-002 remain
+  OPEN. Unresolved reviewer findings = 3.
+- AND-FND-002 remains IN_PROGRESS. Remote CI for uncommitted diff = NOT RUN /
+  NOT CLAIMED. No self-review, RESOLVED/PASS claim, finalization, commit,
+  push, PR or baseline-tag mutation.
+- Next boundary: focused independent Security and QA re-review.
+```
+
+## AND-FND-002 — INDEPENDENT REVIEWER EVIDENCE SYNC — 2026-09-26
+
+```text
+Operation: synchronize independent reviewer evidence only
+Mode: GOV009_DIRECT_MAIN
+Task status: IN_PROGRESS
+Evidence source: owner-supplied actual initial and focused Security/QA
+reviewer reports. This synchronization is not a new review or self-review.
+
+Authoritative Security chronology:
+1. Initial Security Review = FAIL.
+2. SEC-AND-FND-002-001 = MEDIUM / Blocking YES / OPEN.
+3. Remediation implemented: classify terminal/transient refresh failures;
+   terminal and malformed successful responses clear only the bound session.
+4. Focused Security re-review = PASS.
+5. SEC-AND-FND-002-001 = RESOLVED by Security Reviewer authority.
+6. New Security findings = NONE.
+
+Authoritative QA chronology:
+1. Initial QA Review = FAIL.
+2. QA-AND-FND-002-001 = HIGH / Blocking YES / OPEN.
+3. QA-AND-FND-002-002 = MEDIUM / Blocking YES / OPEN.
+4. Remediation implemented: raw refresh response and controlled JSON parsing;
+   MockWebServer HTTP regression tests for 401, transient/permanent failures,
+   malformed 200, session isolation and bounded retry.
+5. Focused QA re-review = PASS.
+6. QA-AND-FND-002-001 and QA-AND-FND-002-002 = RESOLVED by QA Reviewer
+   authority.
+7. New QA findings = NONE.
+
+Cross-review authority resolution:
+- The focused QA report contains an older snapshot of Security Reviewer =
+  FAIL and SEC-AND-FND-002-001 = OPEN. This snapshot predates the later
+  authoritative focused Security re-review and cannot override SR PASS or
+  the Security-owned RESOLVED state. It does not reopen the finding.
+- Security Reviewer likewise does not determine QA finding status.
+
+Canonical reviewer state after synchronization:
+- Security Reviewer = PASS; SEC-AND-FND-002-001 = RESOLVED.
+- QA Reviewer = PASS; QA-AND-FND-002-001 = RESOLVED;
+  QA-AND-FND-002-002 = RESOLVED.
+- Unresolved findings = NONE.
+- AND-FND-002 remains IN_PROGRESS; no implementation mutation, new review,
+  finalization or DONE transition. Remote CI for uncommitted diff = NOT RUN /
+  NOT CLAIMED. Commit/push/PR/baseline-tag mutation = NONE.
+```
+
+## AND-FND-002 — FINALIZE — 2026-09-26
+
+```text
+Operation: finalize
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: AND-FND-002 / AFL / P0
+Dependency: AND-FND-001 = DONE
+
+Acceptance and scope:
+- Android Java V1 uses centralized Retrofit/OkHttp with typed auth/refresh
+  response and canonical error parsing, preserving HTTP 401/403/409,
+  CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE.
+- Access/refresh credentials use AndroidKeyStore AES-GCM encrypted storage.
+  401 refresh is serialized and bounded; permanent failure clears only the
+  matching session, transient network/408/429/5xx keeps it, and a request
+  bound to an old session cannot replay under a new account.
+- LogicalEvent keeps body eventId across retry of the same operation. No
+  automatic mutation retry or additional idempotency HTTP header exists.
+- Owner-approved auth response refreshToken contract is synchronized in API
+  Spec v1.4, OpenAPI v1.4 and downstream Android/Backend/Admin/Flutter specs.
+  V1 refresh remains access-only with no required rotation.
+- No auth UI/route business logic, unrelated feature, backend production
+  implementation, DB/Flyway change or V2 scope was introduced.
+
+Independent reviewer chronology and final state:
+- Security initial FAIL → SEC-AND-FND-002-001 OPEN → remediation → focused
+  Security re-review PASS → SEC-AND-FND-002-001 RESOLVED.
+- QA initial FAIL → QA-AND-FND-002-001 and QA-AND-FND-002-002 OPEN →
+  remediation → focused QA re-review PASS → both QA findings RESOLVED.
+- Security Reviewer = PASS; QA Reviewer = PASS. New findings = NONE;
+  unresolved findings = NONE. Older SR FAIL/OPEN snapshot in focused QA
+  report is stale and does not override later Security-owned resolution.
+
+Final validation (Gradle 8.13, AGP 8.13.2, JDK 21.0.12.1, Java source/target
+17, compileSdk/targetSdk 36, minSdk 26):
+- gradlew.bat --no-daemon clean lintDebug testDebugUnitTest assembleDebug
+  assembleRelease = PASS; 97 actionable tasks, 96 executed, 1 up-to-date.
+- Android unit tests = PASS, 18/18; NetworkFoundationTest = 15/15.
+- AndroidKeyStore instrumentation = PASS, 1/1 on Pixel_8 AVD Android 17 /
+  API 37 during TEST. Token-store code was unchanged in remediation.
+- backend/mvnw.cmd -Dtest=OpenApiContractHarnessTests test = PASS, 12/12.
+- Python audit regression suite = PASS, 45/45; py_compile = PASS.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS.
+- git diff --check, cached diff check, untracked whitespace/conflict markers,
+  secret/sensitive logging, task scope and generated/local-file guards = PASS.
+  No .gradle/, build/, app/build/, APK/AAB or local.properties is tracked.
+- Local/remote immutable baseline tag objects and peeled targets = MATCH.
+
+Change impact:
+- Change/why: Android HTTP/token/error/eventId foundation and approved
+  refresh-token delivery contract needed for secure serialized refresh.
+- Affected documents: API/OpenAPI, Android/Backend/Admin/Flutter technical
+  specs, MASTER_BACKLOG and EXECUTION_LOG.
+- Affected API: register/login/Google auth response includes refreshToken;
+  refresh response stays access-only. Database: NONE. Migration: NONE.
+- Affected clients: Android foundation plus downstream contract documents;
+  existing tolerant JSON consumers remain backward compatible.
+
+Lifecycle and stop state:
+- AND-FND-002: IN_PROGRESS → DONE.
+- M1 execution progress: 23/29 (79.3%); milestone remains IN_PROGRESS.
+- Actual remote CI for this uncommitted diff = NOT RUN / NOT CLAIMED.
+- No commit, push, merge, PR or baseline-tag mutation. Publication is a
+  separate Git-workflow operation: publish AND-FND-002.
+```

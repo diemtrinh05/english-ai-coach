@@ -225,6 +225,10 @@ Dashboard
 
 Use the same backend JWT contract.
 
+Login nhận `accessToken` và `refreshToken` trong auth response được bảo vệ
+theo API/OpenAPI v1.4; refresh V1 chỉ cấp access token mới. Không hiển thị
+refresh token trong UI hoặc ghi vào log.
+
 Responsibilities:
 
 ```text
@@ -1296,10 +1300,12 @@ Never expose:
 ```text
 password hashes
 JWT secrets
-refresh token plaintext
 AI API keys
 database credentials
 ```
+
+Chỉ auth response được bảo vệ được cấp refresh token cho client; không trả
+refresh token trong profile/list response hoặc log.
 
 Admin Web should never access DB directly.
 

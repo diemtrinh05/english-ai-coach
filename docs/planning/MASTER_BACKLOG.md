@@ -106,7 +106,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | `ADM-FND-001` | Bootstrap React + TypeScript + Vite Admin | AFL | `GOV-006` | P0 | AR,QAR | SPA build được; structure theo Admin Tech v1.1; không Thymeleaf; Vietnamese message module central. | Theo global DoD + acceptance. | DONE |
 | `ADM-FND-002` | Admin API client/query/mutation/error foundation | AFL | `ADM-FND-001` | P0 | SR,QAR | Typed models, HTTP client, auth interceptor, 401/403/409 handling, query/mutation state, loading/empty/error pattern. | Theo global DoD + acceptance. | DONE |
 | `AND-FND-001` | Bootstrap Android Java MVVM project | AFL | `GOV-006` | P0 | AR,QAR | Project build/install được; package/feature structure đúng Android v1.1; strings.xml Vietnamese single-locale. | Theo global DoD + acceptance. | DONE |
-| `AND-FND-002` | Android HTTP/token/error/eventId foundation | AFL | `AND-FND-001` | P0 | SR,QAR | Retrofit/OkHttp hoặc approved equivalent; secure token storage; serialized refresh; canonical error parser; eventId helper giữ ID khi retry. | Theo global DoD + acceptance. | TODO |
+| `AND-FND-002` | Android HTTP/token/error/eventId foundation | AFL | `AND-FND-001` | P0 | SR,QAR | Retrofit/OkHttp hoặc approved equivalent; secure token storage; serialized refresh; canonical error parser; eventId helper giữ ID khi retry. | Theo global DoD + acceptance. | DONE |
 | `AND-FND-003` | Android navigation/design/connectivity baseline | AFL | `AND-FND-001` | P1 | AR,QAR | Navigation shell, design tokens/resources, UiState, connectivity detection; offline mutation bị chặn, read-only cache boundary rõ. | Theo global DoD + acceptance. | TODO |
 
 # M2 — Identity & Catalog

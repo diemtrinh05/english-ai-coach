@@ -573,6 +573,11 @@ access token
 refresh token
 ```
 
+Register, login và Google login nhận `refreshToken` trong auth response theo
+API/OpenAPI v1.4. Lưu token bằng Android credential storage được bảo vệ;
+không lấy token từ profile/list response. Refresh V1 chỉ thay access token,
+giữ refresh token hiện có vì rotation chưa bắt buộc.
+
 Do not store tokens in plain text logs or ordinary unprotected files.
 
 ---

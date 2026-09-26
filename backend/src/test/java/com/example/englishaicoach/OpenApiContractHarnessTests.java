@@ -84,6 +84,22 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
     }
 
     @Test
+    void authResponsesIssueRefreshTokenWithoutRotatingItOnRefresh() {
+        Schema<?> auth = openApi.getComponents().getSchemas().get("AuthResponse");
+        assertNotNull(auth);
+        assertTrue(auth.getAllOf().stream().anyMatch(part ->
+                part.getRequired() != null && part.getRequired().contains("refreshToken")));
+        assertEquals("#/components/schemas/AuthResponse", openApi.getPaths().get("/auth/register")
+                .getPost().getResponses().get("201").getContent().get("application/json").getSchema().get$ref());
+        assertEquals("#/components/schemas/AuthResponse", openApi.getPaths().get("/auth/login")
+                .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
+        assertEquals("#/components/schemas/AuthResponse", openApi.getPaths().get("/auth/google")
+                .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
+        assertEquals("#/components/schemas/TokenResponse", openApi.getPaths().get("/auth/refresh")
+                .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
+    }
+
+    @Test
     void preservesCanonicalPathAndOperationInventory() {
         List<Operation> operations = openApi.getPaths().values().stream()
                 .flatMap(pathItem -> pathItem.readOperations().stream())

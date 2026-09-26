@@ -1800,12 +1800,18 @@ Never expose:
 
 ```text
 JWT secret
-Refresh token plaintext
 Password hash
 LLM API key
 OAuth client secret
 Database credentials
 ```
+
+Refresh token plaintext chỉ được cấp cho client qua auth response
+được bảo vệ của register/login/Google login theo API/OpenAPI v1.4 để client
+có thể gọi `/api/v1/auth/refresh` và `/api/v1/auth/logout`. Không ghi token
+vào log, profile/list response hoặc response không thuộc auth; trong database
+chỉ lưu token dạng hash. Refresh V1 không cấp refresh token mới khi rotation
+chưa được bật.
 
 ---
 
