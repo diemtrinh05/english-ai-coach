@@ -6969,3 +6969,103 @@ Lifecycle: BE-FND-012 IN_PROGRESS → DONE; M1 remains IN_PROGRESS.
 No commit, push, merge, PR or baseline-tag mutation in finalization.
 Publication belongs to Git workflow.
 ```
+
+## BE-FND-013 — PLAN — 2026-09-27
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST; stop before independent review)
+Mode: GOV009_DIRECT_MAIN; GOV-009 effective commit is on origin/main.
+Task: BE-FND-013 / M1 / CBL / P1; TODO → IN_PROGRESS.
+Dependency: DB-FND-001 = DONE. Reviewers: AR, SR, QAR.
+Admission: ACTUAL_CI_REPOSITORY_HEALTH. main clean and equal to origin/main
+cbb517c1748b2e74fb0dd9386b6ed2a89f06f064; Required CI run
+36291072538 completed success for that SHA; repository HEALTHY. No Git
+operation or other active direct-main task.
+Sources: PROJECT_RULES, IMPLEMENTATION_PLAN, MASTER_BACKLOG, System
+Architecture v1.3 (AI outage/core learning), Technical Specification v1.2
+§67, Backend Technical Specification v1.3 §§98/134, CODEX_BACKEND_LEAD,
+AR/SR/QAR instructions; Spring Boot 4.1.1 Actuator reference.
+Scope: add Actuator health with DB indicator and readiness group that
+includes readinessState and db; retain provider independence for core
+health and liveness; verify HTTP/status behavior with PostgreSQL tests.
+Out of scope: provider adapters/calls, broad observability and alerting
+(OPS-RC-002), API/OpenAPI product operations, schema, clients, security
+configuration foundation (SEC-FND-002), business algorithms.
+No commit, push, review or baseline-tag mutation during execute.
+```
+
+## BE-FND-013 — IMPLEMENT / TEST — 2026-09-27
+
+```text
+Phạm vi đã triển khai:
+- Thêm Spring Boot Actuator và chỉ expose HTTP health; health details và
+  components không công khai.
+- Bật /actuator/health, /actuator/health/readiness và
+  /actuator/health/liveness. Readiness gồm readinessState và db; health
+  tổng hợp dùng DB indicator tự động của Actuator. Liveness không phụ thuộc DB.
+- Không thêm AI provider hoặc provider network call vào health group. Core
+  health/readiness vẫn UP khi fake LlmProvider báo lỗi nhưng PostgreSQL hoạt động.
+- Điều chỉnh context-only test (cố ý loại DataSource) để readiness test
+  fixture chỉ chứa readinessState; cấu hình production vẫn bắt buộc db.
+
+TEST:
+- backend/mvnw.cmd clean verify = PASS, 107/107 tests, 0 failures/errors/
+  skips; PostgreSQL Testcontainers, Flyway và package đều PASS.
+- ActuatorHealthIntegrationTests = PASS, 3/3: DB thật UP và health/readiness/
+  liveness 200; contributor DB giả DOWN làm health/readiness 503 trong khi
+  liveness 200; AI provider lỗi không bị gọi; /actuator/env không expose;
+  response không lộ components.
+- Lần chạy đầu 106/107 do context-only fixture loại DataSource nhưng còn
+  readiness group production đòi db. Đã sửa fixture đúng phạm vi và rerun
+  toàn bộ 107/107 PASS; không có lỗi tồn đọng.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py = PASS;
+  Python audit regression = 45/45 PASS; py_compile và git diff --check PASS.
+- Untracked Java file qua kiểm tra whitespace/conflict marker/final newline.
+  Không có file generated hoặc credential trong diff. Baseline tags không đổi.
+- API/OpenAPI product contract, DB/Flyway, client, migration và provider
+  adapter không đổi. /actuator/health là endpoint vận hành đã có trong
+  Backend Technical Specification §134. Remote CI cho diff chưa commit =
+  NOT RUN / NOT CLAIMED. Failed-check waiver = NOT USED.
+
+Stop state: BE-FND-013 giữ IN_PROGRESS. AR, SR, QAR review độc lập còn chờ;
+không tự review, finalize, commit hoặc push.
+```
+
+## BE-FND-013 — INDEPENDENT REVIEW / FINALIZE — 2026-09-27
+
+```text
+Independent review trên uncommitted main diff:
+- Architecture Reviewer initial review = PASS; findings NONE.
+- Security Reviewer initial review = PASS; findings NONE.
+- QA Reviewer initial review = PASS; findings NONE. QA chạy độc lập
+  ActuatorHealthIntegrationTests 3/3 PASS và applicable audits PASS.
+- Historical reviewer FAIL = NONE; unresolved findings = NONE.
+  Required gates AR = PASS, SR = PASS, QAR = PASS.
+
+Final gate verification:
+- Implementer backend/mvnw.cmd clean verify = PASS, 107/107, 0 failures,
+  0 errors, 0 skipped; PostgreSQL Testcontainers/Flyway và package PASS.
+  Không có code/config change sau reviewed TEST diff; finalization chỉ cập
+  nhật lifecycle/evidence.
+- baseline_audit, ci_workflow_audit, secret_audit, py_compile và
+  git diff --check = PASS tại finalization. Untracked Java file qua
+  whitespace/conflict/final-newline checks; scope chỉ gồm Actuator config,
+  tests và lifecycle evidence; không có secret/generated file.
+- Baseline tag objects và peeled targets của hai tag local khớp origin.
+- Admission mode ACTUAL_CI_REPOSITORY_HEALTH: Required CI run 36291072538
+  PASS cho admission origin/main SHA
+  cbb517c1748b2e74fb0dd9386b6ed2a89f06f064. No known failing check;
+  failed-check waiver = NOT USED. Remote CI cho diff chưa commit =
+  NOT RUN / NOT CLAIMED.
+
+Acceptance và impact: /actuator/health kiểm tra DB; readiness gồm
+readinessState + db; liveness không phụ thuộc DB/AI. AI provider outage
+không làm core health/readiness DOWN khi DB hoạt động. Chỉ health endpoint
+được expose, không có component/details công khai. API/OpenAPI product
+contract, DB/Flyway, clients, migrations và business algorithms không đổi;
+thay đổi vận hành tương thích ngược.
+
+Lifecycle: BE-FND-013 IN_PROGRESS → DONE. M1 progress 27/29; milestone
+vẫn IN_PROGRESS. Finalization không commit, push, merge, PR hay đổi tag.
+Publication thuộc Git workflow.
+```

@@ -15,6 +15,21 @@ logging:
     format:
       console: ecs
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+
 app:
   # Số câu hỏi, kích thước block và ngưỡng chuyển mức của assessment-block-v1.
   assessment:

@@ -7,7 +7,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
-        "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration"
+        "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+        "management.endpoint.health.group.readiness.include=readinessState"
 })
 class EnglishAiCoachBackendApplicationTests {
 
