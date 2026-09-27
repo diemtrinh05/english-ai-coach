@@ -25,6 +25,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.example.englishaicoach.common.clock.BusinessTimeProvider;
+import com.example.englishaicoach.common.logging.RequestCorrelationFilter;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -185,6 +186,7 @@ public class GlobalExceptionHandler {
             String message,
             HttpServletRequest request,
             List<Map<String, Object>> details) {
+        request.setAttribute(RequestCorrelationFilter.ERROR_CODE_ATTRIBUTE, code);
         ApiErrorResponse body = new ApiErrorResponse(
                 timeProvider.now(),
                 status.value(),

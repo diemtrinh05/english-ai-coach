@@ -6717,3 +6717,143 @@ unpublished diff is pending publication, not claimed PASS.
 Lifecycle: IN_PROGRESS → DONE. No commit, push, PR or baseline-tag mutation
 in finalization. Publication belongs to Git workflow.
 ```
+
+## BE-FND-006 — PLAN / IMPLEMENT — 2026-09-27
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST; stop before independent review)
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: BE-FND-006 / CBL / P1
+Lifecycle: TODO → IN_PROGRESS; remains IN_PROGRESS
+Dependency: BE-FND-005 = DONE
+Reviewers required: Security Reviewer and QA Reviewer; neither has reviewed this diff.
+CI admission: ACTUAL_CI_REPOSITORY_HEALTH. At admission main was clean and
+equal to origin/main at 10941a7763ec14a2c3d12c25a8edb45223a408aa;
+Required CI run 36288153429 completed success for that exact SHA. No Git
+operation or other active direct-main task.
+
+Sources: PROJECT_RULES, IMPLEMENTATION_PLAN, MASTER_BACKLOG, System
+Architecture v1.3 §53, Technical Specification v1.2 §§65–66, Backend
+Technical Specification v1.3 §§97,157–158, Database Schema v1.6
+admin_audit_logs, API/OpenAPI v1.4, CODEX_BACKEND_LEAD, Security Reviewer,
+QA Reviewer instructions.
+Scope: per-request X-Request-Id correlation, structured backend request log
+with safe operational fields, and traceId enrichment for future admin audit
+details. UUID-only client ID acceptance avoids logging opaque credentials
+placed in the request ID header; otherwise generate a UUID. Correlation is
+available in MDC and request attributes, and returned as X-Request-Id.
+No request headers, query, body, authentication credential or FCM token is
+logged by the request logger. Admin audit persistence/business actions are
+future tasks; the enrichment helper adds traceId to canonical JSONB details
+without a schema change.
+Out of scope: admin audit endpoint/persistence, authentication, provider
+adapters, distributed tracing, metrics/alerting (OPS-RC-002), API body or
+database schema changes, and client changes.
+
+TEST evidence:
+- backend/mvnw.cmd clean verify = PASS, 97/97 tests including PostgreSQL
+  Testcontainers and Flyway; RequestCorrelationTests = PASS, 4/4.
+- Spring Boot ECS console output observed as JSON with requestId, traceId,
+  module, operation, durationMs and result on request_complete event.
+- Request tests cover valid client UUID, missing/unsafe header fallback,
+  MDC cleanup, audit traceId linkage, spoofed traceId rejection, and absence
+  of bearer/refresh/FCM test values from the request log.
+- baseline_audit, ci_workflow_audit, secret_audit = PASS; Python audit
+  regression suite = PASS, 45/45; py_compile = PASS.
+- git diff --check and untracked whitespace/conflict-marker checks = PASS;
+  local/remote immutable baseline tag objects and peeled targets = MATCH.
+  No generated output or secret is tracked; no dependency was added.
+- API/OpenAPI, database/Flyway and clients = unchanged. The X-Request-Id
+  response header is additive; error-body contract is unchanged.
+- Remote CI for this uncommitted diff = NOT RUN / NOT CLAIMED.
+Stop state: BE-FND-006 remains IN_PROGRESS; SR and QAR independent reviews
+are pending. Findings are not yet established. No self-review, finalize,
+commit, push, PR or baseline-tag mutation.
+```
+
+## BE-FND-006 — INDEPENDENT REVIEW / REMEDIATION — 2026-09-27
+
+```text
+Initial independent review chronology (preserved):
+- Security Reviewer = FAIL. SEC-BE-FND-006-001: MEDIUM, blocking YES,
+  original status OPEN. A caller could reuse a valid X-Request-Id UUID,
+  making its value unsuitable as an authoritative admin-audit traceId.
+- QA Reviewer = FAIL. QA-BE-FND-006-001: HIGH, blocking YES,
+  original status OPEN. Structured request logs recorded HTTP status but
+  omitted canonical error code; two distinct HTTP 409 errors were
+  indistinguishable in the request log.
+- BE-FND-006 remains IN_PROGRESS; unresolved findings = 2 pending focused
+  independent Security and QA re-review.
+
+Focused remediation:
+- Generate a separate server-owned UUID traceId for every request while
+  retaining the validated client X-Request-Id as requestId. MDC and request
+  attributes carry both values; AuditCorrelation copies only the
+  server-generated traceId into admin-audit details. Tests prove two
+  requests with the same client requestId receive distinct traceId values.
+- GlobalExceptionHandler stores its canonical error code in a private
+  request attribute; RequestCorrelationFilter reads that value after the
+  handler runs and includes errorCode in the structured completion log.
+  Tests distinguish CONCURRENT_UPDATE and IDEMPOTENCY_KEY_REUSE at HTTP 409.
+  No exception message, header, query or body is logged.
+- backend/mvnw.cmd clean verify = PASS, 99/99 tests, including PostgreSQL
+  Testcontainers/Flyway and RequestCorrelationTests 6/6. The initial focused
+  test run failed on an assertion that expected the wrong Logback key-value
+  string format; the assertion was corrected and full clean verify PASSed.
+- ECS JSON evidence in surefire output contains separate requestId/traceId,
+  result=409 and the respective canonical errorCode values; no credential
+  or FCM test value appears in the request-completion events.
+- baseline_audit, ci_workflow_audit, secret_audit, Python audit regression
+  suite (45/45), py_compile, git diff --check and untracked whitespace/
+  conflict-marker checks = PASS. API/OpenAPI, DB/Flyway and clients remain
+  unchanged. No new dependency, generated artifact or secret is tracked.
+- SEC-BE-FND-006-001 and QA-BE-FND-006-001 remain OPEN; original FAIL and
+  severity/blocking metadata remain intact until their owner reviewers
+  perform focused re-review. No self-review, finalize, commit, push or
+  baseline-tag mutation.
+```
+
+## BE-FND-006 — FOCUSED RE-REVIEW / FINALIZE — 2026-09-27
+
+```text
+Authoritative independent reviewer results after remediation:
+- Security Reviewer focused re-review = PASS, new findings NONE.
+  SEC-BE-FND-006-001 (historical MEDIUM, blocking YES, original OPEN) =
+  RESOLVED by Security Reviewer. Server-owned traceId differs across
+  requests even when a client reuses the same X-Request-Id.
+- QA Reviewer focused re-review = PASS, new findings NONE.
+  QA-BE-FND-006-001 (historical HIGH, blocking YES, original OPEN) =
+  RESOLVED by QA Reviewer. Two HTTP 409 cases expose distinct canonical
+  errorCode values in ECS JSON without leaking sample secrets. QA focused
+  tests = PASS, 6/6; context plus focused tests = PASS, 7/7.
+- Initial SR FAIL and QAR FAIL, their OPEN findings, and remediation
+  chronology above remain unchanged. Final required gates SR=PASS,
+  QAR=PASS; unresolved findings=NONE.
+
+Final validation:
+- backend/mvnw.cmd clean verify = PASS, 99/99, 0 failures/errors/skips;
+  PostgreSQL Testcontainers/Flyway included. RequestCorrelationTests 6/6.
+- baseline_audit, ci_workflow_audit and secret_audit = PASS; Python audit
+  regression suite 45/45 = PASS; py_compile = PASS.
+- git diff --check, untracked whitespace/conflict-marker, scope,
+  generated-file, private-secret and baseline-tag integrity = PASS.
+  No generated output is tracked; immutable local/remote baseline tag
+  objects and peeled targets match.
+- CI admission ACTUAL_CI_REPOSITORY_HEALTH: Required CI run 36288153429
+  PASS for admission origin/main SHA 10941a7763ec14a2c3d12c25a8edb45223a408aa.
+  No known failing check; failed-check waiver = NOT USED. Remote CI for
+  this uncommitted diff = NOT RUN / NOT CLAIMED.
+
+Acceptance and impact:
+- Every backend HTTP request has a requestId and distinct server-owned
+  traceId. ECS request completion log records safe operational fields and
+  canonical errorCode when an error is handled. AuditCorrelation can add
+  the server traceId to admin_audit_logs.details without a DB migration.
+- Documents: MASTER_BACKLOG and EXECUTION_LOG. API error body and OpenAPI,
+  database/Flyway, clients, migrations and business rules = unchanged.
+  X-Request-Id response header is additive; no existing field removed.
+
+Lifecycle: BE-FND-006 IN_PROGRESS → DONE. M1 progress 25/29; milestone
+remains IN_PROGRESS. No commit, push, merge, PR or baseline-tag mutation
+in finalization. Publication belongs to Git workflow.
+```

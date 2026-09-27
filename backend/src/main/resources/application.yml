@@ -5,6 +5,11 @@ spring:
   application:
     name: english-ai-coach-backend
 
+logging:
+  structured:
+    format:
+      console: ecs
+
 app:
   # Số câu hỏi, kích thước block và ngưỡng chuyển mức của assessment-block-v1.
   assessment:
