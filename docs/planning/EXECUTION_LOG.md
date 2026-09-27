@@ -6595,3 +6595,125 @@ Lifecycle and stop state:
 - No commit, push, merge, PR or baseline-tag mutation. Publication is a
   separate Git-workflow operation: publish AND-FND-002.
 ```
+
+## BE-FND-011 — PLAN / IMPLEMENT / TEST — 2026-09-27
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST; stop before independent review)
+Mode: GOV009_DIRECT_MAIN
+Task/owner/priority: BE-FND-011 / CBL / P1
+Lifecycle: TODO → IN_PROGRESS; remains IN_PROGRESS
+Dependency: BE-FND-002 = DONE
+Reviewers required: AR, SR, QAR (not yet run)
+CI admission: ACTUAL_CI_REPOSITORY_HEALTH; latest origin/main
+03b55d988aa70e6fc654b2d1818d489636a87a30 had Required CI PASS
+(run 36241740027) at admission. main == origin/main and tree was clean;
+no Git operation or other active direct-main task.
+
+Sources: PROJECT_RULES, IMPLEMENTATION_PLAN, MASTER_BACKLOG,
+System Architecture v1.3, Technical Specification v1.2,
+Backend Technical Specification v1.3, AI Personalization v1.3,
+Database Schema v1.6, API Specification v1.4 and role/reviewer instructions.
+Scope: add only provider-independent internal boundaries for LLM, TTS,
+object storage and push notification. No adapter, provider SDK, endpoint,
+configuration, schema, migration or client behavior is added.
+Out of scope: provider selection, credentials, retry/delivery policy,
+notification preferences, storage URL/key policy and AI budget/safety flow.
+
+Implementation: LlmProvider.generate(AiGenerationRequest) returns
+AiGenerationResult per Backend Technical Specification; TtsProvider exposes
+generateAudio(String) with String return per the specification example.
+ObjectStorageService and NotificationProvider are nominal ports until their
+later integration tasks define the operation contract. AI payload records
+redact their logging representation.
+
+Validation: backend/mvnw.cmd clean verify = PASS (90/90 existing tests;
+PostgreSQL Testcontainers/Flyway included). Focused provider boundary and
+AI-payload logging tests = PASS (2/2). baseline_audit = PASS;
+ci_workflow_audit = PASS; secret_audit = PASS; Python audit regression tests
+= PASS (45/45); py_compile = PASS; git diff --check = PASS.
+Untracked source whitespace/conflict-marker check = PASS; local/remote
+baseline tag objects and peeled targets = MATCH; generated output is
+untracked/ignored and no SDK dependency or secret was added.
+Remote CI for uncommitted changes = NOT RUN / NOT CLAIMED.
+
+Change impact: internal Java provider ports only. API/OpenAPI, database,
+clients and migrations = NONE. Backward compatibility: existing consumers
+unchanged; future adapter contracts remain open for their assigned tasks.
+Stop state: IN_PROGRESS; independent AR/SR/QAR review pending; unresolved
+findings not yet established. No self-review, finalize, commit, push, PR or
+baseline-tag mutation.
+```
+
+## BE-FND-011 — INDEPENDENT REVIEW / REMEDIATION — 2026-09-27
+
+```text
+Initial independent review chronology:
+- Architecture Reviewer = FAIL. ARCH-BE-FND-011-001: HIGH, blocking YES,
+  status OPEN. ObjectStorageService and NotificationProvider were empty;
+  the boundary had no callable provider-independent operation.
+- Security Reviewer = PASS; findings NONE.
+- QA Reviewer = FAIL. QA-BE-FND-011-001: MEDIUM, blocking YES,
+  status OPEN. Interface-only assertions did not exercise fake adapters.
+- BE-FND-011 remains IN_PROGRESS; unresolved findings = 2.
+
+Remediation: add minimal media-store and push-send operations to the two
+existing ports, without deciding storage key/URL policy, provider delivery
+status, retries, credentials or notification business rules. Add a functional
+fake-adapter test for the four ports. Preserve original FAIL and OPEN state
+until focused Architecture and QA re-review.
+
+Remediation execution:
+- ObjectStorageService.store(byte[], String) returns an opaque media
+  reference. Storage location, public URL/key format and provider SDK remain
+  unspecified.
+- NotificationProvider.send(String, String, String) accepts the device push
+  token and prepared title/body. Delivery acknowledgement, invalid-token
+  handling and retry policy remain for BE-NOTI-003.
+- ExternalProviderBoundaryTests now exercises all four ports with fake
+  adapters, including media content and a Vietnamese push message.
+- backend/mvnw.cmd clean verify = PASS, 93/93 tests including PostgreSQL
+  Testcontainers/Flyway and 3/3 provider boundary tests.
+- baseline_audit, ci_workflow_audit, secret_audit, py_compile,
+  git diff --check and untracked whitespace/conflict check = PASS;
+  Python audit regression tests = PASS, 45/45. No generated output tracked,
+  provider SDK, API/OpenAPI, DB or migration change.
+- ARCH-BE-FND-011-001 and QA-BE-FND-011-001 remain OPEN pending focused
+  independent AR and QAR re-review; their original FAIL results remain.
+  Security Reviewer PASS remains unchanged. Task remains IN_PROGRESS.
+  No finalize, commit, push or baseline-tag mutation.
+```
+
+## BE-FND-011 — RE-REVIEW / FINALIZE — 2026-09-27
+
+```text
+Independent re-review after remediation:
+- BE-FND-011 reviewer gates: AR = PASS; SR = PASS; QAR = PASS.
+- BE-FND-011 unresolved findings = NONE; historical findings = 2 RESOLVED.
+- Architecture Reviewer = PASS; ARCH-BE-FND-011-001 RESOLVED by its owner.
+  The storage and push ports expose SDK-independent operations, and the
+  fake-adapter test invokes all four provider ports. No new finding.
+- Security Reviewer = PASS on the final remediation diff; findings NONE.
+  Push token and media content are only port inputs; no adapter, logging,
+  credential, endpoint or provider SDK was added.
+- QA Reviewer = PASS; QA-BE-FND-011-001 RESOLVED by its owner. Focused
+  backend/mvnw.cmd -Dtest=ExternalProviderBoundaryTests test = PASS (3/3).
+  No new finding. Initial AR/QAR FAIL and OPEN chronology above is retained.
+
+Finalization: all required AR/SR/QAR gates PASS; historical findings = 2
+RESOLVED, unresolved findings = NONE. Acceptance met: LlmProvider,
+TtsProvider, ObjectStorageService and NotificationProvider are callable
+interfaces with SDK-free fake adapters. Task tests after remediation:
+backend/mvnw.cmd clean verify = PASS (93/93 including PostgreSQL
+Testcontainers/Flyway); focused provider tests = PASS (3/3).
+baseline_audit, ci_workflow_audit, secret_audit, Python audit regression
+tests (45/45), py_compile, git diff --check, untracked whitespace/conflict,
+scope, generated-file and baseline-tag integrity gates = PASS. CI admission
+mode = ACTUAL_CI_REPOSITORY_HEALTH; Required CI for admission SHA
+03b55d988aa70e6fc654b2d1818d489636a87a30 = PASS (run 36241740027).
+No known failing check; failed-check waiver = NOT USED. Remote CI for this
+unpublished diff is pending publication, not claimed PASS.
+
+Lifecycle: IN_PROGRESS → DONE. No commit, push, PR or baseline-tag mutation
+in finalization. Publication belongs to Git workflow.
+```
