@@ -85,3 +85,23 @@ Cài bản debug lên emulator hoặc thiết bị đang kết nối:
 token/error/eventId thuộc `AND-FND-002`; navigation/design/connectivity baseline
 thuộc `AND-FND-003`. Không thêm business feature, offline mutation queue hoặc
 client-side learning algorithm vào foundation này.
+
+`AND-FND-003` cung cấp năm tab MainGraph, resource thiết kế và `UiState` dùng
+chung. `ConnectivityMonitor` chỉ phát hiện mạng trên thiết bị; lỗi HTTP vẫn là
+nguồn quyết định khả dụng của từng request. Các use case mutation về sau phải
+gọi `OfflineMutationGuard` trước khi gửi và hiển thị trạng thái offline khi
+bị chặn. `ReadOnlyCachePolicy` chỉ cho phép hiển thị dữ liệu tham chiếu đã
+lưu; task này chưa tạo cache hoặc cơ chế đồng bộ. SRS, tiến độ, XP, streak và
+lịch sử attempt không được lấy cache làm nguồn quyết định.
+
+Kiểm tra banner kết nối trên Android emulator đang online bằng lệnh sau từ
+thư mục `android` sau khi chọn JDK 21 và Android SDK như trên:
+
+```powershell
+.\gradlew.bat --no-daemon connectedDebugAndroidTest
+```
+
+`ConnectivityInstrumentedTest` kiểm tra banner ẩn khi online, hiện sau khi
+emulator mất cả Wi-Fi và mạng di động, rồi ẩn lại khi mạng được khôi phục.
+Test khôi phục kết nối trong `finally`. Thiết bị thật được bỏ qua vì test có
+thao tác bật/tắt mạng của emulator.

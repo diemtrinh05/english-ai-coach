@@ -7222,3 +7222,184 @@ remains IN_PROGRESS pending its remaining task and exit gate. Finalization
 does not commit, push, merge, create PR or change baseline tags. Git
 publication and remote Required CI belong to the Git workflow.
 ```
+## AND-FND-003 — PLAN — 2026-09-27
+
+```text
+Mode: GOV009_DIRECT_MAIN. Task AND-FND-003 / M1 / AFL / P1.
+Admission: main sạch, HEAD == origin/main ==
+0bf06773aa1827ec69dce6bd6c0af0774bf2a6b4; Required CI run
+36305613345 completed success for exact SHA; repository HEALTHY.
+Dependency AND-FND-001 = DONE; no other direct-main task active.
+Source: Android Java Technical Spec v1.1, Mobile UI/UX v1.1,
+Design System/Wireframe v1.2, High-Fidelity v1.1, Prototype v1.1,
+PROJECT_RULES and implementation plan. Scope: MainGraph shell with five
+tabs, centralized design resources, reusable UiState, connectivity
+detection, offline mutation guard and read-only cache policy. No auth,
+learning feature, offline queue/sync or backend contract change.
+Required reviewers: AR and QAR. Required validation: Android wrapper
+build/unit/lint, repository audits and scope/secret/generated/tag guards.
+Transition: TODO → IN_PROGRESS. No commit or push.
+```
+
+## AND-FND-003 — IMPLEMENT / TEST — 2026-09-27
+
+```text
+IMPLEMENT:
+- MainActivity hosts five Vietnamese bottom-navigation destinations via
+  MainNavigationViewModel and Fragment shell. Selected destination survives
+  activity recreation; future feature screens remain out of scope.
+- Centralized semantic colors, spacing, typography, theme and user-visible
+  strings in Android resources. Added reusable exclusive UiState and
+  MutationUiState models.
+- ConnectivityMonitor uses Android ConnectivityManager callbacks and
+  lifecycle-aware LiveData. Offline banner explains reconnect/read-only
+  boundary. OfflineMutationGuard blocks execution when device is offline;
+  ReadOnlyCachePolicy admits only approved reference content and rejects
+  SRS/progress/XP/streak/attempt history. No cache DB, queue or sync exists.
+- android/README.md documents device connectivity versus request failure
+  and future use-case integration boundary. API/OpenAPI, backend, database,
+  migrations and other clients unchanged.
+
+TEST:
+- Toolchain: Gradle 8.13, AGP 8.13.2, JDK 21.0.12.1 runtime, Java 17
+  source/target, compile/target SDK 36, min SDK 26. Host-default JDK 25
+  failed Gradle configuration before compilation; rerun used session-local
+  portable JDK 21 and Android SDK, without changing machine configuration.
+- android/gradlew.bat --no-daemon clean lintDebug testDebugUnitTest
+  assembleDebug assembleRelease = PASS (97 tasks, BUILD SUCCESSFUL).
+  Final incremental lintDebug/testDebugUnitTest/assembleDebug/
+  assembleRelease/assembleDebugAndroidTest = PASS (124 tasks).
+- Android local unit tests 22/22 PASS, including UiState and offline guard/
+  cache policy tests. LintDebug PASS; existing nonblocking ApplySharedPref
+  warning in prior token-store source remains.
+- android/gradlew.bat --no-daemon connectedDebugAndroidTest = PASS,
+  2/2 tests, Pixel_8 AVD Android 17/API 37, emulator-5554. New test verifies
+  Home/Review/Profile tab selection and Vietnamese fragment title; existing
+  encrypted token-store device test also PASS.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py PASS;
+  audit regression suite 45/45 PASS. Required CI Android validation already
+  invokes wrapper lint/unit/debug/release build. git diff --check and
+  --cached --check PASS; 13 untracked source/test/resource files have no
+  trailing whitespace or conflict markers. No generated files, credentials,
+  baseline document or tag mutation; local/remote tag refs 2/2 match.
+- Remote CI for current uncommitted task diff = NOT RUN / NOT CLAIMED.
+  Task remains IN_PROGRESS, reviewers AR/QAR pending. No commit or push.
+```
+
+## AND-FND-003 — Independent review / remediation QA-AND-FND-003-001 — 2026-09-27
+
+```text
+REVIEW CHRONOLOGY:
+- Architecture Reviewer initial PASS, findings NONE.
+- QA Reviewer initial FAIL. QA-AND-FND-003-001: HIGH, blocking YES,
+  status OPEN. Thiếu kiểm chứng trên emulator/thiết bị cho callback
+  ConnectivityMonitor và offline banner khi online → offline → online.
+  Giữ nguyên kết quả FAIL và finding OPEN để QAR focused re-review.
+
+REMEDIATION (AFL, chỉ QA-AND-FND-003-001):
+- Thêm ConnectivityInstrumentedTest dùng Android connectivity thực trên
+  Pixel_8 emulator: xác nhận banner GONE khi online; bật airplane mode và
+  tắt Wi-Fi, xác nhận active network không còn và banner VISIBLE; khôi phục
+  Wi-Fi/airplane mode trong finally, xác nhận mạng online và banner GONE.
+  Test chỉ thao tác emulator, không thao tác kết nối thiết bị thật.
+- android/README.md bổ sung lệnh connectedDebugAndroidTest để tái hiện.
+  Không thêm cache, offline queue/sync hoặc behavior của task tương lai.
+
+VALIDATION:
+- Toolchain session-local JDK 21.0.12.1: Gradle 8.13 Launcher JVM và
+  Daemon JVM đều 21.0.12.1; Android SDK API 36, emulator Pixel_8 Android
+  17/API 37 (emulator-5554). Không đổi cấu hình Java/SDK/proxy toàn máy.
+- android/gradlew.bat --no-daemon clean lintDebug testDebugUnitTest
+  assembleDebug assembleRelease assembleDebugAndroidTest = PASS,
+  BUILD SUCCESSFUL, 125 actionable tasks (124 executed, 1 up-to-date).
+  Unit test XML = 22/22 PASS; lintDebug PASS.
+- android/gradlew.bat --no-daemon connectedDebugAndroidTest = PASS,
+  3/3 tests, 0 skipped, 0 failures, 0 errors. Test-results XML ghi rõ
+  ConnectivityInstrumentedTest.offlineBannerFollowsDeviceConnectivityInBothDirections
+  đã thực thi; hai device test hiện hữu cũng PASS. Emulator có active
+  default network sau test, chứng minh kết nối được khôi phục.
+- Manual adb/uiautomator smoke cũng quan sát: online banner ẩn; offline
+  default network = none và banner tiếng Việt hiện; sau khôi phục default
+  network online và banner biến mất.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py = PASS;
+  audit regression suite 45/45 PASS. git diff --check và
+  git diff --cached --check PASS; 14 untracked task files không có trailing
+  whitespace/conflict marker. Không có generated file/credential trong
+  task files; baseline tag refs/peeled targets 4/4 khớp origin.
+- Remote CI cho worktree chưa commit = NOT RUN / NOT CLAIMED.
+
+STOP: AND-FND-003 vẫn IN_PROGRESS. QA-AND-FND-003-001 vẫn OPEN; chỉ QAR
+có authority focused re-review để chuyển finding sang RESOLVED/PASS.
+Không finalize, commit hoặc push.
+```
+
+## AND-FND-003 — Synchronize independent reviewer evidence — 2026-09-27
+
+```text
+Authoritative reports do orchestrator chuyển để đồng bộ:
+- Architecture Reviewer initial PASS, findings NONE. Không có finding AR
+  cần remediation hay re-review.
+- QA Reviewer initial FAIL; QA-AND-FND-003-001 HIGH, blocking YES,
+  original status OPEN. Evidence thiếu device/emulator online → offline
+  → online cho ConnectivityMonitor và offline banner.
+- AFL remediation đã thêm ConnectivityInstrumentedTest và chạy trên
+  Pixel_8 AVD Android 17/API 37: connectedDebugAndroidTest 3/3 PASS,
+  skipped 0, failures 0, errors 0. Android build/lint/unit và audit gates
+  PASS như remediation evidence bên trên.
+- Chính QA Reviewer focused re-review = PASS; finding
+  QA-AND-FND-003-001 = RESOLVED. Reviewer đã xác nhận device test thực thi
+  đủ ba trạng thái. Historical FAIL/OPEN ở các snapshot cũ vẫn được giữ.
+
+Current reviewer gates: AR PASS, QAR PASS. Authoritative unresolved
+findings = NONE. Snapshot STOP/OPEN trong remediation section phía trên
+là trạng thái tại thời điểm remediation, không ghi đè resolution QAR sau đó.
+Task AND-FND-003 vẫn IN_PROGRESS; synchronization không finalize, commit,
+push hay claim remote CI cho diff chưa commit.
+```
+
+## AND-FND-003 — FINALIZE — 2026-09-27
+
+```text
+Mode GOV009_DIRECT_MAIN; task M1 / AFL / P1. Dependency AND-FND-001 =
+DONE. Admission commit 0bf06773aa1827ec69dce6bd6c0af0774bf2a6b4
+vẫn là HEAD == origin/main trên main; admission Required CI run
+36305613345 PASS. Task chỉ có Android và planning files trong worktree.
+
+Acceptance verification:
+- MainGraph shell có năm tab Home/Learn/Review/Progress/Profile bằng
+  nhãn tiếng Việt từ strings.xml; Fragment + ViewModel giữ navigation
+  state khi Activity tái tạo. Design colors/spacing/type/theme được gom
+  trong Android resources.
+- UiState và MutationUiState dùng chung có trạng thái rõ ràng.
+  ConnectivityMonitor dùng Android ConnectivityManager callback;
+  offline banner phản ứng online → offline → online trên emulator.
+- OfflineMutationGuard chặn mutation khi offline; ReadOnlyCachePolicy
+  giới hạn dữ liệu tham chiếu đọc-only. Không có offline learning queue,
+  SRS/sync, feature screen tương lai, backend authority hoặc API/DB change.
+
+Validation at finalization:
+- JDK 21.0.12.1 / Gradle 8.13 / AGP 8.13.2, Java source/target 17,
+  compile/target SDK 36. Android wrapper clean lintDebug
+  testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest
+  PASS; unit XML 22/22, 0 skipped/failures/errors; lint PASS.
+- connectedDebugAndroidTest trên Pixel_8 AVD Android 17/API 37 PASS,
+  3/3 tests, 0 skipped/failures/errors; connectivity test đã thực thi
+  thực tế và emulator có active network sau cleanup.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py PASS;
+  audit regression suite 45/45 PASS. git diff --check và
+  git diff --cached --check PASS. 14 untracked task files không có
+  trailing whitespace/conflict marker; không generated APK/AAB/build,
+  local config, credential hoặc ngoài-scope file; baseline tag refs và
+  peeled targets 4/4 khớp origin.
+
+Reviewer chronology giữ nguyên: AR initial PASS/no finding; QAR initial
+FAIL với QA-AND-FND-003-001 HIGH/blocking/OPEN; AFL remediation; chính
+QAR focused re-review PASS và finding RESOLVED. Current required gates
+AR PASS, QAR PASS, unresolved findings NONE. Không có source-of-truth
+contradiction còn mở. Remote CI cho uncommitted diff = NOT RUN / NOT CLAIMED.
+
+Lifecycle: AND-FND-003 IN_PROGRESS → DONE. M1 backlog 29/29 DONE;
+milestone exit vẫn chờ final commit/push và Required CI PASS thực tế cho
+latest origin/main. Finalization không commit, push, merge hoặc mutate tags.
+Next operation: english-ai-coach-git-workflow publish AND-FND-003.
+```

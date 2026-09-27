@@ -4,4 +4,16 @@
     <color name="brand_on_primary">#FFFFFF</color>
     <color name="surface">#FAFAFF</color>
     <color name="on_surface">#191B23</color>
+    <color name="brand_primary_container">#DFE7FF</color>
+    <color name="brand_on_primary_container">#112B78</color>
+    <color name="background">#FAFAFF</color>
+    <color name="on_background">#191B23</color>
+    <color name="surface_variant">#EEF0F7</color>
+    <color name="on_surface_variant">#474B59</color>
+    <color name="status_success">#187A4B</color>
+    <color name="status_warning">#955B00</color>
+    <color name="status_error">#BA1A1A</color>
+    <color name="status_info">#2952CC</color>
+    <color name="divider">#DDE1EA</color>
+    <color name="disabled">#9A9EA9</color>
 </resources>

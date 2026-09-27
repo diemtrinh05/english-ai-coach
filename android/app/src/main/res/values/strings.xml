@@ -4,4 +4,12 @@
     <string name="app_logo_content_description">Biểu tượng English AI Coach</string>
     <string name="bootstrap_status_initializing">Đang khởi tạo ứng dụng…</string>
     <string name="bootstrap_status_ready">Nền tảng Android đã sẵn sàng</string>
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_learn">Học</string>
+    <string name="nav_review">Ôn tập</string>
+    <string name="nav_progress">Tiến độ</string>
+    <string name="nav_profile">Cá nhân</string>
+    <string name="foundation_destination_empty">Nội dung sẽ xuất hiện khi tính năng này sẵn sàng.</string>
+    <string name="offline_title">Không có kết nối mạng</string>
+    <string name="offline_description">Vui lòng kết nối lại để tiếp tục học. Nội dung đã lưu có thể xem ở chế độ chỉ đọc.</string>
 </resources>

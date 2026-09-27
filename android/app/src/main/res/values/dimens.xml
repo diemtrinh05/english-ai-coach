@@ -4,4 +4,11 @@
     <dimen name="spacing_medium">16dp</dimen>
     <dimen name="spacing_large">24dp</dimen>
     <dimen name="app_logo_size">72dp</dimen>
+    <dimen name="spacing_xsmall">4dp</dimen>
+    <dimen name="spacing_compact">12dp</dimen>
+    <dimen name="spacing_screen">20dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+    <dimen name="radius_card">16dp</dimen>
+    <dimen name="text_headline">24sp</dimen>
+    <dimen name="text_body">16sp</dimen>
 </resources>
