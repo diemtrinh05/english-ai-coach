@@ -4,6 +4,11 @@
 spring:
   application:
     name: english-ai-coach-backend
+  task:
+    scheduling:
+      pool:
+        # Bốn nhóm job có thể quét độc lập mà không chờ một worker đang chạy.
+        size: 4
 
 logging:
   structured:

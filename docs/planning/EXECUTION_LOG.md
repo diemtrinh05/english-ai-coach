@@ -6857,3 +6857,115 @@ Lifecycle: BE-FND-006 IN_PROGRESS → DONE. M1 progress 25/29; milestone
 remains IN_PROGRESS. No commit, push, merge, PR or baseline-tag mutation
 in finalization. Publication belongs to Git workflow.
 ```
+
+## BE-FND-012 — PLAN — 2026-09-27
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST; stop before independent review)
+Mode: GOV009_DIRECT_MAIN; effective GOV-009 commit db574d34f15f8d66f9b8733ac18ac1f6a4ecdc10 is on origin/main.
+Task: BE-FND-012 / M1 / CBL / P1; TODO → IN_PROGRESS.
+Dependencies: BE-FND-003 and BE-FND-010 = DONE.
+Reviewers: Architecture Reviewer and QA Reviewer.
+CI admission: ACTUAL_CI_REPOSITORY_HEALTH; main was clean and equal to origin/main at
+6b5643504b3659184e372b1db139aaf451caf4b4. Required CI run 36289406980
+completed success for that exact SHA; repository HEALTHY. No Git operation or
+other active direct-main task.
+Canonical sources: PROJECT_RULES, IMPLEMENTATION_PLAN, MASTER_BACKLOG,
+System Architecture v1.3 §40/§69.8, Technical Specification v1.2 §15.7,
+Backend Technical Specification v1.3 §§25/75–76, SRS v1.2 notification and
+idempotency boundary, AI Personalization v1.3 background boundary,
+CODEX_BACKEND_LEAD and AR/QAR instructions.
+Scope: Spring scheduling framework with separate notification, Daily Plan
+pre-generation, idempotency cleanup and AI usage aggregation job ports;
+wire the already-defined 30-day idempotency cleanup operation. Other job
+business workers are added by their own backlog tasks.
+Out of scope: notification delivery/timing/dedupe, Daily Plan generation,
+AI usage aggregation logic, new client-facing async AI job/API, schema,
+client and provider changes. Operational polling cadence is an internal
+configurable trigger, not a product schedule; workers determine due work.
+No commit, push, review or baseline-tag mutation during execute.
+```
+
+## BE-FND-012 — IMPLEMENT / TEST — 2026-09-27
+
+```text
+Scope delivered:
+- Enable Spring Scheduler and expose four independently scheduled,
+  provider-neutral BackgroundJobType slots: NOTIFICATION,
+  DAILY_PLAN_PREGENERATION, IDEMPOTENCY_CLEANUP, AI_USAGE_AGGREGATION.
+- BackgroundJobScheduler dispatches only a registered worker, supplies time
+  from injectable BusinessTimeProvider, rejects duplicate job types, and
+  isolates a worker failure from subsequent polls. Error log contains job
+  type and exception class only; no request/user/token data.
+- IdempotencyCleanupJob invokes existing IdempotencyService.deleteExpired,
+  which uses approved app.idempotency.retention=30d and a single SQL delete.
+- Poll intervals are overridable operational triggers (notification 1m,
+  Daily Plan 15m, cleanup 24h, AI usage 1h); they do not define user-local
+  notification time, Daily Plan content or aggregation policy. Spring task
+  scheduling pool size 4 permits the four job groups to run independently.
+- No worker for notification, Daily Plan pre-generation or AI aggregation
+  runs until its owning later task registers an implementation.
+
+TEST evidence:
+- backend/mvnw.cmd clean verify = PASS, 104/104 tests, 0 failures/errors/
+  skips; PostgreSQL Testcontainers and Flyway integration tests included.
+- BackgroundJobSchedulerTests = PASS, 5/5: all four ports receive fixed
+  Clock instant; absent future workers are inert; duplicate type rejected;
+  one worker failure does not stop another; cleanup delegates to existing
+  retention service. Existing IdempotencyServiceIntegrationTests = PASS,
+  14/14 including the 30-day cleanup boundary on real PostgreSQL.
+- python tools/baseline_audit.py = PASS; ci_workflow_audit.py = PASS;
+  secret_audit.py = PASS; Python audit regression suite = 45/45 PASS;
+  py_compile of audit scripts = PASS.
+- git diff --check = PASS; untracked Java files checked for trailing
+  whitespace, conflict markers and final newline = PASS. Immutable
+  baseline tag local objects/peeled targets match origin tags.
+- API/OpenAPI, database/Flyway, client contracts and migrations unchanged.
+  No dependency, provider SDK, generated output or client-facing async AI
+  job/API added. No known failing check; failed-check waiver = NOT USED.
+- Remote CI for current uncommitted diff = NOT RUN / NOT CLAIMED.
+
+Stop state: BE-FND-012 remains IN_PROGRESS. Required independent Architecture
+Reviewer and QA Reviewer gates are pending; no self-review, finalize,
+commit, push, PR or baseline-tag mutation.
+```
+
+## BE-FND-012 — INDEPENDENT REVIEW / FINALIZE — 2026-09-27
+
+```text
+Independent reviewer results for the uncommitted main diff:
+- Architecture Reviewer initial review = PASS; findings NONE. The four
+  scheduler slots and worker boundary match approved V1 architecture;
+  future business flows remain with their owning backlog tasks.
+- QA Reviewer initial review = PASS; findings NONE. Independent focused
+  scheduler and idempotency tests = PASS, 19/19; applicable audits = PASS.
+- Historical FAIL findings = NONE; unresolved findings = NONE. Required
+  reviewer gates AR = PASS and QAR = PASS.
+
+Final gate verification:
+- Implementer backend/mvnw.cmd clean verify = PASS, 104/104, including
+  PostgreSQL Testcontainers/Flyway. No code or configuration changed after
+  the reviewed TEST diff; finalization changes only backlog/log evidence.
+- baseline_audit, ci_workflow_audit, secret_audit, py_compile and
+  git diff --check = PASS at finalization. All six untracked Java files
+  pass whitespace/conflict/final-newline checks. Changed files are task
+  scheduler code, its configuration/tests and lifecycle evidence only;
+  no secret or generated output is in scope. Immutable baseline tag local
+  objects and peeled targets match origin tags.
+- Admission mode ACTUAL_CI_REPOSITORY_HEALTH: Required CI run 36289406980
+  PASS for exact admission origin/main SHA
+  6b5643504b3659184e372b1db139aaf451caf4b4. No known failing check;
+  failed-check waiver = NOT USED. Remote CI for this uncommitted diff is
+  NOT RUN / NOT CLAIMED.
+
+Acceptance and impact: Spring Scheduler dispatches the four approved
+background-job groups. Idempotency cleanup uses the existing 30-day
+retention service. Notification, Daily Plan and AI aggregation business
+workers are not in this task; no client-facing async AI job exists.
+API/OpenAPI, database/Flyway, clients, migrations, provider adapters and
+business algorithms are unchanged. No backward-incompatible change.
+
+Lifecycle: BE-FND-012 IN_PROGRESS → DONE; M1 remains IN_PROGRESS.
+No commit, push, merge, PR or baseline-tag mutation in finalization.
+Publication belongs to Git workflow.
+```
