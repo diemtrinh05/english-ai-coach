@@ -8,3 +8,20 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+
+app:
+  security:
+    cors:
+      # Origin Admin Web phải được cấu hình tường minh tại deployment.
+      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+    rate-limit:
+      enabled: true
+      window: ${APP_RATE_LIMIT_WINDOW}
+      login: ${APP_RATE_LIMIT_LOGIN}
+      refresh: ${APP_RATE_LIMIT_REFRESH}
+      google: ${APP_RATE_LIMIT_GOOGLE}
+      admin-ai-generation: ${APP_RATE_LIMIT_ADMIN_AI_GENERATION}
+      personalized-exercise: ${APP_RATE_LIMIT_PERSONALIZED_EXERCISE}
+      # IP reverse proxy tin cậy; ingress phải ghi đè hoặc nối IP peer thực vào
+      # X-Forwarded-For. Dùng giá trị rỗng khi client kết nối trực tiếp.
+      trusted-proxies: ${APP_RATE_LIMIT_TRUSTED_PROXIES}

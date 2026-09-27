@@ -7069,3 +7069,156 @@ Lifecycle: BE-FND-013 IN_PROGRESS → DONE. M1 progress 27/29; milestone
 vẫn IN_PROGRESS. Finalization không commit, push, merge, PR hay đổi tag.
 Publication thuộc Git workflow.
 ```
+## SEC-FND-002 — PLAN — 2026-09-27
+
+```text
+Operation: execute (PLAN → IMPLEMENT → TEST; stop before independent review).
+Mode: GOV009_DIRECT_MAIN; GOV-009 effective commit is on origin/main.
+Task: SEC-FND-002 / M1 / CBL / P1; TODO → IN_PROGRESS.
+Dependencies: BE-FND-005 = DONE; SEC-FND-001 = DONE.
+Reviewers: SR, AR, QAR. CI mode: ACTUAL_CI_REPOSITORY_HEALTH.
+Admission: main clean, local main = origin/main =
+7ad722dbd60ae7a417fa9d7ae0a1a4433dc50bb0; Required CI run
+36303671697 completed success for exact SHA; repository HEALTHY.
+No Git operation or other active direct-main task.
+Sources: PROJECT_RULES, AGENTS, IMPLEMENTATION_PLAN, MASTER_BACKLOG,
+SRS v1.2, System Architecture v1.3, API/OpenAPI v1.4,
+Technical Specification v1.2, Backend Technical Specification v1.3,
+CODEX_BACKEND_LEAD and backend-task skill.
+Scope: configurable explicit CORS origin allowlist; response security
+headers; configurable rate-limit hook for five POST routes in API §41.
+Out of scope: auth/RBAC implementation, provider/AI budget, distributed
+Redis adapter, new endpoint/error code, schema/migration/client changes.
+The baseline does not prescribe numeric request thresholds; deployment
+must provide explicit positive values for production.
+```
+
+## SEC-FND-002 — IMPLEMENT / TEST — 2026-09-27
+
+```text
+Implementation:
+- CORS filter for /api/v1/** reflects only configured exact HTTP(S)
+  origins. Wildcard and malformed origins are rejected at configuration.
+  Admin production origin comes from APP_CORS_ALLOWED_ORIGINS.
+- Security headers include nosniff, frame deny, no-referrer, restrictive
+  CSP and no-store; HSTS applies only for HTTPS requests.
+- Fixed-window in-process RateLimitGate is an interchangeable foundation.
+  The five canonical POST routes are login, refresh, google, admin AI
+  generation and personalized exercise. Key uses server-observed remote
+  address, not an untrusted forwarded header. Exceeding configured limit
+  returns HTTP 429 + RATE_LIMITED canonical error envelope.
+- Default local/test rate limit is disabled; production enables it and
+  requires window plus five positive thresholds via environment variables.
+  Multi-instance shared counting remains a later distributed adapter.
+- Filter order ensures request correlation and security headers wrap CORS
+  and rate-limit rejections.
+
+TEST:
+- backend/mvnw.cmd clean verify = PASS, 111/111, zero failures/errors/
+  skips, including PostgreSQL Testcontainers and Flyway; focused
+  SecurityFoundationTests + RequestCorrelationTests PASS.
+- New tests cover exact origin allow/deny, security headers and HTTPS
+  HSTS, all five route thresholds and canonical 429 payload, distinct
+  client address, method scoping and invalid enabled configuration.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py, py_compile
+  and git diff --check PASS. No API/OpenAPI, DB, client or migration change.
+- Remote CI for uncommitted diff NOT RUN / NOT CLAIMED; no reviewer gate
+  claimed. Failed-check waiver = NOT USED.
+
+Stop: task remains IN_PROGRESS; SR/AR/QAR independent review required.
+No commit, push, merge, PR or baseline-tag mutation.
+```
+
+## SEC-FND-002 — REVIEW FINDINGS / REMEDIATION — 2026-09-27
+
+```text
+Independent initial review on uncommitted main diff:
+- Architecture Reviewer = FAIL; finding ARCH-SEC-FND-002-001,
+  severity HIGH, blocking YES, status OPEN. Backend Technical Spec §100
+  requires standard Spring Security protections; ad hoc servlet filters
+  for CORS/headers and missing Spring Security dependency did not meet it.
+- Security Reviewer = FAIL; finding SEC-SEC-FND-002-001,
+  severity HIGH, blocking YES, status OPEN. getRemoteAddr as sole limiter
+  key made clients behind one Nginx proxy share one bucket.
+- QA Reviewer initial = PASS; findings NONE. Material remediation requires
+  focused QA re-review. Initial FAIL/OPEN chronology is preserved.
+
+Focused remediation:
+- Added Spring Security starter and a SecurityFilterChain. CORS uses its
+  CorsConfigurationSource with explicit origins; standard Spring Security
+  header writers now supply the security headers. Foundation chain uses
+  permitAll to preserve current behavior before identity/RBAC tasks; it
+  has no generated in-memory user/password. RateLimitFilter runs inside
+  the chain so standard headers apply to its 429 response.
+- Added ClientIdentityResolver with an explicit trusted-proxy IP list.
+  Untrusted peers cannot influence identity via X-Forwarded-For. For a
+  trusted ingress, the rightmost untrusted hop identifies the client;
+  spoofed leftmost values do not change the bucket. Production must set
+  APP_RATE_LIMIT_TRUSTED_PROXIES, empty only for direct connections; a
+  trusted ingress must overwrite or append the real peer address.
+- Replaced the previous header-filter test with Spring Boot/MockMvc
+  integration tests covering actual security chain behavior, including
+  CORS allow/deny, headers, no premature auth, canonical 429, and two
+  distinct clients using one trusted proxy. Unit tests cover spoofed and
+  untrusted forwarding. Added startup assertion that no default
+  UserDetailsService is generated.
+
+Affected TEST rerun after remediation:
+- backend/mvnw.cmd -q clean verify = PASS, 113/113 tests, zero failures,
+  errors and skips; PostgreSQL Testcontainers/Flyway and package PASS.
+- Focused SecurityFoundationTests + SecurityFilterChainIntegrationTests
+  PASS. API/OpenAPI product contract, DB/Flyway files, clients and
+  migrations unchanged. Remote CI for uncommitted diff NOT RUN/CLAIMED.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py, py_compile,
+  git diff --check, untracked whitespace/conflict/final-newline and
+  current-task scope checks PASS. No generated output, credential or
+  baseline-document/tag mutation. Failed-check waiver = NOT USED.
+
+Finding ARCH-SEC-FND-002-001 remains OPEN pending Architecture Reviewer
+focused re-review. Finding SEC-SEC-FND-002-001 remains OPEN pending
+Security Reviewer focused re-review. QA focused re-review also required.
+Task remains IN_PROGRESS; no self-review, finalize, commit or push.
+```
+
+## SEC-FND-002 — INDEPENDENT RE-REVIEW / FINALIZE — 2026-09-27
+
+```text
+Independent reviewer chronology on the uncommitted main diff:
+- Architecture Reviewer initial FAIL remains historical evidence. Finding
+  ARCH-SEC-FND-002-001: HIGH, blocking YES, original status OPEN. After
+  focused remediation, Architecture Reviewer re-review = PASS and the
+  finding status = RESOLVED.
+- Security Reviewer initial FAIL remains historical evidence. Finding
+  SEC-SEC-FND-002-001: HIGH, blocking YES, original status OPEN. After
+  focused remediation, Security Reviewer re-review = PASS and the finding
+  status = RESOLVED.
+- QA Reviewer initial PASS, findings NONE; focused re-review after material
+  remediation = PASS, findings NONE, focused tests 12/12 PASS.
+- Final required gates AR = PASS, SR = PASS, QAR = PASS. Unresolved
+  findings = NONE. Historical FAIL/OPEN results are not overwritten.
+
+Final gate verification:
+- backend/mvnw.cmd -q clean verify = PASS, 113/113 tests, 0 failures,
+  0 errors, 0 skipped; PostgreSQL Testcontainers/Flyway and package PASS.
+  Surefire XML reports independently total 113/113 at finalization.
+- baseline_audit.py, ci_workflow_audit.py, secret_audit.py, py_compile
+  and git diff --check = PASS at finalization. Untracked files belong to
+  current-task security config/filter/tests; no generated file, credential
+  or baseline-document change. Baseline tag objects match origin.
+- Admission mode ACTUAL_CI_REPOSITORY_HEALTH: Required CI run 36303671697
+  PASS for admission origin/main SHA
+  7ad722dbd60ae7a417fa9d7ae0a1a4433dc50bb0. No known failing check;
+  failed-check waiver = NOT USED. Remote CI for current uncommitted diff =
+  NOT RUN / NOT CLAIMED.
+
+Acceptance: configured explicit CORS allowlist, standard Spring Security
+response headers, and configurable rate-limit foundation with auth,
+admin AI and personalized exercise coverage. API/OpenAPI product contract,
+database/migrations and clients unchanged. Production requires explicit
+origin, threshold and trusted-proxy configuration.
+
+Lifecycle: SEC-FND-002 IN_PROGRESS → DONE. M1 progress 28/29; milestone
+remains IN_PROGRESS pending its remaining task and exit gate. Finalization
+does not commit, push, merge, create PR or change baseline tags. Git
+publication and remote Required CI belong to the Git workflow.
+```

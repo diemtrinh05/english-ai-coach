@@ -4,6 +4,9 @@
 spring:
   application:
     name: english-ai-coach-backend
+  autoconfigure:
+    # Auth task sẽ cung cấp identity thật; không sinh user/password mặc định.
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   task:
     scheduling:
       pool:
@@ -31,6 +34,10 @@ management:
           include: readinessState,db
 
 app:
+  security:
+    rate-limit:
+      # Môi trường production phải cấp ngưỡng tường minh; local/test chưa bật.
+      enabled: false
   # Số câu hỏi, kích thước block và ngưỡng chuyển mức của assessment-block-v1.
   assessment:
     algorithm-version: assessment-block-v1
