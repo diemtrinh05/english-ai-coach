@@ -7403,3 +7403,84 @@ milestone exit vẫn chờ final commit/push và Required CI PASS thực tế ch
 latest origin/main. Finalization không commit, push, merge hoặc mutate tags.
 Next operation: english-ai-coach-git-workflow publish AND-FND-003.
 ```
+
+## BE-AUTH-001 — PLAN / IMPLEMENT / TEST — 2026-09-28
+
+```text
+Workflow: GOV009_DIRECT_MAIN; CI mode ACTUAL_CI_REPOSITORY_HEALTH.
+Admission: main clean, HEAD == origin/main ==
+2a815a08d7390f47973c6adef84ba77656c90785; no Git operation or
+other active direct-main task. Latest Required CI for that SHA passed
+(run 36322169681); repository health HEALTHY. Task M2/P0/CBL was TODO;
+BE-FND-004 and SEC-FND-001 DONE. Required reviewers DBR, SR, QAR.
+PLAN moved BE-AUTH-001 TODO → IN_PROGRESS.
+
+Canonical sources: SRS v1.2 auth/security, Database Schema v1.6 §§4.1–4.2,
+Architecture v1.3 §§31–32, API/OpenAPI v1.4 auth boundary, Technical v1.2,
+Backend Technical v1.3 §§58–62. Existing immutable V1/V2 migrations already
+provide users/refresh_tokens and canonical indexes; migration required NO.
+
+IMPLEMENT: auth module now maps users and refresh_tokens with UUID/Instant,
+canonical enums and nullable fields; Spring Data repositories look up user
+by email/provider identity and refresh record by token hash/user. Local user
+factory stores BCrypt work-factor-12 hash only; refresh record factory stores
+SHA-256 hex digest only. No register/login/JWT/refresh/logout endpoint, token
+issuance/rotation, API/OpenAPI/client/DB schema or future-scope change.
+
+TEST: backend\mvnw.cmd -B clean verify PASS on final code; 117 tests, 0 failures,
+0 errors, 0 skipped; PostgreSQL 16.15 Testcontainers started via Docker
+29.7.2, Flyway V1–V3 applied and Hibernate schema validation passed.
+AuthRepositoryIntegrationTests persisted/loaded LOCAL and GOOGLE mappings,
+verified plaintext password and refresh token absent from stored columns.
+After limiting sensitive getters and extending the GOOGLE mapping test,
+targeted AuthHashingTests + AuthRepositoryIntegrationTests rerun PASS.
+python tools/baseline_audit.py PASS; python -m py_compile
+tools/baseline_audit.py PASS; python tools/secret_audit.py PASS;
+python tools/ci_workflow_audit.py PASS; git diff --check PASS;
+untracked whitespace/conflict-marker scan PASS (11 files). Changed files
+are task-scoped Java/tests and planning evidence; no generated artifacts,
+secrets, credentials or baseline migration edits. Baseline tags unchanged.
+
+STOP after TEST: BE-AUTH-001 remains IN_PROGRESS. No independent reviewer
+PASS claimed; unresolved findings NONE RECORDED before review. Next gates:
+Database Reviewer, Security Reviewer, QA Reviewer. No finalize, commit,
+push, merge or baseline-tag mutation.
+```
+
+## BE-AUTH-001 — INDEPENDENT REVIEW / FINALIZE — 2026-09-28
+
+```text
+Authoritative independent review reports transferred by orchestrator for
+the same uncommitted BE-AUTH-001 diff:
+- Database Reviewer = PASS, findings NONE; verified users/refresh_tokens
+  mappings and persistence against PostgreSQL 16.15/Flyway V1–V3,
+  Maven verify 117 tests.
+- Security Reviewer = PASS, findings NONE; reviewed BCrypt password hash,
+  refresh-token hash-only persistence and sensitive-data boundaries.
+- QA Reviewer = PASS, findings NONE; independently ran clean verify,
+  117/117 tests PASS.
+Historical reviewer FAIL = NONE; unresolved findings = NONE. Required
+DBR, SR and QAR gates all PASS; no self-review used.
+
+Final gate verification: acceptance, dependencies BE-FND-004/SEC-FND-001
+DONE and scope rechecked. Implementer final-code clean verify 117/117
+PASS, PostgreSQL/Flyway/Hibernate validation PASS; independent QAR clean
+verify 117/117 PASS. Python audit regression suite 45/45 PASS;
+baseline_audit, py_compile, secret_audit and ci_workflow_audit PASS;
+git diff --check and git diff --cached --check PASS. Eleven untracked
+Java/test files passed whitespace/conflict-marker scan. Worktree contains
+only BE-AUTH-001 implementation/tests and planning evidence; no generated
+artifacts, credentials, schema migration, API/OpenAPI or client change.
+Both local baseline tag object refs match origin; no tag mutation.
+
+CI admission mode ACTUAL_CI_REPOSITORY_HEALTH; Required CI run
+36322169681 PASS for unchanged admission origin/main SHA
+2a815a08d7390f47973c6adef84ba77656c90785. No known failing check;
+failed-check waiver = NOT USED. Remote CI for current uncommitted diff =
+NOT RUN / NOT CLAIMED.
+
+Lifecycle BE-AUTH-001 IN_PROGRESS → DONE. M2 executable-task progress
+1/21; milestone exit remains pending. Finalization did not commit, push,
+merge, create PR or mutate baseline tags. Next operation:
+english-ai-coach-git-workflow publish BE-AUTH-001.
+```
