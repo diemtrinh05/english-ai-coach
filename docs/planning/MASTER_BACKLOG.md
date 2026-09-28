@@ -129,7 +129,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `BE-GOAL-001` | Goals + user goals APIs | CBL | `BE-USER-001`<br>`DB-FND-004` | P0 | DBR,QAR | `GET /goals`, `GET/PUT /users/me/goals`; tối đa một primary goal enforced DB + service. | Theo global DoD + acceptance. | TODO |
-| `BE-CEFR-001` | GET /cefr-levels | CBL | `DB-FND-004` | P0 | QAR | Trả A1..C2 canonical, stable order. | Theo global DoD + acceptance. | TODO |
+| `BE-CEFR-001` | GET /cefr-levels | CBL | `DB-FND-004` | P0 | QAR | Trả A1..C2 canonical, stable order. | Theo global DoD + acceptance. | DONE |
 
 ## Catalog
 
@@ -736,7 +736,7 @@ P0 tasks:
 [ ] BE-AUTH-006
 [ ] BE-USER-001
 [ ] BE-GOAL-001
-[ ] BE-CEFR-001
+[x] BE-CEFR-001
 [ ] DB-CONTENT-001
 [ ] DB-CONTENT-002
 [ ] BE-VOC-001

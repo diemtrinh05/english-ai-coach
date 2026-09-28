@@ -7484,3 +7484,84 @@ Lifecycle BE-AUTH-001 IN_PROGRESS → DONE. M2 executable-task progress
 merge, create PR or mutate baseline tags. Next operation:
 english-ai-coach-git-workflow publish BE-AUTH-001.
 ```
+
+## BE-CEFR-001 — PLAN / admission — 2026-09-28
+
+```text
+Mode GOV009_DIRECT_MAIN; task M2/P0/CBL BE-CEFR-001 was TODO.
+main clean; HEAD == origin/main ==
+9c975bcbf9509d949e2660ff16446e0245ded009. No Git operation or other
+active direct-main task. GOV-009 and CI-FND-001 effective. Required CI run
+36368054922 completed success for exact admission SHA; repository HEALTHY;
+CI mode ACTUAL_CI_REPOSITORY_HEALTH. Dependency DB-FND-004 DONE.
+Canonical sources: SRS v1.2 CEFR order, Database Schema v1.6 cefr_levels,
+Architecture v1.3 Onboarding module, API/OpenAPI v1.4 listCefrLevels,
+Technical v1.2 and Backend Technical v1.3. Acceptance: public GET
+/api/v1/cefr-levels returns seeded canonical A1..C2 in stable order as
+plain JSON array. Scope: read-only controller/service/repository, response
+DTO and PostgreSQL/HTTP contract test; no auth, assessment, goals, schema,
+client or API contract change. Required independent reviewer: QAR.
+PLAN transition BE-CEFR-001 TODO → IN_PROGRESS. No commit or push.
+```
+
+## BE-CEFR-001 — IMPLEMENT / TEST — 2026-09-28
+
+```text
+Implemented read-only onboarding CefrLevelController → CefrLevelService →
+CefrLevelRepository against existing seeded cefr_levels. Repository reads
+id/code/name/sort_order with ORDER BY sort_order, code; response DTO emits
+id/code/name/sortOrder as the documented plain JSON array. No auth,
+assessment, goals, API/OpenAPI, schema, migration or client change.
+
+Focused PostgreSQL/MockMvc test PASS 1/1: unauthenticated GET 200,
+application/json plain array, exactly six seeded levels A1→C2 with UUID
+and sortOrder. Full backend/mvnw.cmd -B clean verify PASS: 118 tests,
+0 failures, 0 errors, 0 skipped; PostgreSQL 16.15 Testcontainers,
+Flyway V1–V3 and Hibernate validation completed.
+python tools/baseline_audit.py PASS; python -m py_compile
+tools/baseline_audit.py PASS; python tools/secret_audit.py PASS;
+python tools/ci_workflow_audit.py PASS; git diff --check PASS;
+untracked whitespace/conflict scan PASS (6 files). Task-scoped files
+only; no credential, generated file, applied migration or baseline tag
+change. Both baseline tag refs match origin. Maven output log removed.
+
+STOP after TEST: BE-CEFR-001 remains IN_PROGRESS; independent QAR review
+required. No reviewer PASS claimed, no finding recorded, no finalize,
+commit, push, merge, PR or tag mutation. Admission CI success remains
+run 36368054922 on unchanged origin/main; current uncommitted diff has
+no remote CI result and none is claimed.
+```
+
+## BE-CEFR-001 — INDEPENDENT REVIEW / FINALIZE — 2026-09-28
+
+```text
+Authoritative independent QA Reviewer report transferred by orchestrator
+for the same uncommitted BE-CEFR-001 diff: QAR PASS; findings NONE.
+QAR independently ran backend clean verify 118/118 PASS, including
+PostgreSQL/Flyway and the CEFR HTTP contract integration test 1/1.
+Historical reviewer FAIL/finding chronology: NONE. Unresolved findings:
+NONE. No self-review used.
+
+Final acceptance/dependency/scope check: DB-FND-004 DONE; GET
+/api/v1/cefr-levels returns plain JSON array of seeded A1..C2 in stable
+sort_order, code order, without authentication. Controller → service →
+repository/DTO only; no API/OpenAPI, schema, migration, auth, goals,
+assessment or client changes. Implementer clean verify 118/118 PASS;
+independent QAR clean verify 118/118 PASS. Python audit regression suite
+45/45 PASS; baseline_audit, py_compile, secret_audit, ci_workflow_audit,
+git diff --check and git diff --cached --check PASS. Six untracked Java
+files passed whitespace/conflict/scope scan; no generated or credential
+file. Both baseline tag refs equal origin; no tag mutation.
+
+CI admission mode ACTUAL_CI_REPOSITORY_HEALTH; Required CI run
+36368054922 PASS for unchanged admission origin/main SHA
+9c975bcbf9509d949e2660ff16446e0245ded009. No known failing check;
+failed-check waiver = NOT USED. Remote CI for current uncommitted diff:
+NOT RUN / NOT CLAIMED. All task gates PASS, reviewer QAR PASS,
+unresolved findings NONE.
+
+Lifecycle BE-CEFR-001 IN_PROGRESS → DONE. M2 executable-task progress
+2/21; milestone exit remains pending. Finalization did not commit, push,
+merge, create PR, modify proxy or mutate baseline tags. Next operation:
+english-ai-coach-git-workflow publish BE-CEFR-001.
+```
