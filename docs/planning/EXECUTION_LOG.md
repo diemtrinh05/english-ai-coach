@@ -7565,3 +7565,96 @@ Lifecycle BE-CEFR-001 IN_PROGRESS → DONE. M2 executable-task progress
 merge, create PR, modify proxy or mutate baseline tags. Next operation:
 english-ai-coach-git-workflow publish BE-CEFR-001.
 ```
+
+## DB-CONTENT-001 — PLAN / admission — 2026-09-28
+
+```text
+Mode GOV009_DIRECT_MAIN. Task M2/P0/CBL DB-CONTENT-001 was TODO.
+main clean; HEAD == origin/main ==
+e181619fcd35959546c3e600cafbfe352e87b0da. No Git operation or
+other active direct-main task. GOV-009 and CI-FND-001 effective;
+Required CI run 36369774208 PASS for exact admission SHA per orchestrator
+verification, repository HEALTHY, mode ACTUAL_CI_REPOSITORY_HEALTH.
+Dependencies DB-FND-002 and BE-CEFR-001 DONE. Sources: SRS v1.2
+vocabulary/CEFR; Database Schema v1.6 vocabulary natural key and source;
+Architecture v1.3 Vocabulary/Assessment boundaries; Technical v1.2
+seed/data readiness; Backend Technical v1.3 and role instructions.
+Acceptance: >=30 active usable vocabulary with meaning_vi per A1..C2,
+demo provenance and no invalid duplicates. Owner approved self-authored
+demo corpus with source=MANUAL, date/creator/review method recorded.
+Scope: append-only Flyway content migration, provenance and PostgreSQL
+integration test; no schema, API/OpenAPI, topic/goal mapping, client,
+assessment selector or later-task implementation. Required independent
+reviewers: DBR and QAR.
+PLAN transition DB-CONTENT-001 TODO → IN_PROGRESS. No commit or push.
+```
+
+## DB-CONTENT-001 — IMPLEMENT / TEST — 2026-09-28
+
+```text
+Added append-only Flyway V4 demo vocabulary seed: 180 distinct entries,
+30 per A1/A2/B1/B2/C1/C2, all source=MANUAL and is_active=TRUE, with
+nonblank Vietnamese meanings and explicit part_of_speech. Deterministic
+UUID from task/code/word/part_of_speech; natural-key ON CONFLICT DO
+NOTHING keeps reapplication idempotent without overwriting edits. V1-V3
+unchanged; no DDL, API/OpenAPI, client or topic/goal mapping change.
+Provenance document records 2026-09-28, AI agent Codex as creator under
+owner approval, per-entry curation method, demo/CEFR limitations and no
+unverified external source/license or human expert endorsement.
+
+Focused DemoVocabularySeedIntegrationTests PASS 3/3 on PostgreSQL 16.15:
+Flyway V4 SUCCESS; 30 active usable entries and 30 distinct meanings per
+level; no natural-key duplicates; running V4 twice leaves all IDs and
+timestamps unchanged. Full backend/mvnw.cmd -B -f backend/pom.xml clean
+verify PASS 121 tests, 0 failures/errors/skipped, Flyway V1-V4 and jar
+build PASS. Python audit regression suite PASS 45/45. baseline_audit,
+py_compile, secret_audit, ci_workflow_audit PASS. git diff --check and
+cached diff check PASS; untracked whitespace/conflict scan PASS.
+Task-scoped migration/test/provenance/planning files only; no generated
+or secret file. Both local baseline tag refs match origin; no mutation.
+
+STOP after TEST: DB-CONTENT-001 remains IN_PROGRESS. Independent DBR and
+QAR review required; no reviewer PASS claimed, findings unresolved state
+to be set by those reviewers. No finalize, commit, push, merge, PR or
+proxy change. Admission Required CI run 36369774208 PASS on unchanged
+origin/main; current uncommitted diff has no remote CI result and none
+is claimed.
+```
+
+## DB-CONTENT-001 — INDEPENDENT REVIEW / FINALIZE — 2026-09-28
+
+```text
+Authoritative independent reviewer results transferred by orchestrator
+for the same uncommitted DB-CONTENT-001 diff: DBR PASS, findings NONE;
+QAR PASS, findings NONE. DBR reviewed V4 append-only migration and
+repeatability. QAR independently ran focused PostgreSQL seed tests 3/3
+PASS and checked 180 meanings and truthful provenance. Historical
+reviewer FAIL/finding chronology: NONE. Unresolved findings: NONE.
+No self-review was used.
+
+Final acceptance check: DB-FND-002 and BE-CEFR-001 DONE; 30 active
+usable vocabulary per A1..C2, 180 total, nonblank Vietnamese meanings,
+30 distinct meanings within each level, no invalid natural-key
+duplicates, source=MANUAL and explicit provenance. Flyway V4 is
+append-only/repeatable; V1-V3 unchanged. Implementer full Maven clean
+verify 121/121 PASS (25 Surefire reports, zero fail/error/skip),
+including PostgreSQL/Flyway tests; independent QAR focused 3/3 PASS.
+Python audit regression suite 45/45 PASS. Finalization recheck:
+baseline_audit, py_compile, secret_audit, ci_workflow_audit,
+git diff --check and git diff --cached --check PASS. Untracked SQL,
+Java and provenance files passed whitespace/conflict-marker scan.
+Task-scoped diff only; no generated file, credential, unrelated API,
+schema, client or later-task change. Both baseline tag refs match origin.
+
+CI admission mode ACTUAL_CI_REPOSITORY_HEALTH. Required CI run
+36369774208 completed success for exact unchanged admission SHA
+e181619fcd35959546c3e600cafbfe352e87b0da. No known failing check;
+failed-check waiver = NOT USED. Remote CI for current uncommitted diff:
+NOT RUN / NOT CLAIMED. All task TEST/reviewer/acceptance gates PASS;
+unresolved findings NONE.
+
+Lifecycle DB-CONTENT-001 IN_PROGRESS → DONE. M2 executable-task
+progress 3/21; milestone exit remains pending. Finalization did not
+commit, push, merge, create PR, modify proxy or mutate baseline tags.
+Next operation: english-ai-coach-git-workflow publish DB-CONTENT-001.
+```
