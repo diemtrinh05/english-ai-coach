@@ -7881,3 +7881,85 @@ Lifecycle BE-VOC-002 IN_PROGRESS → DONE. Finalization did not commit,
 push, merge, create PR, modify proxy or mutate baseline tags. Next
 operation: english-ai-coach-git-workflow publish BE-VOC-002.
 ```
+
+## DB-CONTENT-002 — PLAN / IMPLEMENT / TEST — 2026-09-29
+
+```text
+Command boundary: backend-task execute DB-CONTENT-002; stop after TEST.
+Workflow: GOV009_DIRECT_MAIN; CI mode ACTUAL_CI_REPOSITORY_HEALTH.
+Admission: main clean, HEAD = origin/main = d4ccaa1c9ad41a9bd4d5f860377e57689353b25a;
+no Git operation or other active direct-main task. Required CI run 36541366433
+completed success on that exact SHA, repository HEALTHY. Task was TODO,
+Owner CBL, M2/P0. DB-FND-004 and DB-CONTENT-001 DONE. Required reviewers
+DBR,QAR. PLAN transitioned DB-CONTENT-002 TODO → IN_PROGRESS.
+
+Canonical sources: Database Schema v1.6 goal_topics, goals/topics/vocabulary
+relationships and 0..1 CHECK; AI Personalization v1.3 deterministic
+recommendation (goal_topics relevance, primary full, non-primary ×0.5,
+max score); SRS v1.2 seven goals; V3/V4/V5/V6 reference/demo seeds;
+Architecture v1.3 and Technical/Backend Technical specs. Acceptance:
+goal_topics has bounded relevance and non-GENERAL goals can reach active
+vocabulary through topic mappings. Scope: append-only V7 seed, provenance,
+PostgreSQL integration tests and planning evidence. Explicitly out of scope:
+API/OpenAPI/client/schema/algorithm changes, V1–V6 edits, new vocabulary
+or topics, and future recommendation implementation.
+
+Implementation: V7 adds 23 curated goal-topic rows for seven seeded goals
+and eight seeded topics. General coverage uses 0.250, direct semantic
+match 1.000, adjacent context 0.500. Values are manually curated demo
+data, documented in docs/database/DB-CONTENT-002-demo-goal-topic-provenance.md;
+they do not change the normative scoring formula. Stable UUIDs derive
+from names; natural-key conflict handling allows repeat without mutation.
+Every specialized goal has at least one active-vocabulary path through V6.
+V6 has no vocabulary_topics for C1/C2, so this task cannot claim
+goal-specific new-word availability at those levels. Future BE-PERS-003
+must honor the canonical CEFR eligibility/fallback rule.
+
+Focused PostgreSQL/Testcontainers/Flyway GoalTopicSeedIntegrationTests:
+3/3 PASS. Maven clean verify: 139/139 tests PASS across 31 Surefire
+reports, 0 failures/errors/skipped; seven Flyway migrations validate on
+fresh PostgreSQL and package build passes. Python audit regression suite
+45/45 PASS. baseline_audit, py_compile, secret_audit, ci_workflow_audit,
+git diff --check, untracked whitespace/conflict scan, task scope and
+generated-file checks PASS. Baseline tag refs unchanged and match origin.
+No known failing check; failed-check waiver = NOT USED. Remote CI for the
+uncommitted DB-CONTENT-002 diff: NOT RUN / NOT CLAIMED.
+
+STOP after TEST: task remains IN_PROGRESS. Independent DBR and QAR reviews
+are required next. No self-review, reviewer PASS/finding resolution,
+finalization, commit, push, merge, PR, proxy or tag change claimed.
+```
+
+## DB-CONTENT-002 — INDEPENDENT REVIEW / FINALIZE — 2026-09-29
+
+```text
+Authoritative independent results transferred by orchestrator for the same
+uncommitted task diff: Database Reviewer PASS, findings NONE; QA Reviewer
+PASS, findings NONE. DBR verified V7 23 mappings for seven goals/eight
+topics, PostgreSQL focused 3/3, schema constraints and replay behavior.
+QAR verified focused 3/3, Maven clean verify 139/139, Python audit suite
+45/45, acceptance and documented C1/C2 limitation. Historical reviewer
+FAIL/finding chronology: NONE. Unresolved findings: NONE. No self-review.
+
+Finalization recheck: current branch main; HEAD = origin/main =
+d4ccaa1c9ad41a9bd4d5f860377e57689353b25a, worktree contains only
+DB-CONTENT-002 migration/test/provenance/planning changes. Dependencies
+DB-FND-004 and DB-CONTENT-001 DONE. Acceptance PASS: goal_topics relevance
+is within 0..1 and all six specialized goals have active vocabulary paths;
+GENERAL_ENGLISH covers eight topics at lower relevance. V6 has no C1/C2
+vocabulary_topics and no completeness claim is made. No API, schema,
+algorithm, client, prior Flyway migration or baseline-tag change.
+
+Required TEST evidence remains PASS: focused PostgreSQL/Flyway 3/3,
+Maven clean verify 139/139, Python audit regression 45/45, baseline_audit,
+py_compile, secret_audit, ci_workflow_audit, git diff --check, untracked
+whitespace/conflict scan, scope/generated-file audit and tag integrity.
+CI mode ACTUAL_CI_REPOSITORY_HEALTH; admission Required CI run 36541366433
+PASS for unchanged published SHA. No known failing check; failed-check
+waiver = NOT USED. Remote CI for this uncommitted task diff has not run.
+
+Lifecycle DB-CONTENT-002 IN_PROGRESS → DONE. M2 executable-task progress
+6/21; milestone exit remains pending. Finalization did not commit, push,
+merge, create PR, modify proxy or mutate baseline tags. Next operation:
+english-ai-coach-git-workflow publish DB-CONTENT-002.
+```

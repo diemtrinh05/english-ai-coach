@@ -136,7 +136,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `DB-CONTENT-001` | Seed/import vocabulary content đủ placement | CBL | `DB-FND-002`<br>`BE-CEFR-001` | P0 | DBR,QAR | Mỗi CEFR có >=30 active vocabulary với `meaning_vi` usable; dữ liệu demo/import có provenance; không duplicate invalid. | Theo global DoD + acceptance. | DONE |
-| `DB-CONTENT-002` | Seed goal_topics relevance | CBL | `DB-FND-004`<br>`DB-CONTENT-001` | P0 | DBR,QAR | `goal_topics` có mapping/relevance 0..1 đủ để recommendation V1 không rơi toàn bộ về GENERAL. | Theo global DoD + acceptance. | TODO |
+| `DB-CONTENT-002` | Seed goal_topics relevance | CBL | `DB-FND-004`<br>`DB-CONTENT-001` | P0 | DBR,QAR | `goal_topics` có mapping/relevance 0..1 đủ để recommendation V1 không rơi toàn bộ về GENERAL. | Theo global DoD + acceptance. | DONE |
 | `BE-VOC-001` | Topic read APIs | CBL | `DB-CONTENT-001`<br>`BE-FND-007` | P0 | QAR | `GET /topics`, `GET /topics/{topicId}` hỗ trợ active data và contract. | Theo global DoD + acceptance. | DONE |
 | `BE-VOC-002` | Vocabulary list/detail/examples APIs | CBL | `DB-CONTENT-001`<br>`BE-FND-007` | P0 | DBR,QAR | `GET /vocabulary`, `/{id}`, `/{id}/examples`; filter/search/pagination không N+1; inactive content policy đúng spec. | Theo global DoD + acceptance. | DONE |
 | `BE-VOC-003` | TTS/audio integration boundary | CBL | `BE-VOC-002`<br>`BE-FND-011` | P1 | AR,SR,QAR | Vocabulary audio/TTS theo technical contract; provider failure degrade gracefully; không block metadata core. | Theo global DoD + acceptance. | TODO |
