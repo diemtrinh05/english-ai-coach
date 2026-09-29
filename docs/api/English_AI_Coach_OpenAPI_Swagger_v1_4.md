@@ -448,6 +448,7 @@ paths:
       - Vocabulary
       summary: Search vocabulary
       operationId: listVocabulary
+      security: []
       parameters:
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/Size'
@@ -482,6 +483,7 @@ paths:
       - Vocabulary
       summary: Get vocabulary
       operationId: getVocabulary
+      security: []
       parameters:
       - $ref: '#/components/parameters/VocabularyId'
       responses:
@@ -499,6 +501,7 @@ paths:
       - Vocabulary
       summary: Get examples
       operationId: getVocabularyExamples
+      security: []
       parameters:
       - $ref: '#/components/parameters/VocabularyId'
       responses:
@@ -510,6 +513,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/VocabularyExampleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /learning/sessions:
     post:
       tags:

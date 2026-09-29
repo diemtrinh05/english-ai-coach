@@ -824,8 +824,10 @@ Response:
   "imageUrl": "...",
   "examples": [
     {
-      "text": "He abandoned the project.",
-      "translation": "Anh ấy đã từ bỏ dự án."
+      "id": "uuid",
+      "exampleText": "He abandoned the project.",
+      "translationText": "Anh ấy đã từ bỏ dự án.",
+      "source": "MANUAL"
     }
   ]
 }
@@ -842,8 +844,10 @@ If small, return plain array:
 ```json
 [
   {
-    "text": "He abandoned the project.",
-    "translation": "Anh ấy đã từ bỏ dự án."
+    "id": "uuid",
+    "exampleText": "He abandoned the project.",
+    "translationText": "Anh ấy đã từ bỏ dự án.",
+    "source": "MANUAL"
   }
 ]
 ```

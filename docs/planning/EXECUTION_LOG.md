@@ -7767,3 +7767,117 @@ milestone exit remains pending. Finalization did not commit, push, merge,
 create PR, modify proxy or mutate baseline tags. Next operation:
 english-ai-coach-git-workflow publish BE-VOC-001.
 ```
+
+## BE-VOC-002 — PLAN / admission — 2026-09-29
+
+```text
+Mode GOV009_DIRECT_MAIN. Task M2/P0/CBL BE-VOC-002 was TODO; dependencies
+DB-CONTENT-001 and BE-FND-007 are DONE. main clean; HEAD == origin/main ==
+f9515dbd9136d20a977c194f896764e51913f836; no Git operation or other
+active direct-main task. GOV-009 and CI-FND-001 effective. Required CI run
+36538695453 completed success on exact admission SHA; repository HEALTHY;
+CI mode ACTUAL_CI_REPOSITORY_HEALTH.
+Sources: SRS v1.2, Database Schema v1.6, System Architecture v1.3,
+API/OpenAPI v1.4, Technical v1.2, Backend Technical v1.3, backend role.
+Acceptance: three GET vocabulary endpoints, bounded page/search/filters/sort,
+active-only list/detail/examples, stable DTO/error contract and bounded query
+count without N+1. Scope: vocabulary read controller/service/repository/DTO,
+append-only demo topic associations, tests and owner-approved examples/public
+OpenAPI reconciliation. Out of scope: admin mutations, goal_topics, auth
+implementation, AI/TTS and client changes. Required independent reviewers:
+DBR and QAR. PLAN transition TODO → IN_PROGRESS. No commit/push.
+Owner approved example fields id/exampleText/translationText/source per
+OpenAPI/DB and public access for exactly three vocabulary GET operations.
+```
+
+## BE-VOC-002 — IMPLEMENT / TEST — 2026-09-29
+
+```text
+Implemented public GET /api/v1/vocabulary, GET /api/v1/vocabulary/{vocabularyId}
+and GET /api/v1/vocabulary/{vocabularyId}/examples in the vocabulary module.
+List supports bounded page/size, literal case-insensitive search, cefr,
+topicId, partOfSpeech and a word/createdAt sort whitelist with stable id
+tie-break. Inactive vocabulary is omitted from list and returns 404
+NOT_FOUND on detail/examples; inactive topics are omitted from filters and
+nested DTOs. List uses count + page + one bulk topics + one bulk examples
+query, independent of page length. Detail and examples use bounded queries.
+
+Owner-approved contract reconciliation: API Specification §13 example
+objects now use id/exampleText/translationText/source per OpenAPI/DB.
+Exactly three vocabulary GET operations have OpenAPI security: [] to match
+API Specification §34; examples operation also documents runtime 404.
+No auth implementation or other operation's security changed.
+
+Append-only Flyway V6 inserts 27 manually curated vocabulary_topics pairs
+for eight Initial Topics, with provenance in
+docs/database/BE-VOC-002-demo-topic-provenance.md. Distribution by CEFR:
+A1 10, A2 9, B1 1, B2 7, C1 0, C2 0. Each of eight topics has at least
+three pairs; Food topicId filter is tested against real seed. This sparse
+demo mapping does not claim complete topic coverage and DB-CONTENT-002
+must assess goal relevance/fallback separately. No production example text
+was invented; vocabulary_examples remains empty in seed and API returns []
+until approved content exists. Tests use transactional example fixtures.
+
+Focused tests PASS 9/9, including PostgreSQL/Flyway V1-V6, HTTP pagination,
+filters, sorting, active policy, detail/examples DTO, V6 replay, OpenAPI
+and 100-item batching. Initial focused run failed on PostgreSQL nullable
+parameter typing and was repaired with typed casts. Initial full run failed
+contextLoads because test context omits DataSource auto-configuration;
+repository now builds named parameters from existing JdbcTemplate.
+Final Maven clean verify PASS 136/136 tests across 30 Surefire reports,
+0 errors/failures/skipped; PostgreSQL/Testcontainers and jar build PASS.
+Python audit regression suite 45/45 PASS; baseline_audit, py_compile,
+secret_audit and ci_workflow_audit PASS. git diff --check and cached diff
+check PASS; 11 untracked task files pass whitespace/conflict scan. Scope,
+secret and generated-file review: task files only, no credentials/generated
+files. Both local baseline tags match origin. No known failing check;
+failed-check waiver = NOT USED. Admission Required CI run 36538695453
+PASS on exact origin/main SHA. Remote CI for current uncommitted diff:
+NOT RUN / NOT CLAIMED.
+
+STOP after TEST: BE-VOC-002 remains IN_PROGRESS. Independent DBR and QAR
+reviews required. No reviewer PASS/finding resolution claimed. No finalize,
+commit, push, merge, PR, or proxy change.
+```
+
+## BE-VOC-002 — INDEPENDENT REVIEW / FINALIZE — 2026-09-29
+
+```text
+Authoritative independent reviewer results transferred by orchestrator
+for the same uncommitted BE-VOC-002 task diff: required DBR PASS, findings
+NONE; required QAR PASS, findings NONE. DBR independently completed
+focused PostgreSQL validation with exit 0 and baseline/py_compile/diff
+checks PASS. QAR confirmed focused 9/9, final Maven clean verify 136/136,
+and applicable audits PASS. Historical independent reviewer FAIL/finding
+chronology: NONE. Unresolved findings: NONE. No self-review used.
+
+Final acceptance/dependency check: DB-CONTENT-001 and BE-FND-007 DONE;
+three public vocabulary GET operations; bounded pagination and whitelisted
+sorting; literal search, cefr/topicId/partOfSpeech filters; stable DTO and
+NOT_FOUND behavior for absent/inactive content; bulk topic/example loading
+without N+1. Owner-approved API Specification examples and OpenAPI public
+security declarations remain scoped to the three operations. V6 append-only
+27 curated demo topic links with provenance; C1/C2 coverage limitation is
+documented for DB-CONTENT-002. No production examples or unrelated schema,
+admin, auth, AI/TTS or client changes.
+
+Implementer final Maven clean verify PASS 136/136 across 30 Surefire
+reports, zero failures/errors/skipped, PostgreSQL/Flyway V1-V6 PASS and jar
+built; focused 9/9 and Python audit regression suite 45/45 PASS. Finalization
+recheck: baseline_audit, py_compile, secret_audit, ci_workflow_audit,
+git diff --check and git diff --cached --check PASS. Eleven untracked task
+files passed whitespace/conflict scan. Task-scoped source/test/migration/
+API/OpenAPI/planning diff only, no credentials or generated files. Both
+baseline tag refs match origin; no tag mutation.
+
+CI admission mode ACTUAL_CI_REPOSITORY_HEALTH. Required CI run
+36538695453 completed success on exact unchanged admission origin/main SHA
+f9515dbd9136d20a977c194f896764e51913f836. No known failing check;
+failed-check waiver = NOT USED. Remote CI for current uncommitted diff:
+NOT RUN / NOT CLAIMED. All acceptance/TEST/reviewer gates PASS and
+unresolved findings NONE.
+
+Lifecycle BE-VOC-002 IN_PROGRESS → DONE. Finalization did not commit,
+push, merge, create PR, modify proxy or mutate baseline tags. Next
+operation: english-ai-coach-git-workflow publish BE-VOC-002.
+```
