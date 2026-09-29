@@ -7963,3 +7963,128 @@ Lifecycle DB-CONTENT-002 IN_PROGRESS → DONE. M2 executable-task progress
 merge, create PR, modify proxy or mutate baseline tags. Next operation:
 english-ai-coach-git-workflow publish DB-CONTENT-002.
 ```
+
+## BE-VOC-003 — PLAN / IMPLEMENT / TEST — 2026-09-29
+
+```text
+Command boundary: backend-task execute BE-VOC-003; stop after TEST.
+Workflow: GOV009_DIRECT_MAIN; CI mode ACTUAL_CI_REPOSITORY_HEALTH.
+Admission: main clean, HEAD = origin/main =
+60e51874c4442dd398cf4ac3e35d5a1459661657; no Git operation or other
+active direct-main task. Required CI run 36568559522 completed success on
+that exact SHA; repository HEALTHY. Task was TODO, Owner CBL, M2/P1.
+BE-VOC-002 and BE-FND-011 DONE. Required reviewers AR,SR,QAR.
+PLAN transitioned BE-VOC-003 TODO → IN_PROGRESS.
+
+Canonical sources: SRS v1.2 FR-VOC-04; Database Schema v1.6
+vocabulary.audio_url; Architecture v1.3 §§38,50; API/OpenAPI v1.4
+existing nullable audioUrl; Technical Spec v1.2 §35; Backend Technical
+Spec v1.3 §§55–56; BE-FND-011 internal provider ports and evidence.
+Initial gap: TtsProvider.generateAudio returned undefined String while
+ObjectStorageService.store required byte[]; returned storage reference was
+not guaranteed to be a client-fetchable URL. Owner approved GeneratedAudio
+(bytes, contentType) and stable public HTTPS audio URL, plus a ports-only
+pipeline with disabled adapters until a separate provider task is approved.
+
+Scope: TtsService orchestrates existing active vocabulary → TTS bytes/MIME
+→ Object Storage URL → existing audio_url column, with cached URL reuse.
+ObjectStorageService audio contract and Backend Technical Spec §55 are
+synchronized. Missing-provider adapters fail closed for audio generation;
+metadata GETs do not call TTS and stay usable. Fake provider/storage tests
+cover success, cached URL, provider/storage failures, invalid URL, binary
+content protection and PostgreSQL persistence/public GET. No new endpoint,
+schema/migration, API field, client change, provider SDK, credentials,
+scheduler trigger or new Task ID. Real provider integration, secret config
+and pre-generation scheduling remain outside this task and require an
+approved backlog task. No audio is generated in the default deployment.
+
+Focused tests: TtsServiceTests, ExternalProviderBoundaryTests and
+VocabularyApiIntegrationTests = 17/17 PASS, including PostgreSQL/Flyway.
+Maven clean verify = PASS, 146/146 tests, 0 failures/errors/skipped; jar
+built. Fresh PostgreSQL applied V1–V7. Python audit regression = 45/45 PASS.
+baseline_audit, ci_workflow_audit, secret_audit, py_compile and
+git diff --check = PASS. Untracked source/whitespace, scope, generated-file
+and baseline-tag integrity checks = PASS; local tag refs match origin.
+Remote CI for this uncommitted diff = NOT RUN / NOT CLAIMED.
+
+Stop state: BE-VOC-003 remains IN_PROGRESS. Independent AR/SR/QAR reviews
+are required next; unresolved reviewer findings not yet established. No
+self-review, finalize, commit, push, PR, proxy or tag change.
+```
+
+## BE-VOC-003 — INDEPENDENT REVIEW / REMEDIATION — 2026-09-29
+
+```text
+Independent reviewer results transferred by orchestrator for the same
+uncommitted task diff: Architecture Reviewer PASS; Security Reviewer PASS;
+QA Reviewer FAIL. Finding QA-BE-VOC-003-001: MEDIUM, blocking YES,
+status OPEN. Required action: PostgreSQL concurrent test with barrier and
+two fake TTS/storage URLs for the same vocabulary when audio_url is NULL;
+prove first-writer-wins, no overwrite and both ensureAudio calls return
+the persisted URL. Original FAIL/finding metadata remain unchanged.
+
+Focused remediation: added TtsConcurrencyIntegrationTests only. It creates
+an isolated active vocabulary fixture, coordinates two concurrent callers
+after both read NULL, then holds the second storage result until the first
+URL is persisted. Fake adapters return distinct HTTPS URLs. The test asserts
+first URL in PostgreSQL before and after the second attempt, both caller
+results equal the persisted first URL, and both fake ports ran twice.
+Fixture cleanup runs in finally. No production behavior/API/schema or
+technical contract changed; prior AR/SR PASS gates are unaffected.
+
+Focused TtsConcurrencyIntegrationTests + TtsServiceTests +
+VocabularyApiIntegrationTests = PASS 15/15. Maven clean verify = PASS,
+147/147 tests, zero failures/errors/skipped, jar built; fresh PostgreSQL
+applied Flyway V1–V7. Python audit regression = PASS 45/45.
+baseline_audit, ci_workflow_audit, secret_audit, py_compile,
+git diff --check, untracked whitespace/conflict scan, scope/generated
+checks and baseline-tag integrity = PASS. No known failing check;
+failed-check waiver = NOT USED. Remote CI for uncommitted diff = NOT RUN.
+
+Task remains IN_PROGRESS. QA-BE-VOC-003-001 remains OPEN pending focused
+independent QAR re-review by finding owner. No self-resolution, finalize,
+commit, push, PR, proxy or tag change.
+```
+
+## BE-VOC-003 — QAR RE-REVIEW / FINALIZE — 2026-09-29
+
+```text
+Authoritative independent reviewer chronology transferred by orchestrator:
+- Architecture Reviewer initial PASS; findings NONE.
+- Security Reviewer initial PASS; findings NONE. Recommendation for the
+  separately scoped future real provider adapter is nonblocking.
+- QA Reviewer initial FAIL; QA-BE-VOC-003-001 MEDIUM, blocking YES, OPEN.
+- Implementer remediated only the PostgreSQL concurrency-test gap, keeping
+  the finding OPEN until its owner re-reviewed.
+- QA Reviewer focused re-review PASS; QA-BE-VOC-003-001 RESOLVED by QAR;
+  new findings NONE. Historical FAIL and OPEN state remain in the earlier
+  log entry. All required AR/SR/QAR gates now PASS; unresolved findings NONE.
+
+Finalization recheck: BE-VOC-003 Owner CBL/M2/P1, dependencies BE-VOC-002
+and BE-FND-011 DONE, branch main, HEAD = origin/main =
+60e51874c4442dd398cf4ac3e35d5a1459661657, no Git operation or other
+active direct-main task. Current diff is limited to BE-VOC-003 TTS/audio
+pipeline, its approved internal port contract, tests, Backend Technical
+Spec and planning evidence. Acceptance PASS: fake TTS bytes/MIME pass
+through storage to existing audio_url; cached URL reused; missing/failing
+provider or storage does not block public vocabulary metadata. URL is
+stable public HTTPS by approved adapter contract. Default adapters remain
+disabled, so real provider audio availability awaits a separately approved
+task; no new endpoint, schema, migration, API field or client behavior.
+
+Required TEST evidence: focused 15/15 after remediation, Maven clean
+verify 147/147 PASS across 33 Surefire reports (zero failures/errors/
+skipped), fresh PostgreSQL Flyway V1–V7 PASS, Python audit tests 45/45
+PASS. baseline_audit, ci_workflow_audit, secret_audit, py_compile,
+git diff --check and git diff --cached --check, untracked whitespace/
+conflict, scope/generated-file and baseline-tag integrity PASS. Local
+baseline tag refs match origin. No known failing check; failed-check
+waiver = NOT USED. CI mode ACTUAL_CI_REPOSITORY_HEALTH; admission Required
+CI run 36568559522 PASS on unchanged published SHA. Remote CI for this
+uncommitted BE-VOC-003 diff = NOT RUN / NOT CLAIMED.
+
+Lifecycle BE-VOC-003 IN_PROGRESS → DONE. M2 executable-task progress 7/21;
+milestone exit remains pending. Finalization did not commit, push, merge,
+create PR, modify proxy or mutate baseline tags. Next operation:
+english-ai-coach-git-workflow publish BE-VOC-003.
+```

@@ -67,6 +67,13 @@ public class VocabularyRepository {
                 (rs, row) -> mapVocabulary(rs)).stream().findFirst();
     }
 
+    public void saveAudioUrlIfAbsent(UUID id, String audioUrl) {
+        jdbc.update("""
+                UPDATE vocabulary SET audio_url = :audioUrl, updated_at = NOW()
+                WHERE id = :id AND is_active = TRUE AND audio_url IS NULL
+                """, new MapSqlParameterSource("id", id).addValue("audioUrl", audioUrl));
+    }
+
     public Map<UUID, List<TopicResponse>> findTopics(List<UUID> vocabularyIds) {
         Map<UUID, List<TopicResponse>> result = new HashMap<>();
         if (vocabularyIds.isEmpty()) {

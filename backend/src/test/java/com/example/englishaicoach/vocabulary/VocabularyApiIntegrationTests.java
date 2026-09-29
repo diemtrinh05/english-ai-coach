@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.englishaicoach.common.storage.ObjectStorageService;
 import com.example.englishaicoach.support.PostgreSqlIntegrationTestSupport;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -32,6 +33,44 @@ class VocabularyApiIntegrationTests extends PostgreSqlIntegrationTestSupport {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private VocabularyRepository vocabularyRepository;
+
+    @Autowired
+    private TtsService ttsService;
+
+    @Test
+    void ttsPipelinePersistsAudioUrlAndPublicMetadataReturnsIt() throws Exception {
+        UUID apple = wordId("apple");
+        String url = "https://media.example.test/vocabulary/apple.mp3";
+        TtsProvider provider = text -> {
+            org.junit.jupiter.api.Assertions.assertEquals("apple", text);
+            return new GeneratedAudio(new byte[] {1, 2, 3}, "audio/mpeg");
+        };
+        ObjectStorageService storage = (content, contentType) -> {
+            org.junit.jupiter.api.Assertions.assertArrayEquals(new byte[] {1, 2, 3}, content);
+            org.junit.jupiter.api.Assertions.assertEquals("audio/mpeg", contentType);
+            return url;
+        };
+
+        org.junit.jupiter.api.Assertions.assertEquals(url,
+                new TtsService(vocabularyRepository, provider, storage)
+                        .ensureAudio(apple).orElseThrow());
+        mockMvc.perform(get("/api/v1/vocabulary/" + apple))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.audioUrl").value(url));
+    }
+
+    @Test
+    void disabledAdaptersDoNotBlockPublicMetadata() throws Exception {
+        UUID apple = wordId("apple");
+        org.junit.jupiter.api.Assertions.assertTrue(ttsService.ensureAudio(apple).isEmpty());
+        mockMvc.perform(get("/api/v1/vocabulary/" + apple))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.word").value("apple"))
+                .andExpect(jsonPath("$.audioUrl").isEmpty());
+    }
 
     @Test
     void curatedMigrationCoversEightTopicsAndCanBeReappliedWithoutDuplicates() {

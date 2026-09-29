@@ -1567,9 +1567,19 @@ Interface:
 
 ```java
 public interface TtsProvider {
-    String generateAudio(...);
+    GeneratedAudio generateAudio(String text);
 }
+
+public record GeneratedAudio(byte[] content, String contentType) {}
 ```
+
+`GeneratedAudio` chứa bytes audio và MIME type `audio/*`; không dùng
+`String` mơ hồ làm bytes hay URL. Adapter TTS cung cấp bytes/MIME, không
+trả URL của provider. `ObjectStorageService.store(content, contentType)`
+trả URL HTTPS ổn định, công khai, client-fetchable khi lưu audio từ vựng.
+Không lưu URL tạm thời có thời hạn vào `vocabulary.audio_url`. Đây là
+internal port contract được owner phê duyệt cho `BE-VOC-003`; các field
+API/database hiện hữu không đổi.
 
 Flow:
 
@@ -1584,6 +1594,14 @@ audio_url
 ```
 
 Prefer pre-generation/cache for stable vocabulary.
+
+`TtsService` dùng `audio_url` hiện có trước khi gọi provider. Khi TTS hoặc
+Object Storage chưa cấu hình/bị lỗi, service bỏ qua việc cập nhật URL;
+GET metadata từ vựng vẫn hoạt động và `audioUrl` tiếp tục nullable. V1
+không thêm endpoint tạo audio trong `BE-VOC-003`. Task này chỉ cung cấp
+pipeline qua ports với adapter disabled mặc định và fake adapter tests;
+provider thật, secret và lịch pre-generation cần một task được phê duyệt
+riêng trong backlog trước khi triển khai.
 
 ---
 
