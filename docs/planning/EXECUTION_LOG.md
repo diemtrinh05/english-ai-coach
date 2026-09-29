@@ -7658,3 +7658,112 @@ progress 3/21; milestone exit remains pending. Finalization did not
 commit, push, merge, create PR, modify proxy or mutate baseline tags.
 Next operation: english-ai-coach-git-workflow publish DB-CONTENT-001.
 ```
+## BE-VOC-001 — PLAN / admission — 2026-09-29
+
+```text
+Mode GOV009_DIRECT_MAIN. Task M2/P0/CBL BE-VOC-001 was TODO; dependencies
+DB-CONTENT-001 and BE-FND-007 are DONE. main clean; HEAD == origin/main ==
+2f2482cafef8ae7fef4845233a2bb94e8097559f; no Git operation or other
+active direct-main task. GOV-009 and CI-FND-001 effective. Required CI run
+36371599294 completed success on exact admission SHA; repository HEALTHY;
+CI mode ACTUAL_CI_REPOSITORY_HEALTH.
+Sources: SRS v1.2, Database Schema v1.6 Initial Topics, System Architecture
+v1.3, API/OpenAPI v1.4, Technical v1.2, Backend Technical v1.3, backend
+role instructions. Acceptance: seeded active topics and GET /api/v1/topics
+with page/size/search/parentTopicId plus GET /api/v1/topics/{topicId}, exact
+DTO/pagination/error contract. Scope: append-only initial-topic content seed,
+read controller/service/repository/DTO and PostgreSQL integration tests.
+Out of scope: vocabulary_topics, goal_topics, vocabulary API, admin mutations,
+auth/client changes, baseline contract change. Required independent reviewer:
+QAR. PLAN transition TODO → IN_PROGRESS. No commit/push.
+```
+
+## BE-VOC-001 — Contract reconciliation approval — 2026-09-29
+
+```text
+During IMPLEMENT, API Specification v1.4 §34 matrix was found to allow
+optional public access for /topics, while OpenAPI v1.4 inherited global
+bearerAuth on the two GET topic operations. Owner approved public GET
+/topics and GET /topics/{topicId} per API Specification §34 and adding
+security: [] only to those two OpenAPI operations. No other endpoint or
+auth behavior was approved for change. Implementation/runtime tests use
+public access; the OpenAPI adjustment records the approved contract.
+Task remains IN_PROGRESS for TEST and independent QAR review.
+```
+
+## BE-VOC-001 — IMPLEMENT / TEST — 2026-09-29
+
+```text
+Added append-only Flyway V5 with the eight Initial Topics from Database
+Schema v1.6 §29, active and with stable UUIDs. V5 uses name conflict
+handling without modifying existing rows. Added Topic controller/service/
+repository/DTO in vocabulary module. GET /api/v1/topics supports bounded
+page/size, case-insensitive literal name search, parentTopicId, stable
+ordering, active-only results, and PageTopicResponse fields. GET
+/api/v1/topics/{topicId} returns active TopicResponse or 404 NOT_FOUND.
+No goal_topics, vocabulary_topics, vocabulary endpoints, admin mutations,
+auth enforcement, schema DDL, or client change.
+
+Owner-approved OpenAPI reconciliation added security: [] to exactly the
+two GET topic operations; API Specification §34 already specifies optional
+public access. TopicOpenApiContractTests checks public security, operation
+parameters/statuses and TopicResponse properties. TopicApiIntegrationTests
+checks real PostgreSQL/Flyway V5, eight seed topics, public read, pagination,
+search, parent filter, inactive exclusion, detail, 404 and validation.
+
+Focused PostgreSQL test PASS 5/5. Final Maven clean verify PASS 127/127,
+0 failures/errors/skipped across 27 Surefire reports, including six new
+topic tests; jar built. Python audit regression suite 45/45 PASS;
+baseline_audit, py_compile, secret_audit, ci_workflow_audit PASS.
+git diff --check and cached diff check PASS; eight untracked source/test/SQL
+files pass whitespace/conflict scan. Scope/secret/generated-file review:
+task files only, no credential or generated file. Both baseline tags match
+origin. No known failing check; failed-check waiver = NOT USED. Admission
+Required CI run 36371599294 PASS on exact origin/main SHA. Remote CI for
+uncommitted task diff NOT RUN / NOT CLAIMED.
+
+STOP after TEST: BE-VOC-001 remains IN_PROGRESS. Independent QAR review
+required; no reviewer PASS or finding resolution claimed. No finalize,
+commit, push, merge, PR or proxy change.
+```
+
+## BE-VOC-001 — INDEPENDENT REVIEW / FINALIZE — 2026-09-29
+
+```text
+Authoritative independent reviewer results transferred by orchestrator
+for the same uncommitted BE-VOC-001 diff: required QAR PASS, findings NONE;
+supplemental impact DBR PASS for V5 migration, findings NONE; supplemental
+impact SR PASS for owner-approved public OpenAPI security: [] correction,
+findings NONE. QAR focused topic runtime tests 5/5 and OpenAPI contract
+test 1/1 PASS. Historical reviewer FAIL/finding chronology: NONE.
+Unresolved findings: NONE. No self-review used.
+
+Final acceptance/dependency check: DB-CONTENT-001 and BE-FND-007 DONE;
+eight active canonical Initial Topics, GET /api/v1/topics paginated with
+search and parentTopicId, active-only list/detail, valid TopicResponse,
+404 NOT_FOUND for missing/inactive detail. Owner-approved public access
+is represented by security: [] on exactly the two topic GET operations.
+No vocabulary_topics, goal_topics, vocabulary endpoint or admin mutation
+was added. V5 append-only seed; no schema DDL or prior migration change.
+
+Implementer final Maven clean verify 127/127 PASS across 27 Surefire
+reports, zero failures/errors/skipped, PostgreSQL/Flyway V1-V5 PASS and
+jar built. Python audit regression suite 45/45 PASS. Finalization recheck:
+baseline_audit, py_compile, secret_audit, ci_workflow_audit,
+git diff --check and git diff --cached --check PASS. Eight untracked files
+passed whitespace/conflict scan. Task-scoped source/test/migration/OpenAPI/
+planning diff only; no generated file or credential. Both local baseline
+tag refs match origin; no tag mutation.
+
+CI admission mode ACTUAL_CI_REPOSITORY_HEALTH. Required CI run
+36371599294 completed success on exact unchanged admission origin/main SHA
+2f2482cafef8ae7fef4845233a2bb94e8097559f. No known failing check;
+failed-check waiver = NOT USED. Remote CI for current uncommitted diff:
+NOT RUN / NOT CLAIMED. All task acceptance/TEST/reviewer gates PASS and
+unresolved findings NONE.
+
+Lifecycle BE-VOC-001 IN_PROGRESS → DONE. M2 executable-task progress 4/21;
+milestone exit remains pending. Finalization did not commit, push, merge,
+create PR, modify proxy or mutate baseline tags. Next operation:
+english-ai-coach-git-workflow publish BE-VOC-001.
+```

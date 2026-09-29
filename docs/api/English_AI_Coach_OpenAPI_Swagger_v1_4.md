@@ -402,6 +402,7 @@ paths:
     get:
       tags:
       - Topics
+      security: []
       summary: List topics
       operationId: listTopics
       parameters:
@@ -427,6 +428,7 @@ paths:
     get:
       tags:
       - Topics
+      security: []
       summary: Get topic
       operationId: getTopic
       parameters:
