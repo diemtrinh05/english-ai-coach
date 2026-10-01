@@ -11,6 +11,19 @@ Module Android V1 dùng Java, XML/ViewBinding và MVVM theo baseline Android v1.
 - `compileSdk` / `targetSdk` 36
 - `minSdk` 26
 
+## AND-VOC-001 — danh mục từ vựng
+
+Tab **Học** có lối vào **Khám phá từ vựng**. Màn danh sách gọi các GET
+`/api/v1/vocabulary` với tìm kiếm, trình độ/loại từ và phân trang; màn chi tiết
+gọi GET theo ID và GET examples. Nội dung đã tải được giữ trong cache bộ nhớ
+giới hạn để xem chỉ đọc khi mất mạng trong cùng phiên ứng dụng. Cache không
+lưu tiến độ học, không tạo hàng đợi mutation và có thể mất khi app bị đóng.
+
+API base URL lấy từ Gradle property `eacApiBaseUrl` hoặc biến môi trường
+`EAC_API_BASE_URL` khi build. Giá trị phải là HTTPS và kết thúc bằng
+`/api/v1/`. Giá trị mặc định `https://example.invalid/api/v1/` chỉ là
+placeholder; cần cấu hình endpoint backend thật cho smoke test mạng.
+
 JDK chạy Gradle và mức tương thích của source là hai khái niệm khác nhau:
 
 - Gradle/Android Gradle Plugin của workflow được tài liệu hóa phải chạy bằng

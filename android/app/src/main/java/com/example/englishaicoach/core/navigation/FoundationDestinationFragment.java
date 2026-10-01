@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.englishaicoach.databinding.FragmentFoundationDestinationBinding;
+import com.example.englishaicoach.MainActivity;
 
 public final class FoundationDestinationFragment extends Fragment {
     private static final String ARG_DESTINATION = "destination";
@@ -36,6 +37,11 @@ public final class FoundationDestinationFragment extends Fragment {
         String name = requireArguments().getString(ARG_DESTINATION, MainDestination.HOME.name());
         MainDestination destination = MainDestination.valueOf(name);
         binding.destinationTitle.setText(destination.getTitleId());
+        if (destination == MainDestination.LEARN) {
+            binding.openVocabulary.setVisibility(View.VISIBLE);
+            binding.openVocabulary.setOnClickListener(ignored ->
+                    ((MainActivity) requireActivity()).openVocabulary());
+        }
     }
 
     @Override

@@ -8088,3 +8088,156 @@ milestone exit remains pending. Finalization did not commit, push, merge,
 create PR, modify proxy or mutate baseline tags. Next operation:
 english-ai-coach-git-workflow publish BE-VOC-003.
 ```
+
+## AND-VOC-001 — PLAN / IMPLEMENT — 2026-10-01
+
+```text
+Workflow GOV009_DIRECT_MAIN; M2/P1; Owner AFL. Admission: branch main,
+clean worktree, HEAD = origin/main = f1c6358989a10d708cc76fac44c21a78baffed50,
+latest Required CI run 36573647861 PASS for that SHA (confirmed by
+orchestrator), repository HEALTHY, dependencies AND-FND-003 and BE-VOC-002
+DONE, no other direct-main task active, QAR required. CI mode
+ACTUAL_CI_REPOSITORY_HEALTH. TODO → IN_PROGRESS before implementation.
+
+Scope: Android Java vocabulary browse/search/filter/pagination, detail and
+examples with loading/empty/error/offline states. Entry remains under Learn,
+not a new bottom navigation item. GET /vocabulary, /vocabulary/{id},
+/vocabulary/{id}/examples and topic filter GET /topics use approved public
+API/OpenAPI v1.4. In-memory bounded read-only cache covers previously fetched
+pages/details/examples/topics in this process; no offline mutation/sync, SRS,
+user progress or backend-owned algorithm. Vietnamese UI strings in strings.xml.
+API base URL is build-configured HTTPS; default example.invalid placeholder
+requires actual endpoint for network smoke. No schema/API/server change.
+```
+
+## AND-VOC-001 — TEST / STOP — 2026-10-01
+
+```text
+Gradle 8.13 / AGP 8.13.2 with session-local Temurin JDK 21.0.12.1;
+Java source/target 17; Android SDK 36. Host-default JDK 25 initially failed
+before compilation (unsupported class-file major 69); missing ANDROID_HOME
+was also corrected only for the command session. No machine/global Java,
+Android SDK or proxy configuration was changed.
+
+Canonical command android/gradlew.bat --no-daemon clean lintDebug
+testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest:
+PASS, 128 actionable tasks (127 executed, 1 up-to-date). After a final
+cache-key hardening change, targeted testDebugUnitTest, lintDebug and
+assembleDebug were rerun and PASS (52 tasks). Latest unit reports: 26/26
+PASS, zero failures/errors, including three new MockWebServer vocabulary/
+topic contract/cache tests and a cache-key collision test. lintDebug has zero errors and
+27 nonblocking warnings. Debug/release APK and instrumented-test APK built.
+Required CI already contains Android lintDebug/testDebugUnitTest/
+assembleDebug/assembleRelease gates; no workflow change needed.
+
+AVD Pixel_8 was started for optional smoke, but sys.boot_completed was not
+reported before the optional validation window ended; emulator was stopped.
+connectedDebugAndroidTest/install/UI smoke = NOT RUN / NOT CLAIMED. Task
+acceptance does not require device/emulator evidence; instrumented navigation
+test was compiled but not executed. Remote CI for uncommitted diff = NOT RUN /
+NOT CLAIMED. Backend network smoke requires configured HTTPS API endpoint.
+
+baseline_audit PASS; ci_workflow_audit PASS; secret_audit PASS; Python audit
+regression 45/45 PASS. git diff --check and --cached --check PASS; untracked
+whitespace/conflict scan PASS; no tracked build/.gradle/APK/local.properties;
+task scope and baseline-tag refs unchanged. No known failing check, no
+failed-check waiver. AND-VOC-001 remains IN_PROGRESS. Next: independent QAR
+review of tracked and untracked current-task changes; unresolved findings
+not yet established. No self-review, finalize, commit, push, PR or tag change.
+```
+
+## AND-VOC-001 — QAR FINDING / REMEDIATION — 2026-10-01
+
+```text
+Independent QAR initial review = FAIL. Finding QA-AND-VOC-001-001:
+MEDIUM, blocking YES, status OPEN. Gap: no deterministic ViewModel-level
+evidence for list/detail/examples state transitions, failed next-page retry
+and stale asynchronous callbacks after a new query or detail selection.
+Historical QAR FAIL and finding OPEN remain authoritative until the finding
+owner performs focused re-review.
+
+Focused remediation: added VocabularyViewModelStateTest with a manually
+controlled fake VocabularyRepository and synchronous LiveData executor.
+Four tests cover list INITIAL → LOADING → SUCCESS, empty/error/offline,
+next-page failure while retaining loaded items then retry/append, stale
+old-query callback ignored, detail/examples independent success/empty/
+error/offline states, retry connectivity and stale old-detail callbacks.
+Focused Gradle testDebugUnitTest --tests VocabularyViewModelStateTest PASS
+4/4. No production behavior/API/DB/UI contract was changed by remediation.
+
+Full rerun android/gradlew.bat --no-daemon clean lintDebug testDebugUnitTest
+assembleDebug assembleRelease assembleDebugAndroidTest = PASS, 128 tasks
+(127 executed, 1 up-to-date). All JVM unit reports = PASS 30/30, zero
+failures/errors. lintDebug PASS (zero errors); debug/release builds and
+instrumented-test APK PASS. No device gate was required; connected tests
+remain NOT RUN / NOT CLAIMED. baseline_audit, ci_workflow_audit,
+secret_audit = PASS; Python audit regression 45/45 PASS; git diff --check,
+cached diff check, untracked whitespace/conflict scan, scope/generated-file
+and baseline-tag integrity = PASS. No known failing check; failed-check
+waiver NOT USED. Remote CI for uncommitted diff = NOT RUN / NOT CLAIMED.
+
+Finding QA-AND-VOC-001-001 remains OPEN pending QAR focused re-review;
+AND-VOC-001 remains IN_PROGRESS. No self-resolution, finalization, commit,
+push or proxy change.
+```
+
+## AND-VOC-001 — INDEPENDENT QAR EVIDENCE SYNCHRONIZATION — 2026-10-01
+
+```text
+Authoritative QAR chronology transferred by orchestrator for the same
+uncommitted AND-VOC-001 task diff:
+- Initial QAR review FAIL; QA-AND-VOC-001-001 MEDIUM, blocking YES, OPEN.
+- Implementer added four focused JVM ViewModel state tests; focused 4/4
+  PASS, full Android unit 30/30 and required Gradle gates/audits PASS.
+  No production behavior changed. Historical FAIL/OPEN remains above.
+- QAR focused re-review PASS/APPROVE; finding QA-AND-VOC-001-001 RESOLVED
+  by finding owner; new findings NONE. Current QAR gate PASS and unresolved
+  findings NONE.
+
+connectedDebugAndroidTest/install/UI smoke remain NOT RUN / NOT CLAIMED;
+the AND-VOC-001 acceptance does not require a device/emulator gate.
+Remote CI for uncommitted diff = NOT RUN / NOT CLAIMED. Task remains
+IN_PROGRESS. This synchronization did not implement, self-review, finalize,
+commit, push, modify proxy or mutate baseline tags. Next valid operation:
+english-ai-coach-android-task finalize AND-VOC-001.
+```
+
+## AND-VOC-001 — FINALIZE — 2026-10-01
+
+```text
+Finalization recheck: task M2/P1, Owner AFL; dependencies AND-FND-003 and
+BE-VOC-002 DONE. Branch main; HEAD = origin/main =
+f1c6358989a10d708cc76fac44c21a78baffed50; no Git operation or other
+active direct-main task. Scope is Android vocabulary browse/search/filter/
+pagination/detail/examples, topic lookup, navigation entry under Learn,
+Vietnamese resources and bounded in-memory read-only cache. No API/schema/
+backend change, offline mutation/sync, SRS or future-scope behavior.
+
+Acceptance PASS: GET /vocabulary list/search/filter/pagination and GET detail/
+examples DTO mapping; states INITIAL/LOADING/SUCCESS/EMPTY/ERROR/OFFLINE;
+next-page retry preserves loaded items; late callbacks after new search or
+detail selection are ignored; previously fetched content can be displayed
+read-only in the same process when offline. API base URL is build-configured
+HTTPS; example.invalid is a placeholder until environment configuration.
+
+Required TEST evidence: Gradle clean lintDebug testDebugUnitTest assembleDebug
+assembleRelease assembleDebugAndroidTest PASS (128 tasks); JVM unit tests
+30/30 PASS, no failures/errors/skips; focused ViewModel tests 4/4 PASS;
+lintDebug zero errors; debug/release and instrumented-test APK compile PASS.
+Python audit regression 45/45 PASS. baseline_audit, ci_workflow_audit,
+secret_audit, git diff --check, git diff --cached --check, untracked
+whitespace/conflict, task scope/generated-file and baseline-tag integrity
+PASS. No known failing check; failed-check waiver NOT USED. Optional
+connectedDebugAndroidTest/install/UI smoke NOT RUN because AVD did not
+finish booting; acceptance has no device gate. Remote CI for uncommitted
+diff NOT RUN / NOT CLAIMED.
+
+Independent QAR chronology: initial FAIL with QA-AND-VOC-001-001 MEDIUM,
+blocking, OPEN; focused test remediation; QAR re-review PASS/APPROVE and
+finding RESOLVED by QAR. Required QAR gate PASS; unresolved findings NONE.
+Earlier FAIL/OPEN evidence remains unchanged. CI mode
+ACTUAL_CI_REPOSITORY_HEALTH. Lifecycle IN_PROGRESS → DONE. M2 executable
+task progress 8/21; milestone exit remains pending. No commit, push, PR,
+proxy or tag change. Next operation: english-ai-coach-git-workflow publish
+AND-VOC-001.
+```

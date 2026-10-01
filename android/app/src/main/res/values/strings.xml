@@ -12,4 +12,24 @@
     <string name="foundation_destination_empty">Nội dung sẽ xuất hiện khi tính năng này sẵn sàng.</string>
     <string name="offline_title">Không có kết nối mạng</string>
     <string name="offline_description">Vui lòng kết nối lại để tiếp tục học. Nội dung đã lưu có thể xem ở chế độ chỉ đọc.</string>
+    <string name="vocabulary_open">Khám phá từ vựng</string>
+    <string name="vocabulary_title">Từ vựng</string>
+    <string name="vocabulary_search_hint">Tìm từ vựng</string>
+    <string name="vocabulary_cefr_all">Tất cả trình độ</string>
+    <string name="vocabulary_topic_all">Tất cả chủ đề</string>
+    <string name="vocabulary_pos_hint">Loại từ</string>
+    <string name="vocabulary_search_action">Tìm kiếm</string>
+    <string name="vocabulary_load_more">Xem thêm</string>
+    <string name="vocabulary_retry">Thử lại</string>
+    <string name="vocabulary_loading">Đang tải từ vựng…</string>
+    <string name="vocabulary_empty">Không tìm thấy từ phù hợp.</string>
+    <string name="vocabulary_error">Không tải được từ vựng. Vui lòng thử lại.</string>
+    <string name="vocabulary_offline_empty">Chưa có từ đã tải cho tìm kiếm này. Hãy kết nối mạng để xem thêm.</string>
+    <string name="vocabulary_examples">Ví dụ</string>
+    <string name="vocabulary_examples_empty">Chưa có ví dụ cho từ này.</string>
+    <string name="vocabulary_examples_error">Không tải được ví dụ.</string>
+    <string name="vocabulary_detail_error">Không tải được chi tiết từ.</string>
+    <string name="vocabulary_back">Quay lại</string>
+    <string name="vocabulary_detail_meta">%1$s · %2$s</string>
+    <string name="vocabulary_example_translation">Nghĩa: %1$s</string>
 </resources>

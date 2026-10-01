@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_medium">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/vocabulary_title"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall" />
+
+    <EditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:hint="@string/vocabulary_search_hint"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Spinner
+            android:id="@+id/cefr_filter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:contentDescription="@string/vocabulary_cefr_all" />
+        <EditText
+            android:id="@+id/pos_filter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/vocabulary_pos_hint"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <Spinner
+        android:id="@+id/topic_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/vocabulary_topic_all" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/search_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/vocabulary_search_action" />
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_medium"
+        android:textColor="@color/on_surface_variant"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/retry_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/vocabulary_retry"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/vocabulary_items"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/load_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/vocabulary_load_more"
+        android:visibility="gone" />
+</LinearLayout>

@@ -164,7 +164,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `AND-VOC-001` | Vocabulary browse/search/detail | AFL | `AND-FND-003`<br>`BE-VOC-002` | P1 | QAR | List/detail/examples states, pagination/search, offline read-only cache where available. | Theo global DoD + acceptance. | TODO |
+| `AND-VOC-001` | Vocabulary browse/search/detail | AFL | `AND-FND-003`<br>`BE-VOC-002` | P1 | QAR | List/detail/examples states, pagination/search, offline read-only cache where available. | Theo global DoD + acceptance. | DONE |
 
 ## Admin Identity
 

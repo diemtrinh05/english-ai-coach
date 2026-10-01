@@ -14,6 +14,10 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        def configuredApiUrl = providers.gradleProperty("eacApiBaseUrl")
+                .orElse(providers.environmentVariable("EAC_API_BASE_URL"))
+                .orElse("https://example.invalid/api/v1/").get()
+        buildConfigField "String", "API_BASE_URL", "\"${configuredApiUrl}\""
     }
 
     buildTypes {
@@ -34,6 +38,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -41,6 +46,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.7.1"
     implementation "androidx.lifecycle:lifecycle-livedata:2.9.4"
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.4"
+    implementation "androidx.recyclerview:recyclerview:1.4.0"
     implementation "com.google.android.material:material:1.12.0"
     implementation "com.squareup.retrofit2:retrofit:2.11.0"
     implementation "com.squareup.retrofit2:converter-gson:2.11.0"
