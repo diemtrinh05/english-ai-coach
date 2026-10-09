@@ -8241,3 +8241,130 @@ task progress 8/21; milestone exit remains pending. No commit, push, PR,
 proxy or tag change. Next operation: english-ai-coach-git-workflow publish
 AND-VOC-001.
 ```
+
+## BE-AUTH-004 — PLAN / ĐỒNG BỘ DEPENDENCY ĐÃ DUYỆT — 2026-10-09
+
+Owner đã phê duyệt trong phiên: “Duyệt sửa thứ tự auth: đưa BE-AUTH-004
+trước register/login, rồi triển khai theo dependency mới”. Đây là đồng bộ
+planning cần thiết dưới BE-AUTH-004; không thay product contract hay policy.
+Snapshot trước mutation: main sạch, HEAD = origin/main = live origin/main
+24a63f989aff6a30deabae5ce809786d42ab2229; không Git operation/task active khác;
+Required CI run 36860887120 completed/success, repository HEALTHY, CI mode
+ACTUAL_CI_REPOSITORY_HEALTH; GOV-009 và CI-FND-001 đã effective.
+Dependency map đã duyệt: BE-AUTH-004 → BE-AUTH-001 + SEC-FND-001 (đều DONE);
+BE-AUTH-002/003 thêm BE-AUTH-004, giữ dependencies cũ. Map được đồng bộ trước
+transition TODO → IN_PROGRESS trong cùng admission operation. Không dùng
+GOV-009 one-time exception, không waive gate, không planning commit riêng.
+
+Task M2/P0, Owner CBL, reviewers SR,QAR. Sources: SRS FR-AUTH-03/04/05;
+Architecture §45/46; Technical §36/37/70; Backend §58/127/128;
+API/OpenAPI v1.4 public operations, bearerAuth và ErrorResponse;
+PROJECT_RULES, IMPLEMENTATION_PLAN, MASTER_BACKLOG và role instructions.
+Scope: access-token issuer/verifier, short-lived configurable expiry,
+canonical identity/role, Spring Security bearer authentication và admin guard.
+Minimum SRS user_id và Technical sub cùng biểu diễn user ID: payload chứa cả
+hai UUID khớp nhau cùng role/iat/exp. Không thêm endpoint/register/login,
+refresh issuance/rotation/persistence, database migration hay client behavior.
+Tests: crypto/claims/expiry boundaries bằng fixed Clock, filter-chain
+public/protected/ADMIN/invalid-token/error envelopes, full Maven verify,
+baseline/CI/secret audits + Python regression/py_compile/diff/scope/tags.
+SR/QAR chưa review; không tự claim reviewer PASS. Không commit/push/proxy/tag.
+
+## BE-AUTH-004 — IMPLEMENT / TEST CHRONOLOGY — 2026-10-09
+
+Đã triển khai Nimbus HS256 access-token issuer/verifier, JwtProperties,
+AccessTokenIdentity, bearer filter, canonical 401/403 envelope và public/admin
+route guards. Không endpoint auth business, DB/schema migration hay client
+change. Dependency spring-security-oauth2-jose dùng Spring Boot BOM; không tự
+viết crypto. JWT_SECRET runtime base64 tối thiểu32 bytes; thiếu khóa local
+fail-closed cho issuing/verification, prod binding bắt buộc; expiry15m.
+
+Focused JwtAccessTokenServiceTests PASS 6/6. Full Maven verify đầu tiên FAIL:
+157 tests, 1 failure, 0 errors/skips. ConfigurationPropertiesTests chỉ nhận
+placeholder ${ENV} nên từ chối ${JWT_SECRET:}; không failure JWT behavior.
+SecurityErrorWriter/JWT filter integration 4/4 PASS trong lần này.
+Secret audit đầu tiên FAIL và Python regression 44/45 PASS do scanner nhận
+empty environment fallback và access-token-expiration:15m là literal secret.
+Remediation tối thiểu: tools/secret_audit.py chấp nhận empty env placeholder
+(không literal fallback), nhận chính xác access_token_expiration là Duration
+khi value khớp số+unit; không bỏ secret key detection. Thêm regression chứng
+minh literal JWT_SECRET fallback và giả secret trong expiry vẫn bị chặn.
+ConfigurationPropertiesTests đồng bộ empty-placeholder rule. secret_audit
+rerun PASS; Python regression46/46 PASS; py_compile PASS. Full Maven verify
+đang rerun; chưa claim PASS. Những thay đổi scanner là dependency validation
+của BE-AUTH-004, SR/QAR phải review positive/negative case; không waive audit.
+
+## BE-AUTH-004 — TEST PASS / STOP TRƯỚC REVIEW — 2026-10-09
+
+Full rerun với JAVA_HOME session-local JDK21:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+PASS,157/157 tests, failures/errors/skips=0; package Spring Boot JAR PASS.
+JwtAccessTokenServiceTests6/6 và JwtAuthenticationIntegrationTests4/4 PASS;
+PostgreSQL Testcontainers + Flyway fresh migration/JPA/canonical API regression
+đều chạy thực trong full verify. Unit fixed Clock xác minh expiry chính xác,
+future iat, nbf, missing/invalid claims, mismatch subject/user_id, role, alg,
+unsigned/wrong-key/tampered/malformed token và unavailable key. Runtime chain
+xác minh public method/path, protected401, USER→ADMIN403, ADMIN success,
+stateless context, invalid/expired/future/wrong-key/duplicate header401.
+
+baseline_audit PASS; ci_workflow_audit PASS; secret_audit PASS;
+Python regression46/46 PASS; required py_compile PASS. git diff --check và
+cached --check PASS; untracked whitespace/conflict scan PASS; current-task
+scope/generated-file PASS. Broad all-repo generated scan nhận historical
+wrapper JAR đã tracked; scoped diff không thêm generated artifact. Baseline
+refs giữ nguyên5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650. Full tracked diff và untracked task
+sources đã kiểm tra. No known failing check; failed-check waiver NOT USED.
+
+Change: JWT issuing/verification và enforce existing auth contract.
+Why: register/login cần access-token issuer prerequisite đã owner duyệt.
+Affected documents: README và planning/evidence; baseline contracts unchanged.
+Affected API: bearer verification/401/403 theo contract hiện hành, public list
+không đổi; chưa thêm auth endpoint. Affected database/clients/migration: NONE.
+Backward compatibility: catalog public vẫn hoạt động; protected APIs yêu cầu
+JWT theo baseline; không plaintext credential default. Scanner chỉnh hẹp có
+negative regression, không security waiver. Remote CI cho diff uncommitted
+NOT RUN/NOT CLAIMED. Task giữ IN_PROGRESS, SR/QAR phải review độc lập tracked
+và untracked changes tiếp theo. Không self-review/finalize/commit/push/proxy/tag.
+
+## BE-AUTH-004 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-09
+
+Orchestrator chuyển authoritative independent results cho cùng tracked và
+untracked17-file task diff: SR initial review PASS/APPROVE, findings NONE;
+QAR initial review PASS/APPROVE, findings NONE. Không reviewer FAIL hay finding
+remediation/re-review trong task này; implementation validation FAIL ở trên
+vẫn được giữ nguyên theo chronology. Unresolved reviewer findings = NONE.
+
+SR xác minh signature/alg/claims/expiry, malformed/tampered/wrong-key token,
+role guard, stateless bearer context và secret/error boundary; trực tiếp rerun
+JDK21 Maven -Dtest=JwtAccessTokenServiceTests,JwtAuthenticationIntegrationTests
+test PASS10/10 exit0; baseline/secret/diff và secret audit regression22 tests
+PASS. QAR kiểm tra full diff,35 Surefire XML tổng157 tests không failure/error/
+skip; trực tiếp chạy baseline/CI/secret audits, Python46/46, py_compile/diff
+PASS; acceptance expiry/claims/public11 operations/method guards/state/scope
+và owner-approved dependency admission PASS. Các PASS này là independent
+reviewer evidence do orchestrator cung cấp, không implementer self-review.
+
+Finalization recheck: GOV009_DIRECT_MAIN, BE-AUTH-004 OwnerCBL M2/P0,
+BE-AUTH-001 + SEC-FND-001 DONE theo map đã owner duyệt; task trước closure
+IN_PROGRESS; branch main, HEAD=origin/main24a63f989aff6a30deabae5ce809786d42ab2229,
+không Git operation hay task direct-main khác active. CI mode
+ACTUAL_CI_REPOSITORY_HEALTH, admission Required CI run36860887120 PASS/HEALTHY;
+remote CI của diff mới chưa chạy/chưa claim. Không dùng PRE_CI hay waiver.
+
+Applicable TEST: full JDK21 Maven clean verify/package157/157 PASS;
+JWT unit6/6 + integration4/4 PASS; PostgreSQL/Flyway/JPA/API regression PASS.
+Finalization trực tiếp rerun baseline_audit/ci_workflow_audit/secret_audit PASS,
+Python46/46 PASS, required py_compile PASS, git diff/cached checks PASS,
+untracked whitespace/conflict và task-scope/generated audit PASS; baseline
+tag refs không đổi5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650. Scope vẫn chỉ JWT access-token issuer/
+verifier/filter, canonical bearer/public/admin guards và necessary validation/
+planning/docs. Không register/login/refresh business endpoint, DB migration
+hay client contract mới. Required SR/QAR PASS, unresolved findings NONE.
+
+Lifecycle IN_PROGRESS → DONE. M2 executable-task progress9/21 (42.86%);
+milestone exit vẫn pending vì auth/profile/integration tasks chưa hoàn tất.
+Finalization chỉ cập nhật MASTER_BACKLOG.md và EXECUTION_LOG.md; không sửa
+implementation, commit/push/proxy/tag. Bước tiếp: Git workflow publish
+BE-AUTH-004 bằng một final task-scoped commit trên main, rồi actual Required CI.

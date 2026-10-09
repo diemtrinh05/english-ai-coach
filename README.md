@@ -208,3 +208,32 @@ Task này chỉ cung cấp exception boundary và mapping. Correlation/trace ID 
 QA-FND-002 bổ sung Maven test harness đọc trực tiếp YAML block từ canonical OpenAPI v1.4 Markdown, parse/validate bằng Swagger Parser hỗ trợ OpenAPI 3.1, rồi kiểm tra inventory 72 paths/76 operations và `operationId` duy nhất.
 
 `OpenApiContractTestSupport` cung cấp khung dùng lại để lấy operation/schema, so sánh Java record với OpenAPI properties, và đối chiếu `RequestMappingInfo`/`HandlerMethod` của Spring MVC với path, HTTP method, request-body type, success status và response-body type canonical. Suite nền tảng dùng một `@RestController` fixture test-only cho `POST /api/v1/learning/attempts`, unwrap `ResponseEntity<LearningAttemptResponse>`, xác nhận runtime status `200`, resolve chuỗi response/component/schema của operation `400/409/429` và toàn bộ reusable error responses (`ValidationError`, `Unauthorized`, `Forbidden`, `NotFound`, `Conflict`, `RateLimited`) tới `ErrorResponse`, đồng thời kiểm tra method/request/response/operation-error/reusable-error drift bằng metadata cô lập. Harness tự chạy trong Maven `test`/`verify`; không cần production controller hoặc bản sao OpenAPI YAML.
+
+## JWT access token — BE-AUTH-004
+
+`JwtAccessTokenService` cấp và xác minh access token HS256 qua Nimbus JOSE/JWT
+(dependency `spring-security-oauth2-jose`, version do Spring Boot BOM quản lý).
+Payload chỉ gồm `sub`, `user_id`, `role`, `iat`, `exp`; `sub` và `user_id` cùng
+UUID để đáp ứng minimum claims trong SRS và technical specs. Thời gian sống
+`app.jwt.access-token-expiration` mặc định `15m`, cấu hình trong khoảng mục tiêu
+15–30 phút. Verifier kiểm tra chữ ký/HS256, UUID canonical, identity khớp nhau,
+role USER/ADMIN, iat/exp bắt buộc, thời điểm hiện tại và nbf nếu có; expiry không
+có grace period. Token và secret không nằm trong SecurityContext credentials
+hoặc error/log. User hiện tại có thể lấy UUID từ Principal.name.
+
+Cấp `JWT_SECRET` từ môi trường/secrets manager: base64 của ít nhất 32 byte
+ngẫu nhiên mật mã, giữ riêng cho môi trường triển khai. Không commit giá trị
+thật. Profile prod yêu cầu biến này; cấu hình base64 sai/khóa quá ngắn làm
+startup thất bại với thông báo không chứa secret. Local/default thiếu khóa vẫn
+chạy public catalog/health, nhưng issuer không cấp token và verifier từ chối
+mọi bearer token; không có signing key mặc định hay tự sinh để dùng thực tế.
+
+Spring Security xác thực Bearer trên từng request, stateless; protected
+`/api/v1/**` yêu cầu đăng nhập, `/api/v1/admin/**` yêu cầu ADMIN. Chỉ đúng các
+method/path public trong OpenAPI được miễn auth: POST register/login/refresh/
+google; GET goals/cefr-levels/topics/topic detail/vocabulary/detail/examples.
+Logout vẫn protected. Thiếu hoặc sai token trả envelope `401 UNAUTHORIZED`;
+USER gọi admin trả `403 FORBIDDEN`, message tiếng Việt. Rate limit/CORS/headers
+vẫn dùng foundation hiện có. JWT issuer không phải API cấp token public;
+register/login/refresh/logout/Google flows và resource ownership thuộc các task
+phụ thuộc tương ứng. Không migration/schema/client contract mới.

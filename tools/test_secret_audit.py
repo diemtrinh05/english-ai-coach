@@ -12,6 +12,16 @@ from tools import secret_audit
 
 
 class SecretAuditTests(unittest.TestCase):
+    def test_jwt_duration_and_empty_env_placeholder_do_not_hide_literal_secrets(self) -> None:
+        with self.secure_fixture() as root:
+            value = self.synthetic_secret()
+            self.write(root, "jwt.yml", "secret: ${JWT_SECRET:}\naccess-token-expiration: 15m\n")
+            self.assertEqual([], secret_audit.audit(root, self.fixture_paths(root)))
+            self.write(root, "jwt.yml", f"secret: ${{JWT_SECRET:{value}}}\naccess-token-expiration: {value}\n")
+            issues = secret_audit.audit(root, self.fixture_paths(root))
+            self.assertIn("LITERAL_SECRET:jwt.yml:line=1:key=secret", issues)
+            self.assertIn("LITERAL_SECRET:jwt.yml:line=2:key=access_token_expiration", issues)
+
 
     def test_canonical_repository_passes(self) -> None:
         self.assertEqual([], secret_audit.audit())

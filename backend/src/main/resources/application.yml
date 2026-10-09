@@ -34,6 +34,10 @@ management:
           include: readinessState,db
 
 app:
+  jwt:
+    # Thiếu khóa ở local chỉ cho phép public API; không sinh khóa fallback.
+    secret: ${JWT_SECRET:}
+    access-token-expiration: 15m
   security:
     rate-limit:
       # Môi trường production phải cấp ngưỡng tường minh; local/test chưa bật.

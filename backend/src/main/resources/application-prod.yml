@@ -10,6 +10,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
 
 app:
+  jwt:
+    secret: ${JWT_SECRET}
   security:
     cors:
       # Origin Admin Web phải được cấu hình tường minh tại deployment.

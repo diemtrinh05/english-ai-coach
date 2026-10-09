@@ -135,7 +135,7 @@ def is_safe_placeholder(value: str) -> bool:
         return True
     if lowered in {"false", "null", "true", "~"}:
         return True
-    if re.fullmatch(r"\$\{[A-Z][A-Z0-9_]*(?::\?[^}]*)?\}", value):
+    if re.fullmatch(r"\$\{[A-Z][A-Z0-9_]*(?::(?:\?[^}]*|))?\}", value):
         return True
     if value.startswith("<") and value.endswith(">"):
         return True
@@ -209,6 +209,11 @@ def audit_paths(repository_root: Path, paths: list[Path]) -> list[str]:
             relative_path, text
         ):
             value = normalized_assignment_value(raw_value)
+            # Thời gian sống JWT là cấu hình Duration, không phải nội dung token.
+            if normalized_key == "access_token_expiration" and re.fullmatch(
+                r"[0-9]+(?:ms|s|m|h|d)", value
+            ):
+                continue
             if not is_safe_placeholder(value):
                 issues.append(
                     f"LITERAL_SECRET:{relative_path.as_posix()}:"

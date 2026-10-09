@@ -187,7 +187,8 @@ class ConfigurationPropertiesTests {
                     Matcher matcher = SENSITIVE_PROPERTY.matcher(source);
                     while (matcher.find()) {
                         String value = matcher.group("value").trim();
-                        assertTrue(value.matches("\\$\\{[A-Z][A-Z0-9_]*}"),
+                        // Fallback rỗng không cấp credential; fallback literal vẫn bị từ chối.
+                        assertTrue(value.matches("\\$\\{[A-Z][A-Z0-9_]*(?::)?}"),
                                 () -> resource + " chứa giá trị nhạy cảm không lấy từ environment: " + value);
                     }
                 }
