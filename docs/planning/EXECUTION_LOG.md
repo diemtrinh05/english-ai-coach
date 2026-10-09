@@ -8368,3 +8368,127 @@ milestone exit vẫn pending vì auth/profile/integration tasks chưa hoàn tấ
 Finalization chỉ cập nhật MASTER_BACKLOG.md và EXECUTION_LOG.md; không sửa
 implementation, commit/push/proxy/tag. Bước tiếp: Git workflow publish
 BE-AUTH-004 bằng một final task-scoped commit trên main, rồi actual Required CI.
+
+## BE-AUTH-002 — PLAN — 2026-10-09
+
+GOV009_DIRECT_MAIN, M2/P0 OwnerCBL; user đã chọn register và phê duyệt
+BE-AUTH-004 trước register/login, nay prerequisite DONE. Admission snapshot:
+cleanmain HEAD=origin/main=liveorigin/main
+fcf1930f4f8ecb7ebb2f0d99064aa8ad28a5cd52; Required CI37906115509 completed/
+success HEALTHY; không operation/direct-main active khác; tags unchanged.
+TaskTODO, deps BE-AUTH-001/BE-FND-007/BE-AUTH-004 DONE; CI mode
+ACTUAL_CI_REPOSITORY_HEALTH. PLAN TODO→IN_PROGRESS, reviewersSR,QAR.
+
+Sources SRS FR-AUTH01/05/NFRSEC01, DBusers/refresh_tokens, Architectureauth,
+API§7.1/OpenAPI RegisterRequest/AuthResponse/Conflict, Technicalpassword/
+configuration, Backend§58–62/119, role/governance/planning. Scope publicPOST
+/api/v1/auth/register201, validation8–100/email/fullName, USER/ACTIVE/LOCAL,
+passwordhash, deterministicduplicate409CONFLICT, JWT+initialopaque refreshtoken
+hash persistence atomically. Initial issuance is necessary AuthResponse
+acceptance; refresh/logout/login/rotation endpoints remain later tasks.
+
+Cross-check: BCrypt implementation rejects >72UTF8bytes while OpenAPI permits
+100characters. Backend§61 explicitly permits BCrypt or Argon2; preserve
+BCrypt existing and use Argon2id above72bytes, matches dispatch encodedhash.
+No password contract truncation. Email kept exactinput per VARCHAR UNIQUE;
+no invented normalization policy. Refresh lifetime baseline configurable/
+long-lived with no numericdefault: require app.jwt.refresh-token-expiration
+runtime configuration >access lifetime; tests explicitfixture7d; no default
+productduration invented. Minimumlength configurable default8 from OpenAPI.
+Missing tokenconfiguration controlled500INTERNAL_ERROR and atomicrollback,
+not a newcode/status. Tests happy/validation/duplicates/Postgresconcurrent
+sameemail/rollback/OpenAPI/hashlength/key config and fullMaven/audits.
+
+## BE-AUTH-002 — IMPLEMENT / TEST CHRONOLOGY — 2026-10-09
+
+CompileJDK21 PASS. Focused first run11tests10PASS1FAIL: test incorrectly
+expected400 for unknown role field; OpenAPI does not forbid additionalFields,
+Jackson ignores it and actualresponse201USER did not elevate role. Split test:
+invalid definedfields400 with zero writes, suppliedroleADMIN still201USER/
+ACTIVE. No production reject-unknown policy was added. BCryptlongpassword
+remediation uses allowed Argon2, existing BCryptshort hashes unchanged.
+
+Full cleanverify first166tests165PASS1ERROR: original no-database smoke
+EnglishAiCoachBackendApplicationTests excluded datasource/JPA, so new register
+service required unavailable RefreshTokenRepository. Test-only MockitoBean
+added for that repository, matching existing JdbcTemplate mock isolation;
+real PostgreSQL integration contexts stay real. All9 registration additions
+passed, including duplicate/concurrent/PostgreSQL atomic rollback, configured
+minimum/missingrefreshlifetime and OpenAPI contract. No production failure
+was concealed. Fullcleanverify rerun underway; not yet claimPASS.
+
+baseline_audit/ci_workflow_audit/secret_audit PASS; Python46/46PASS;
+py_compile/diff checksPASS. Task keepsIN_PROGRESS; no self-review or
+finalize/commit/push/proxy/tag changes. Required reviewers SR,QAR pending.
+
+## BE-AUTH-002 — TEST PASS / STOP TRƯỚC REVIEW — 2026-10-09
+
+Full rerun JDK21 session-local:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+PASS, 166/166 tests, failures/errors/skips = 0; package JAR PASS.
+Registration tests: API 6/6, OpenAPI 1/1, policy 1/1, rollback 1/1 PASS.
+PostgreSQL concurrency trả đúng một 201 và một 409, một user và một refresh
+record; sequential duplicate không tạo thêm session. Hash/validation boundary
+8/72/100 ký tự và UTF-8 >72 byte PASS. Initial token response/hash/expiry,
+USER/ACTIVE/LOCAL defaults, configured minimum, missing refresh policy,
+rollback sau khi insert user nhưng issuer thất bại đều PASS. Existing suites
+vẫn PASS, gồm JWT, PostgreSQL/Flyway/JPA và catalog/API regressions.
+
+baseline_audit, ci_workflow_audit, secret_audit PASS; Python 46/46 PASS;
+required py_compile PASS; diff/cached check PASS; untracked whitespace/
+conflict, task scope và generated-file gates PASS. Full tracked diff và nội
+dung 12 untracked files đã kiểm tra; tổng task diff 21 files. Baseline tags
+không đổi 5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650. Không known failing check/waiver.
+
+Change: public register theo API/OpenAPI đã duyệt và initial token issuance.
+Why: BE-AUTH-004 prerequisite đã DONE, đáp ứng AuthResponse đầy đủ.
+Affected documents: README, planning/evidence; baseline contract không đổi.
+Affected API: POST /auth/register 201/400/409 và existing error envelope.
+Affected DB: inserts users/refresh_tokens trong schema hiện có; migration NONE.
+Affected clients: dùng AuthResponse đã duyệt, không field/path mới.
+Backward compatibility: BCrypt hiện hữu vẫn verify; Argon2 chỉ khắc phục
+password dài theo contract; không chuẩn hóa email ngoài policy hiện hành.
+Configuration prerequisite: JWT_SECRET và refresh expiry phải được cấp tại
+môi trường triển khai; test fixture 7d không phải default sản phẩm. Không claim
+đã cấu hình/deploy environment thật. Remote CI cho diff uncommitted chưa chạy/
+chưa claim. Task giữ IN_PROGRESS; required independent SR/QAR review tiếp theo.
+Không self-review/finalize/commit/push/proxy/tag change.
+
+## BE-AUTH-002 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-09
+
+Orchestrator chuyển authoritative results của independent SR/QAR cho cùng
+21-file tracked/untracked register diff: SR initial review PASS/APPROVE,
+findings NONE; QAR initial review PASS/APPROVE, findings NONE. Không reviewer
+FAIL hoặc remediation/re-review finding. Implementation/test failures trước
+đó được giữ nguyên trong chronology; unresolved reviewer findings = NONE.
+SR kiểm tra register validation/default USER, password/refresh hash, token và
+error/log boundaries, PostgreSQL duplicate/concurrency và atomicity; trực tiếp
+baseline/secret/diff và secret-audit regression 22/22 PASS. QAR trực tiếp chạy
+JDK21 Maven -Dtest=RegistrationIntegrationTests,RegistrationOpenApiContractTests,
+RegistrationPolicyIntegrationTests,RegistrationRollbackIntegrationTests,
+AuthHashingTests test: BUILD SUCCESS, 11/11 PASS, failures/errors/skips = 0;
+baseline/CI/secret, Python 46/46, py_compile/diff PASS. Đây là independent
+reviewer evidence được orchestrator cung cấp, không phải implementer self-review.
+
+Backend skill finalize recheck: GOV009_DIRECT_MAIN, Owner CBL, M2/P0,
+BE-AUTH-001 + BE-FND-007 + BE-AUTH-004 DONE; main HEAD=origin/main=
+live origin/main fcf1930f4f8ecb7ebb2f0d99064aa8ad28a5cd52, không Git operation
+hay task direct-main khác active. CI mode ACTUAL_CI_REPOSITORY_HEALTH,
+admission Required CI 37906115509 completed/success, repository HEALTHY;
+remote CI cho diff mới chưa chạy/chưa claim. Applicable full Maven clean
+verify/package 166/166 PASS, registration 9/9 PASS, PostgreSQL/Flyway/JPA/API
+regressions PASS. Finalize kiểm tra 39 Surefire XML: 166 tests, zero failures/
+errors/skips; trực tiếp baseline_audit/ci_workflow_audit/secret_audit PASS,
+Python 46/46 PASS, required py_compile/diff/cached checks PASS. Untracked
+whitespace scan ban đầu lỗi Windows default encoding cp1252; rerun UTF-8 PASS
+với 12 files, không whitespace/conflict. Scope/generated/secret gates PASS;
+baseline tags giữ nguyên object/peeled targets. No known failing check;
+failed-check waiver NOT USED. Required SR PASS, QAR PASS; unresolved findings NONE.
+
+Lifecycle IN_PROGRESS → DONE. M2 executable-task progress 10/21 (47.62%);
+milestone exit vẫn pending. Finalize chỉ đồng bộ EXECUTION_LOG.md và
+MASTER_BACKLOG.md, giữ nguyên product diff đã review. Không contract/schema/
+client/migration change, không proxy/global environment/tag/commit/push.
+Bước tiếp: Git workflow publish BE-AUTH-002 bằng một final task-scoped commit
+trên main khi root điều phối yêu cầu, rồi actual Required CI cho exact SHA.

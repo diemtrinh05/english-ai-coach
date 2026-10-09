@@ -34,6 +34,8 @@ management:
           include: readinessState,db
 
 app:
+  registration:
+    minimum-length: 8
   jwt:
     # Thiếu khóa ở local chỉ cho phép public API; không sinh khóa fallback.
     secret: ${JWT_SECRET:}

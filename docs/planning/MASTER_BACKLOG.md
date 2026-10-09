@@ -116,7 +116,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `BE-AUTH-001` | User/refresh-token repositories + password hashing | CBL | `BE-FND-004`<br>`SEC-FND-001` | P0 | DBR,SR,QAR | users/refresh_tokens mappings + repository; password hash secure; token stored hash only. | Theo global DoD + acceptance. | DONE |
-| `BE-AUTH-002` | POST /auth/register | CBL | `BE-AUTH-001`<br>`BE-FND-007`<br>`BE-AUTH-004` | P0 | SR,QAR | Register validates email/password, duplicate handling deterministic, role USER default, response đúng OpenAPI. | Theo global DoD + acceptance. | TODO |
+| `BE-AUTH-002` | POST /auth/register | CBL | `BE-AUTH-001`<br>`BE-FND-007`<br>`BE-AUTH-004` | P0 | SR,QAR | Register validates email/password, duplicate handling deterministic, role USER default, response đúng OpenAPI. | Theo global DoD + acceptance. | DONE |
 | `BE-AUTH-003` | POST /auth/login + brute-force protection | CBL | `BE-AUTH-001`<br>`BE-FND-010`<br>`BE-AUTH-004` | P0 | SR,QAR | 5 failed attempts → lock ~5 phút; success resets counters per baseline; locked account response đúng API. | Theo global DoD + acceptance. | TODO |
 | `BE-AUTH-004` | JWT access token issuing/verification | CBL | `BE-AUTH-001`<br>`SEC-FND-001` | P0 | SR,QAR | Short-lived access token, subject/role claims canonical, expiry enforced. | Theo global DoD + acceptance. | DONE |
 | `BE-AUTH-005` | POST /auth/refresh + rotation | CBL | `BE-AUTH-004` | P0 | SR,DBR,QAR | Refresh expiry/revoke/hash/rotation hoạt động; reuse/revoked token bị từ chối. | Theo global DoD + acceptance. | TODO |

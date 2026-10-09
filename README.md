@@ -237,3 +237,37 @@ USER gọi admin trả `403 FORBIDDEN`, message tiếng Việt. Rate limit/CORS/
 vẫn dùng foundation hiện có. JWT issuer không phải API cấp token public;
 register/login/refresh/logout/Google flows và resource ownership thuộc các task
 phụ thuộc tương ứng. Không migration/schema/client contract mới.
+
+## Đăng ký tài khoản — BE-AUTH-002
+
+`POST /api/v1/auth/register` public nhận email, password và fullName theo
+OpenAPI v1.4, trả 201 AuthResponse gồm user (USER/ACTIVE), accessToken,
+refreshToken, expiresIn và tokenType=Bearer. DTO không trả entity/password_hash;
+request/response toString che credential. Email lưu đúng input theo UNIQUE
+VARCHAR hiện tại; chưa có quy tắc chuyển hoa/thường trong approved contract.
+Trùng email trả 409 CONFLICT; PostgreSQL INSERT ON CONFLICT(email) DO NOTHING
+xử lý cả race, không catch unique exception rồi tiếp tục transaction hỏng.
+
+`app.registration.minimum-length` mặc định 8 theo OpenAPI, có thể cấu hình
+8..100. Password tối đa 100 ký tự. BCrypt cost 12 vẫn dùng với password ≤72 byte UTF-8;
+password dài hơn dùng Argon2id qua Spring Security default v5.8 (m=16384 KiB,
+t=2, p=1, salt 16 byte, hash 32 byte). Matches đọc encoded algorithm, giữ tương
+thích hash BCrypt hiện hữu, không truncate password. Backend Spec§61 cho phép
+BCrypt/Argon2; Bouncy Castle bcprov-jdk18on 1.86 cung cấp primitive Argon2
+([nguồn phân phối chính thức](https://www.bouncycastle.org/download/bouncy-castle-java/)).
+
+Trước khi dùng register, cấp JWT_SECRET như hướng dẫn JWT và cấu hình
+`app.jwt.refresh-token-expiration` bằng Duration lớn hơn access-token expiry.
+Baseline không quy định giá trị mặc định cụ thể cho refresh lifetime nên implementation
+không đặt default. Local dùng env APP_JWT_REFRESH_TOKEN_EXPIRATION hoặc option
+`--app.jwt.refresh-token-expiration=<duration>`; prod dùng
+JWT_REFRESH_TOKEN_EXPIRATION bắt buộc. Duration 7d trong integration tests là
+fixture kiểm thử, không phải default sản phẩm. Thiếu/sai cấu hình token
+không tạo account/session một phần và trả error envelope hiện hữu 500
+INTERNAL_ERROR. Lifetime âm làm cấu hình thất bại, không tiết lộ token/secret.
+
+Initial refresh token là opaque value 256 bit từ SecureRandom, chỉ trả plaintext
+trong auth response theo approval hiện có; database lưu SHA256 hash với
+expires_at. User insert, access issuing và refresh persistence nằm trong một
+transaction; lỗi issuing/persistence rollback toàn bộ. Register không cần
+body eventId, không thêm rotation/login/refresh/logout endpoints hay DB schema.

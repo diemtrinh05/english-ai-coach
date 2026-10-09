@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.example.englishaicoach.auth.RefreshTokenRepository;
 
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
@@ -14,6 +15,9 @@ class EnglishAiCoachBackendApplicationTests {
 
     @MockitoBean
     private JdbcTemplate jdbcTemplate;
+
+    @MockitoBean
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Test
     void contextLoads() {
