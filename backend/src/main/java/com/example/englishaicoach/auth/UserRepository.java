@@ -15,6 +15,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("select u from User u where u.email = :email")
     Optional<User> findForLogin(@Param("email") String email);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findForRefresh(@Param("id") UUID id);
+
     Optional<User> findByAuthProviderAndProviderUserId(AuthProvider authProvider,
             String providerUserId);
 }

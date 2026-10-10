@@ -431,6 +431,7 @@ Response:
 ```json
 {
   "accessToken": "new-jwt",
+  "refreshToken": "new-refresh-token",
   "expiresIn": 1800,
   "tokenType": "Bearer"
 }
@@ -442,35 +443,27 @@ Rules:
 invalid → reject
 expired → reject
 revoked → reject
-valid → issue new Access Token
+valid → atomic revoke old + issue new Access Token and Refresh Token
 ```
 
 ### Refresh Token Rotation
 
-V1:
+V1 bật refresh-token rotation theo quyết định owner cho `BE-AUTH-005`:
 
 ```text
-rotation not required
+valid refresh → atomic revoke old + issue new Access Token + new Refresh Token
+old token reused/revoked → 401 AUTH_REFRESH_TOKEN_INVALID
+expired token (now >= expires_at) → 401 AUTH_REFRESH_TOKEN_EXPIRED
 ```
 
-Refresh Token still has:
-
-```text
-expiry
-revocation
-```
-
-Future improvement:
-
-```text
-Refresh
-  ↓
-Revoke old Refresh Token
-  ↓
-Issue new Refresh Token
-+
-new Access Token
-```
+Token mới giữ nguyên `expires_at` của token cũ, không gia hạn phiên bằng rotation.
+`users.status=LOCKED` từ chối refresh với `401 AUTH_REFRESH_TOKEN_INVALID`,
+không cấp token; `locked_until` của login cooldown không chặn phiên đang hợp lệ.
+Ghi `revoked_at` và `last_used_at` của token cũ cùng transaction với hash token mới;
+lỗi cấp/lưu token rollback toàn bộ. Các refresh đồng thời cùng token chỉ có một
+lần thành công; lần còn lại bị từ chối như reuse. Không replay qua body `eventId`,
+không tự revoke token family khi reuse. Client lưu atomic cả token pair mới;
+không tự retry refresh đã gửi khi chưa biết kết quả server.
 
 Future reuse detection may revoke the affected token family/session.
 
@@ -523,8 +516,7 @@ Backend validates Google ID Token before login/create account.
 Response 200 dùng cùng hợp đồng auth response như login, gồm
 `accessToken`, `refreshToken`, `expiresIn`, `tokenType` và `user`.
 `refreshToken` chỉ được cấp qua auth response được bảo vệ cho client;
-không xuất hiện trong profile/list API hoặc log. Refresh V1 chỉ trả access
-token mới vì refresh-token rotation chưa bắt buộc.
+không xuất hiện trong profile/list API hoặc log. Refresh V1 trả cả access token và refreshToken mới theo rotation đã bật.
 
 ---
 
@@ -2176,9 +2168,8 @@ internal stack traces
 ```
 
 Ngoại lệ duy nhất cho refresh token plaintext là auth response được bảo vệ
-trong §7.1, §7.2 và §7.5 để cấp token cho client. Không trả token này trong
-profile/list API hoặc ghi vào log. Refresh response V1 không trả refresh token
-mới khi rotation chưa được bật.
+trong §7.1, §7.2, §7.3 và §7.5 để cấp token cho client. Không trả token này trong
+profile/list API hoặc ghi vào log. Refresh response V1 trả refresh token mới theo rotation đã bật; client phải lưu cả token pair.
 
 Admin APIs require:
 
@@ -2455,7 +2446,7 @@ Redis
 [ ] Learning Attempt accepts answerQuality only.
 [ ] isCorrect is derived by backend.
 [ ] Refresh Token expiry/revoke are enforced.
-[ ] Refresh Token rotation is documented as a future improvement.
+[ ] Refresh Token rotation, fixed session expiry và atomic token-pair replacement được kiểm tra.
 [ ] Pagination is standardized.
 [ ] Validation is implemented.
 [ ] Idempotency is defined for event-like requests.
@@ -2495,7 +2486,7 @@ Android V1 uses FCM. `installationId` identifies an app installation; token refr
 
 ## Refresh Token Rotation
 
-Database Schema v1.6 supports refresh-token expiry and revocation. V1 does not require refresh-token rotation; rotation remains a future hardening improvement and must not be assumed by clients.
+Database Schema v1.6 hỗ trợ expiry/revocation. V1 bật rotation theo BE-AUTH-005; xem §7.3 cho fixed expiry, atomicity, lock và reuse semantics.
 
 ---
 

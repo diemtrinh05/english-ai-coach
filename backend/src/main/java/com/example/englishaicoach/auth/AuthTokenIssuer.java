@@ -2,6 +2,7 @@ package com.example.englishaicoach.auth;
 
 import com.example.englishaicoach.auth.dto.AuthResponse;
 import com.example.englishaicoach.auth.dto.AuthUserSummary;
+import com.example.englishaicoach.auth.dto.RefreshResponse;
 import com.example.englishaicoach.common.exception.ApiErrorCodes;
 import com.example.englishaicoach.common.exception.ApiException;
 import com.example.englishaicoach.config.JwtProperties;
@@ -40,13 +41,23 @@ public class AuthTokenIssuer {
                     "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
         }
         String accessToken = accessTokens.issue(userId, role);
+        String refreshToken = newRefreshToken(userId, now.plus(lifetime), null);
+        return new AuthResponse(accessToken, jwt.accessTokenExpiration().toSeconds(), "Bearer",
+                new AuthUserSummary(userId, email, fullName, role, status), refreshToken);
+    }
+
+    public RefreshResponse rotate(UUID userId, UserRole role, Instant expiresAt, String deviceInfo) {
+        String accessToken = accessTokens.issue(userId, role);
+        return new RefreshResponse(accessToken, jwt.accessTokenExpiration().toSeconds(), "Bearer",
+                newRefreshToken(userId, expiresAt, deviceInfo));
+    }
+
+    private String newRefreshToken(UUID userId, Instant expiresAt, String deviceInfo) {
         byte[] entropy = new byte[32];
         random.nextBytes(entropy);
         String refreshToken = Base64.getUrlEncoder().withoutPadding().encodeToString(entropy);
         refreshTokens.saveAndFlush(RefreshToken.forRawToken(userId, refreshToken,
-                now.plus(lifetime), null, hasher));
-        return new AuthResponse(accessToken, jwt.accessTokenExpiration().toSeconds(), "Bearer",
-                new AuthUserSummary(userId, email, fullName, role, status),
-                refreshToken);
+                expiresAt, deviceInfo, hasher));
+        return refreshToken;
     }
 }

@@ -22,6 +22,10 @@ public final class TokenSession {
         return new TokenSession(sessionId, newAccessToken, refreshToken);
     }
 
+    public TokenSession withTokens(String newAccessToken, String newRefreshToken) {
+        return new TokenSession(sessionId, newAccessToken, newRefreshToken);
+    }
+
     public String sessionId() { return sessionId; }
     public String accessToken() { return accessToken; }
     public String refreshToken() { return refreshToken; }

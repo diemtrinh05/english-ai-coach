@@ -76,9 +76,9 @@ public final class SerializedRefreshAuthenticator implements Authenticator {
                 sessions.clearIfCurrent(current);
                 return null;
             }
-            if (!sessions.updateAccessIfCurrent(current, body.accessToken)) return null;
-            TokenSession updated = sessions.current();
-            return updated == null ? null : retry(response.request(), updated);
+            if (!sessions.updateTokensIfCurrent(current, body.accessToken, body.refreshToken)) return null;
+            // Retry giữ identity của snapshot đã refresh; không đọc phiên khác sau CAS.
+            return retry(response.request(), current.withTokens(body.accessToken, body.refreshToken));
         }
     }
 

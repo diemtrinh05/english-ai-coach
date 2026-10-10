@@ -1292,7 +1292,7 @@ Validate hash
   │
   ├── expired → reject
   ├── revoked → reject
-  └── valid → issue new Access Token
+  └── valid → atomic revoke old + issue new Access Token and Refresh Token
 ```
 
 Logout:
@@ -2728,7 +2728,23 @@ POST /api/v1/quiz-attempts/{attemptId}/complete
 
 The exact endpoint identifier is stored with the key.
 
-`POST /auth/refresh` is **not** handled through this learning-event idempotency mechanism; it uses refresh-token expiry/revocation semantics. Refresh-token rotation remains a future security enhancement unless explicitly implemented.
+`POST /auth/refresh` is **not** handled through this learning-event idempotency mechanism; it uses refresh-token expiry/revocation semantics. V1 bật refresh-token rotation theo quyết định owner cho `BE-AUTH-005`:
+
+```text
+valid refresh → atomic revoke old + issue new Access Token + new Refresh Token
+old token reused/revoked → 401 AUTH_REFRESH_TOKEN_INVALID
+expired token (now >= expires_at) → 401 AUTH_REFRESH_TOKEN_EXPIRED
+```
+
+Token mới giữ nguyên `expires_at` của token cũ, không gia hạn phiên bằng rotation.
+`users.status=LOCKED` từ chối refresh với `401 AUTH_REFRESH_TOKEN_INVALID`,
+không cấp token; `locked_until` của login cooldown không chặn phiên đang hợp lệ.
+Ghi `revoked_at` và `last_used_at` của token cũ cùng transaction với hash token mới;
+lỗi cấp/lưu token rollback toàn bộ. Các refresh đồng thời cùng token chỉ có một
+lần thành công; lần còn lại bị từ chối như reuse. Không replay qua body `eventId`,
+không tự revoke token family khi reuse. Client lưu atomic cả token pair mới;
+không tự retry refresh đã gửi khi chưa biết kết quả server.
+
 
 ---
 

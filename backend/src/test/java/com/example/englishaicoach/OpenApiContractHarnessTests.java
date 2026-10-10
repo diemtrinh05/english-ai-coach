@@ -84,7 +84,7 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
     }
 
     @Test
-    void authResponsesIssueRefreshTokenWithoutRotatingItOnRefresh() {
+    void authResponsesIssueRefreshTokenAndRefreshRotatesIt() {
         Schema<?> auth = openApi.getComponents().getSchemas().get("AuthResponse");
         assertNotNull(auth);
         assertTrue(auth.getAllOf().stream().anyMatch(part ->
@@ -95,7 +95,7 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
                 .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
         assertEquals("#/components/schemas/AuthResponse", openApi.getPaths().get("/auth/google")
                 .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
-        assertEquals("#/components/schemas/TokenResponse", openApi.getPaths().get("/auth/refresh")
+        assertEquals("#/components/schemas/RefreshResponse", openApi.getPaths().get("/auth/refresh")
                 .getPost().getResponses().get("200").getContent().get("application/json").getSchema().get$ref());
     }
 

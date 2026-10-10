@@ -6,6 +6,8 @@ public final class ApiErrorCodes {
     public static final String UNAUTHORIZED = "UNAUTHORIZED";
     public static final String AUTH_INVALID_CREDENTIALS = "AUTH_INVALID_CREDENTIALS";
     public static final String AUTH_ACCOUNT_LOCKED = "AUTH_ACCOUNT_LOCKED";
+    public static final String AUTH_REFRESH_TOKEN_INVALID = "AUTH_REFRESH_TOKEN_INVALID";
+    public static final String AUTH_REFRESH_TOKEN_EXPIRED = "AUTH_REFRESH_TOKEN_EXPIRED";
     public static final String FORBIDDEN = "FORBIDDEN";
     public static final String NOT_FOUND = "NOT_FOUND";
     public static final String CONFLICT = "CONFLICT";

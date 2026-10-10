@@ -294,3 +294,15 @@ cập nhật last_login_at. PostgreSQL row lock serialize request cùng tài kho
 Expected rejection commit counter; lỗi issuer/storage rollback state/token
 cùng transaction. Login dùng cùng prerequisite JWT_SECRET/refresh expiration
 như register. Không thêm refresh/logout/rotation endpoints hoặc migration.
+
+
+### BE-AUTH-005 — refresh token rotation
+
+`POST /api/v1/auth/refresh` public với body `refreshToken`, trả accessToken,
+refreshToken mới, expiresIn và tokenType. PostgreSQL row lock bảo vệ single-use;
+revoke/last_used_at của token cũ cùng transaction với token mới hash-only.
+Rotated token giữ expires_at cũ; expired401 AUTH_REFRESH_TOKEN_EXPIRED,
+unknown/revoked/reuse/manual LOCKED401 AUTH_REFRESH_TOKEN_INVALID. Login
+cooldown không chặn session hợp lệ. Android serialized refresh lưu atomic
+token pair dưới cùng sessionId và không cập nhật phiên đã đổi. Token-family
+revocation và refresh eventId replay không thuộc scope. Không schema migration.

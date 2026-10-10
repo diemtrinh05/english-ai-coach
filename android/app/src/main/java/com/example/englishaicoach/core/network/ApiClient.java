@@ -16,10 +16,7 @@ public final class ApiClient {
         if (baseUrl == null || !baseUrl.startsWith("https://") || !baseUrl.endsWith("/api/v1/")) {
             throw new IllegalArgumentException("HTTPS API v1 base URL is required");
         }
-        OkHttpClient refreshClient = new OkHttpClient.Builder()
-                .followRedirects(false)
-                .callTimeout(30, TimeUnit.SECONDS)
-                .build();
+        OkHttpClient refreshClient = refreshHttpClient();
         Retrofit refreshRetrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .client(refreshClient)
@@ -39,6 +36,12 @@ public final class ApiClient {
                 .callFactory(new SessionBindingCallFactory(client, sessions))
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+    }
+
+    static OkHttpClient refreshHttpClient() {
+        // Token single-use không được tự gửi lại sau lỗi kết nối chưa rõ kết quả.
+        return new OkHttpClient.Builder().retryOnConnectionFailure(false)
+                .followRedirects(false).callTimeout(30, TimeUnit.SECONDS).build();
     }
 
     public <T> T create(Class<T> service) {

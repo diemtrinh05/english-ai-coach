@@ -1714,27 +1714,23 @@ Never store plaintext refresh tokens.
 
 # 60. Refresh Token Rotation
 
-Current baseline:
+V1 bật refresh-token rotation theo quyết định owner cho `BE-AUTH-005`:
 
 ```text
-rotation = future improvement
+valid refresh → atomic revoke old + issue new Access Token + new Refresh Token
+old token reused/revoked → 401 AUTH_REFRESH_TOKEN_INVALID
+expired token (now >= expires_at) → 401 AUTH_REFRESH_TOKEN_EXPIRED
 ```
 
-V1 minimum:
-
-```text
-expiry
-revocation
-logout revoke
-```
-
-If rotation is later implemented:
-
-```text
-refresh old token
-→ revoke old record
-→ issue new refresh token
-```
+Token mới giữ nguyên `expires_at` của token cũ, không gia hạn phiên bằng rotation.
+`users.status=LOCKED` từ chối refresh với `401 AUTH_REFRESH_TOKEN_INVALID`,
+không cấp token; `locked_until` của login cooldown không chặn phiên đang hợp lệ.
+Ghi `revoked_at` và `last_used_at` của token cũ cùng transaction với hash token mới;
+lỗi cấp/lưu token rollback toàn bộ. Các refresh đồng thời cùng token chỉ có một
+lần thành công; lần còn lại bị từ chối như reuse. Không replay qua body `eventId`,
+không tự revoke token family khi reuse. Client lưu atomic cả token pair mới;
+không tự retry refresh đã gửi khi chưa biết kết quả server.
+V1 minimum expiry, revocation và logout revoke vẫn được giữ; logout implementation thuộc BE-AUTH-006.
 
 ---
 
@@ -1839,11 +1835,10 @@ Database credentials
 ```
 
 Refresh token plaintext chỉ được cấp cho client qua auth response
-được bảo vệ của register/login/Google login theo API/OpenAPI v1.4 để client
+được bảo vệ của register/login/refresh/Google login theo API/OpenAPI v1.4 để client
 có thể gọi `/api/v1/auth/refresh` và `/api/v1/auth/logout`. Không ghi token
 vào log, profile/list response hoặc response không thuộc auth; trong database
-chỉ lưu token dạng hash. Refresh V1 không cấp refresh token mới khi rotation
-chưa được bật.
+chỉ lưu token dạng hash. Refresh V1 cấp refresh token mới theo rotation đã bật; response được bảo vệ và database chỉ lưu hash.
 
 ---
 

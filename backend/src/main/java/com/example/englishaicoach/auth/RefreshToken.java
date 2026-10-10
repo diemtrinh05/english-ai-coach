@@ -48,6 +48,11 @@ public class RefreshToken extends UuidEntity {
         return token;
     }
 
+    public void consume(Instant now) {
+        revokedAt = now;
+        lastUsedAt = now;
+    }
+
     public UUID getUserId() {
         return userId;
     }

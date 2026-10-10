@@ -100,7 +100,8 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
         mvc.perform(get("/api/v1/goals")).andExpect(status().isNotFound());
         mvc.perform(post("/api/v1/auth/register")).andExpect(status().isBadRequest());
         mvc.perform(post("/api/v1/auth/login")).andExpect(status().isBadRequest());
-        for (String route : new String[] {"refresh", "google"}) {
+        mvc.perform(post("/api/v1/auth/refresh")).andExpect(status().isBadRequest());
+        for (String route : new String[] {"google"}) {
             mvc.perform(post("/api/v1/auth/" + route)).andExpect(status().isNotFound());
         }
         mvc.perform(post("/api/v1/vocabulary")).andExpect(status().isUnauthorized());

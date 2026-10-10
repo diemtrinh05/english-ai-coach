@@ -8646,3 +8646,170 @@ không đổi reviewedproductdiff; currenttask gate checklist marked.
 Không commit/push/proxy/globalenv/tag mutation. Bước tiếp: Git workflow
 publish BE-AUTH-003 bằng one final task-scoped commit trên main, rồi required
 actual CI cho exact published SHA.
+
+
+## BE-AUTH-005 — OWNER RESOLUTION / PLAN — 2026-10-10
+
+User chọn BE-AUTH-005; cross-check read-only phát hiện backlog rotation trái
+API/OpenAPI/Backend/client V1 chỉ cấp access token. Owner phê duyệt rõ:
+bật rotation mỗi refresh, transaction revoke old + hash new + access token;
+response bắt buộc refreshToken mới, old reuse401 AUTH_REFRESH_TOKEN_INVALID;
+rotated expires_at giữ nguyên token cũ, không sliding extension; manual
+users.status=LOCKED trả401 AUTH_REFRESH_TOKEN_INVALID và không mint, còn
+locked_until cooldown login không chặn phiên hợp lệ. Đồng bộ canonical
+SRS/DB/Architecture/API/OpenAPI/Technical/Backend/Android/Flutter/Admin và
+minimal Android DTO + atomic token-pair storage + tests trong cùng currenttask.
+Không family revoke, không idempotency eventId cho refresh, không logout/Google
+implementation, không UI/new AND lifecycle hay schema migration.
+
+Fresh Git pre-task PLAN ADMISSION READY trước mọi mutation: clean main,
+HEAD=origin/main=live main ea40dca07ded5f7b19d439f5539f58c2e31a0e0e,
+no operation/other active, BE-AUTH-005 TODO, dependency BE-AUTH-004 DONE;
+Required CI38018435218 completed/success exact SHA, ACTUAL_CI_REPOSITORY_HEALTH
+HEALTHY; GOV009/CI effective, tags unchanged, failed-check waiver NOT USED.
+Backend helper advisory live-health limitation đã đối chiếu actual Git evidence.
+PLAN thực hiện TODO→IN_PROGRESS trước product patch. Required SR/DBR/QAR,
+additional AR theo approved cross-layer token contract impact. Scope/tests:
+controller/service/DTO, persisted hash/expiry/revoke/last_used_at, row lock
+concurrent one200/one401, atomic issuer failure rollback, fixed Clock boundary,
+role/manuallock/cooldown; Android serialized refresh lưu cả pair và stale
+session guard, sequential rotation và malformed response regressions.
+Implementation chưa bắt đầu tại PLAN checkpoint; không commit/push/proxy.
+
+
+## BE-AUTH-005 — IMPLEMENT / TEST CHRONOLOGY — 2026-10-10
+
+Focused refresh tests8/8 PASS, Android32/32 PASS+assembleDebug PASS. First full
+compiled snapshot184 tests:183PASS/1FAIL/0errors/skips. Existing OpenApiContract
+HarnessTests còn expect TokenResponse/no rotation cũ; sửa tên/assertion sang
+RefreshResponse theo ownerapprovedcontract, không sửa product để ép test.
+Sau snapshot compiled, bổ sung concrete PostgreSQL persistence fault rollback
+và distincttoken rotations+login lockorder concurrency tests; finalsource
+cleanverify rerun sẽ gồm10newrefresh tests. Clock check sau cả rowlocks tránh
+mint khi đã qua expiry trong lúc chờ userlock. Production Android refresh
+client tắt implicitconnectionretry cho single-use token; existing networkfault
+test dùng đúng factory client. UTF8scriptread error trướcissuerpatch được sửa
+explicitUTF8; không claim test hay reviewerPASS cho finalsource trước rerun.
+
+
+## BE-AUTH-005 — TEST PASS / STOP TRƯỚC INDEPENDENT REVIEW — 2026-10-10
+
+Final exact-source JDK21 process-local Maven clean verify BUILD SUCCESS,
+186/186 tests failures/errors/skips=0, package JAR PASS. New refresh10/10:
+8PG integration cases + signingrollback + OpenAPI schema, PostgreSQL16/Flyway
+V1–V7 thật; fixedexpiry/hash/device/2rotations, exactexpiry, invalid/revoked,
+manualLOCKED/cooldown, currentADMINrole, bodyvalidation, concurrentreuse one200
+one401, distincttoken+login no deadlock, injectedPGinsertfailure atomicrollback
+và issuerfailure rollback PASS. Existingregister/login/JWT/catalog regressions
+PASS. First184suite183PASS/1FAIL obsolete nonrotationharness assertion đã sửa
+đúng ownercontract, chronology giữ nguyên; finalsource186PASS không waive.
+
+Android latestsource testDebugUnitTest32/32 zero failures/errors/skips,
+assembleDebug PASS. Existing serialized401/stale-session/networkfailure và
+new sequential2rotations/missingnewtoken cases PASS; production refreshclient
+connectionretry disabled, atomic tokenpair one storewrite cùng sessionId.
+Device instrumentation không thuộc required gate minimal contract sync này.
+Baseline/CI/secret audits PASS, Python46/46 PASS, required py_compile PASS;
+gitdiffcheck/cachedempty PASS, new7files UTF8/whitespace/conflict PASS.
+Full tracked diff + untracked content inspected; scope33files26tracked7new,
+no generated/secret/schema/migration/laterendpoint changes; tags5ccf0650 và
+e3884521 unchanged, main baseea40dca RequiredCI38018435218successHEALTHY.
+RemoteCI cho uncommitteddiff chưa chạy/chưa claim.
+
+Change/Why: implement ownerapprovedrotation + fixedsessionexpiry và account
+manualLOCKED policy; all10 relevantcanonicaldocs đồngbộ với API newrequired
+refreshToken và dedicated RefreshResponse schema giữ TokenResponse/AuthResponse
+compatibility. AffectedDB behavioral only rowlocks/transactions/oldrevocation/
+newhash, migration NONE. AffectedAndroid minimalDTO/store/clientretry/tests
+sync explicitownerapproved; Adminadapter interface chưa concretebackendrefresh
+implementation, Fluttercontractonly, docs đã cậpnhật không mởfutureUI.
+Backwardcompatibility: client cũ giữoldrefreshToken không tương thích repeated
+rotation; Android được sửa trong cùngchange, otherconcreteclients phải tuân
+newpaircontract trước rollout. RuntimeJWTSECRET prerequisite giữ nguyên.
+
+Task IN_PROGRESS; required independent SR/DBR/QAR và impactAR pending;
+no selfreview/PASS/finalize/DONE/commit/push/proxy/globalenv/tagmutation.
+Bước tiếp orchestrator gọi4independentreviewers trên current uncommitted main.
+
+
+## BE-AUTH-005 — INITIAL REVIEW FAIL / REMEDIATION — 2026-10-10
+
+Independent SR initial FAIL: SEC-BE-AUTH-005-001 HIGH blocking=YES OPEN.
+Independent AR initial FAIL: ARCH-BE-AUTH-005-001 HIGH blocking=YES OPEN,
+cùng session-race defect. Reviewer trace: updateTokensIfCurrent(A,a1,r1)
+thành công, session B login trước sessions.current() reread; retry request
+A nhận identity/header B, networkguard cho phép B. Original initial FAIL
+và finding metadata được bảo toàn; không self-resolve hay ghi final PASS.
+
+Remediation được root giao: retry immutable snapshot A.withTokens(a1,r1)
+sau compare-and-set, bỏ reread latest identity; regression deterministic
+switch B ngay sau token-pair storewrite trước retry, assert A không nhận
+header/tag B và networkguard chặn request A. Scope chỉ Android client/test
+và currenttask evidence; backend unchanged, rerun Android affected unit/build
+và audits, không optional full Maven. Task IN_PROGRESS; cả findings OPEN
+đến khi chính SR/AR focused re-review xác nhận.
+
+
+## BE-AUTH-005 — REMEDIATION TEST PASS / FINDINGS OPEN — 2026-10-10
+
+SEC-BE-AUTH-005-001 và ARCH-BE-AUTH-005-001: bỏ sessions.current() reread
+sau successful tokenpair CAS; retry current.withTokens(newaccess,newrefresh)
+giữ immutable identity A. Deterministic afterNextWrite hook chuyển sessionB
+ngay sau A pairwrite, trước retrycreation; assert retryheader accessA1/tag
+sessionA/refreshtokenA1, storeB giữ nguyên, SessionGuardNetworkInterceptor
+throw IOException và chỉ refreshcall trên wire, không gửi requestA dưới B.
+Android testDebugUnitTest33/33 failures/errors/skips=0, assembleDebug BUILD
+SUCCESSFUL, log TEMP/BE-AUTH-005-remediation-android.log; all existing32cases
+PASS cùng newrace regression. Baseline/CI/secret audit, py_compile, diffcheck/
+cachedempty và baseline tags PASS. Backend source/tests không đổi, prior186
+PASS còn áp dụng; không chạy lại optional fullMaven cho clientonlyremediation.
+
+Initial SR FAIL và AR FAIL HIGH blockingYES OPEN giữ nguyên; remediation
+TESTPASS không tự resolve findings. Task IN_PROGRESS; required focused
+SR re-review SEC-BE-AUTH-005-001 và AR re-review ARCH-BE-AUTH-005-001; QAR
+đánh giá finalclient regression. Không finalize/commit/push/proxy/tagmutation.
+
+
+## BE-AUTH-005 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-10
+
+Root cung cấp authoritative independent review results cho final33-file diff:
+SR initial FAIL SEC-BE-AUTH-005-001 HIGH blockingYES originalOPEN; AR initial
+FAIL ARCH-BE-AUTH-005-001 HIGH blockingYES originalOPEN. Cả hai finding cùng
+race reread latestsession sau pairCAS, remediation immutableA snapshot và
+deterministic switchB test đã thực hiện. Chính SR focused re-review xác nhận
+SEC-BE-AUTH-005-001 RESOLVED, finalPASS/APPROVE, không newfindings; chính AR
+focused re-review xác nhận ARCH-BE-AUTH-005-001 RESOLVED, finalPASS/APPROVE,
+không newfindings. OriginalFAIL/HIGH/blockingYES/OPEN và chronology vẫn giữ
+nguyên ở initialreview/remediation sections; không overwrite thành initialPASS.
+
+DBR initialPASS/APPROVE findingsNONE: PostgreSQL rowlocking/concurrentreuse,
+fixedexpiry/hash/oldrevocation/newpersistence atomictransaction và rollback,
+không schema/migration changes. QAR initialPASS/APPROVE findingsNONE sau
+independent focusedbackend10/10 trên PostgreSQL và finalAndroid33/33 rerun.
+QAR Android invocation ban đầu thiếu ANDROID_HOME nên dừng trướccompile;
+SDK36/process-only ANDROID_HOME được đặt cho rerun và PASS, không globalenv
+hoặc repository config mutation, không waive failedcommand. QAR baseline/CI/
+secret/pycompile/diff PASS, kiểm tra priorfull186 và finalclientregression.
+Requiredbacklog SR/DBR/QAR giữ nguyên; thêm AR theo ownerapprovedcrosslayer
+contractimpact. Final SR/DBR/QAR/AR PASS, unresolvedfindings=NONE; implementation
+chỉ synchronize evidence do root chuyển, không selfreview/selfresolve.
+
+Finalize directrecheck GOV009_DIRECT_MAIN, CBL M2P0, BE-AUTH-005 IN_PROGRESS,
+dependency004DONE, main HEAD=origin/main=live main
+ea40dca07ded5f7b19d439f5539f58c2e31a0e0e, no operation/otheractive.
+FreshREST RequiredCI38018435218 completed/success exactSHA+job success,
+ACTUAL_CI_REPOSITORY_HEALTH HEALTHY latestbase; CI cho currentuncommitteddiff
+chưa chạy/chưa claim. Mavenfull186/186/packagePASS và current46XML186zero
+FAIL/errors/skips verified; backendunchangedafterreview/remediation. Android
+current7XML33/33zeroFAIL/errors/skips/assembleDebugPASS, Python46/46PASS.
+Finalize baseline/CI/secret auditsPASS, py_compile/diff/cachedemptyPASS,
+new7filesUTF8/whitespace/conflictPASS, scope33files26tracked7new/generated
+privatecredential guardsPASS; tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+và e3884521c3d497094961d015b7b32d12a8e55650 unchanged. Failed-checkwaiver
+NOTUSED; allacceptance/relevanttests/reviewersPASS, findingsNONE.
+
+Lifecycle IN_PROGRESS→DONE; M2 executableprogress12/21 (57.14%), còn9tasks,
+milestoneexitpending. Chỉ closure MASTER_BACKLOG/EXECUTION_LOG, không đổi
+reviewedproduction/test/canonicalcontract source. No commit/push/proxy/global
+env/tagmutation. Bước tiếp Gitworkflow explicitpublish onefinaltaskcommit
+trênmain rồi requiredremoteCI cho exactpublishedSHA/repositoryhealth.

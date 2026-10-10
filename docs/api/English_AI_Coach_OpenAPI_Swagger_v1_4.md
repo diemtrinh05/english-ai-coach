@@ -19,7 +19,7 @@
 - answerQuality is the single correctness input.
 - Backend derives isCorrect = answerQuality >= 3.
 - Refresh Token expiry/revocation are V1.
-- Refresh Token rotation is future improvement.
+- Refresh Token rotation được bật trong V1 theo BE-AUTH-005, giữ fixed session expiry.
 - Small reference lists return plain arrays.
 - Paginated lists use content/page/size/totalElements/totalPages/hasNext.
 - learning/reviews is a domain-specific response in V1.
@@ -136,7 +136,7 @@ paths:
       - Auth
       security: []
       summary: Refresh access token
-      description: V1 supports refresh-token expiry and revocation. Rotation is a future improvement.
+      description: V1 rotates refresh tokens atomically with fixed expires_at. Reused/revoked or manually LOCKED account returns 401 AUTH_REFRESH_TOKEN_INVALID; expired returns 401 AUTH_REFRESH_TOKEN_EXPIRED. Login cooldown does not block valid sessions.
       operationId: refreshAccessToken
       requestBody:
         required: true
@@ -146,11 +146,11 @@ paths:
               $ref: '#/components/schemas/RefreshTokenRequest'
       responses:
         '200':
-          description: New access token
+          description: New access and refresh token pair
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
+                $ref: '#/components/schemas/RefreshResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
@@ -1870,6 +1870,25 @@ components:
         refreshToken:
           type: string
           writeOnly: true
+    RefreshResponse:
+      type: object
+      required:
+      - accessToken
+      - expiresIn
+      - tokenType
+      - refreshToken
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          example: 1800
+        tokenType:
+          type: string
+          example: Bearer
+        refreshToken:
+          type: string
+          description: Token mới; client phải lưu atomic cả token pair.
     TokenResponse:
       type: object
       required:
@@ -3617,13 +3636,13 @@ GET /learning/reviews
 V1:
 
 ```text
-expiry + revoke
+expiry + revoke + rotation (fixed session expiry)
 ```
 
 Future:
 
 ```text
-rotation + reuse detection
+token-family reuse detection/revocation
 ```
 
 ### Validation

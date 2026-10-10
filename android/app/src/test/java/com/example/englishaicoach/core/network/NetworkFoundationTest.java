@@ -99,7 +99,7 @@ public class NetworkFoundationTest {
         sessions.start("old-access", "refresh-a");
         server.enqueue(new MockResponse().setResponseCode(401));
         server.enqueue(new MockResponse().setResponseCode(200).setBody(
-                "{\"accessToken\":\"new-access\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}"));
+                "{\"accessToken\":\"new-access\",\"refreshToken\":\"refresh-b\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}"));
         server.enqueue(new MockResponse().setResponseCode(200).setBody("{}"));
         OkHttpClient refreshClient = new OkHttpClient();
         RefreshService service = new Retrofit.Builder().baseUrl(server.url("/api/v1/"))
@@ -126,7 +126,7 @@ public class NetworkFoundationTest {
         assertTrue(refresh.getBody().readUtf8().contains("refresh-a"));
         assertNull(retry.getHeader("Idempotency-Key"));
         assertEquals("new-access", sessions.current().accessToken());
-        assertEquals("refresh-a", sessions.current().refreshToken());
+        assertEquals("refresh-b", sessions.current().refreshToken());
     }
 
     @Test public void oldSessionRefreshFailureCannotClearNewSession() {
@@ -135,7 +135,8 @@ public class NetworkFoundationTest {
         sessions.start("b", "rb");
         sessions.clearIfCurrent(previous);
         assertEquals("b", sessions.current().accessToken());
-        assertFalse(sessions.updateAccessIfCurrent(previous, "stale-refresh-result"));
+        assertFalse(sessions.updateTokensIfCurrent(previous, "stale-refresh-result", "stale-refresh-token"));
+        assertEquals("rb", sessions.current().refreshToken());
         assertEquals("b", sessions.current().accessToken());
     }
 
@@ -143,7 +144,7 @@ public class NetworkFoundationTest {
         sessions.start("old-access", "refresh-a");
         TokenSession bound = sessions.current();
         server.enqueue(new MockResponse().setResponseCode(200).setBody(
-                "{\"accessToken\":\"new-access\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}")
+                "{\"accessToken\":\"new-access\",\"refreshToken\":\"refresh-b\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}")
                 .setBodyDelay(150, TimeUnit.MILLISECONDS));
         RefreshService service = new Retrofit.Builder().baseUrl(server.url("/api/v1/"))
                 .addConverterFactory(GsonConverterFactory.create()).build().create(RefreshService.class);
@@ -276,7 +277,7 @@ public class NetworkFoundationTest {
         sessions.start("old-access", "refresh");
         server.enqueue(new MockResponse().setResponseCode(401));
         server.enqueue(new MockResponse().setResponseCode(200).setBody(
-                "{\"accessToken\":\"new-access\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}"));
+                "{\"accessToken\":\"new-access\",\"refreshToken\":\"refresh-b\",\"expiresIn\":1800,\"tokenType\":\"Bearer\"}"));
         server.enqueue(new MockResponse().setResponseCode(401));
         try (Response response = boundClient().newCall(protectedRequest()).execute()) {
             assertEquals(401, response.code());
@@ -288,8 +289,76 @@ public class NetworkFoundationTest {
         assertEquals("/api/v1/users/me", server.takeRequest().getPath());
     }
 
+    @Test public void twoSuccessiveRefreshesSendRotatedRefreshToken() throws Exception {
+        sessions.start("a0", "r0");
+        for (int i = 1; i <= 2; i++) {
+            server.enqueue(new MockResponse().setResponseCode(401));
+            server.enqueue(new MockResponse().setResponseCode(200).setBody(
+                    "{\"accessToken\":\"a" + i + "\",\"refreshToken\":\"r" + i
+                            + "\",\"expiresIn\":900,\"tokenType\":\"Bearer\"}"));
+            server.enqueue(new MockResponse().setResponseCode(200).setBody("{}"));
+            try (Response response = boundClient().newCall(protectedRequest()).execute()) {
+                assertEquals(200, response.code());
+            }
+            server.takeRequest();
+            RecordedRequest refresh = server.takeRequest();
+            assertTrue(refresh.getBody().readUtf8().contains("r" + (i - 1)));
+            server.takeRequest();
+            assertEquals("a" + i, sessions.current().accessToken());
+            assertEquals("r" + i, sessions.current().refreshToken());
+        }
+    }
+
+    @Test public void missingRotatedRefreshTokenClearsSessionWithoutPartialUpdate() throws Exception {
+        sessions.start("a0", "r0");
+        server.enqueue(new MockResponse().setResponseCode(401));
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(
+                "{\"accessToken\":\"a1\",\"expiresIn\":900,\"tokenType\":\"Bearer\"}"));
+        try (Response response = boundClient().newCall(protectedRequest()).execute()) {
+            assertEquals(401, response.code());
+        }
+        assertNull(sessions.current());
+        assertEquals(2, server.getRequestCount());
+    }
+
+    @Test public void accountSwitchImmediatelyAfterPairWriteCannotRebindRetry() throws Exception {
+        sessions.start("access-a0", "refresh-a0");
+        TokenSession boundA = sessions.current();
+        server.enqueue(new MockResponse().setResponseCode(200).setBody(
+                "{\"accessToken\":\"access-a1\",\"refreshToken\":\"refresh-a1\","
+                        + "\"expiresIn\":900,\"tokenType\":\"Bearer\"}"));
+        RefreshService service = new Retrofit.Builder().baseUrl(server.url("/api/v1/"))
+                .client(ApiClient.refreshHttpClient()).addConverterFactory(GsonConverterFactory.create())
+                .build().create(RefreshService.class);
+        SerializedRefreshAuthenticator authenticator = new SerializedRefreshAuthenticator(sessions, service);
+        Request original = protectedRequest().newBuilder().tag(TokenSession.class, boundA)
+                .header("Authorization", "Bearer access-a0").build();
+        Response unauthorized = new Response.Builder().request(original).protocol(okhttp3.Protocol.HTTP_1_1)
+                .code(401).message("Unauthorized").build();
+        // Chuyển tài khoản đúng lúc pair A đã ghi, trước khi authenticator tạo retry.
+        store.afterNextWrite = () -> sessions.start("access-b", "refresh-b");
+        Request retry = authenticator.authenticate(null, unauthorized);
+        assertNotNull(retry);
+        assertEquals("Bearer access-a1", retry.header("Authorization"));
+        assertEquals(boundA.sessionId(), retry.tag(TokenSession.class).sessionId());
+        assertEquals("refresh-a1", retry.tag(TokenSession.class).refreshToken());
+        assertEquals("access-b", sessions.current().accessToken());
+        assertEquals("refresh-b", sessions.current().refreshToken());
+        assertNotEquals(sessions.current().sessionId(), retry.tag(TokenSession.class).sessionId());
+        OkHttpClient guarded = new OkHttpClient.Builder().retryOnConnectionFailure(false)
+                .addNetworkInterceptor(new SessionGuardNetworkInterceptor(sessions)).build();
+        try {
+            guarded.newCall(retry).execute();
+            fail("Request phiên A phải bị chặn sau khi phiên B đã đăng nhập");
+        } catch (IOException expected) {
+            assertEquals("Session changed before network exchange", expected.getMessage());
+        }
+        assertEquals(1, server.getRequestCount());
+        assertEquals("/api/v1/auth/refresh", server.takeRequest().getPath());
+    }
+
     private SessionBindingCallFactory boundClient() {
-        OkHttpClient refreshClient = new OkHttpClient.Builder().retryOnConnectionFailure(false).build();
+        OkHttpClient refreshClient = ApiClient.refreshHttpClient();
         RefreshService service = new Retrofit.Builder().baseUrl(server.url("/api/v1/"))
                 .client(refreshClient).addConverterFactory(GsonConverterFactory.create())
                 .build().create(RefreshService.class);
@@ -306,7 +375,13 @@ public class NetworkFoundationTest {
 
     private static final class MemoryStore implements TokenStore {
         private TokenSession value;
+        private Runnable afterNextWrite;
         @Override public TokenSession read() { return value; }
-        @Override public void write(TokenSession session) { value = session; }
+        @Override public void write(TokenSession session) {
+            value = session;
+            Runnable hook = afterNextWrite;
+            afterNextWrite = null;
+            if (hook != null) hook.run();
+        }
     }
 }

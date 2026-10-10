@@ -34,6 +34,13 @@ public final class SessionManager {
         return true;
     }
 
+    public synchronized boolean updateTokensIfCurrent(TokenSession expected,
+            String accessToken, String refreshToken) {
+        if (!expected.equals(store.read())) return false;
+        store.write(expected.withTokens(accessToken, refreshToken));
+        return true;
+    }
+
     public synchronized void clearIfCurrent(TokenSession expected) {
         if (expected.equals(store.read())) store.write(null);
     }
