@@ -66,7 +66,7 @@ class SecurityFilterChainIntegrationTests extends PostgreSqlIntegrationTestSuppo
         mockMvc.perform(post("/api/v1/auth/login")
                         .with(request -> { request.setRemoteAddr("10.0.0.1"); return request; })
                         .header("X-Forwarded-For", "203.0.113.9, 198.51.100.1"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
         mockMvc.perform(post("/api/v1/auth/login")
                         .with(request -> { request.setRemoteAddr("10.0.0.1"); return request; })
                         .header("X-Forwarded-For", "203.0.113.10, 198.51.100.1"))
@@ -76,6 +76,6 @@ class SecurityFilterChainIntegrationTests extends PostgreSqlIntegrationTestSuppo
         mockMvc.perform(post("/api/v1/auth/login")
                         .with(request -> { request.setRemoteAddr("10.0.0.1"); return request; })
                         .header("X-Forwarded-For", "198.51.100.2"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 }

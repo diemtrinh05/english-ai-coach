@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.Duration;
 
 @Entity
 @Table(name = "users")
@@ -99,5 +100,20 @@ public class User extends AuditableEntity {
 
     public Instant getLastLoginAt() {
         return lastLoginAt;
+    }
+
+    void recordFailedLogin(Instant now, int threshold, Duration duration) {
+        if (failedLoginAttempts < Integer.MAX_VALUE) {
+            failedLoginAttempts++;
+        }
+        if (failedLoginAttempts >= threshold) {
+            lockedUntil = now.plus(duration);
+        }
+    }
+
+    void recordSuccessfulLogin(Instant now) {
+        failedLoginAttempts = 0;
+        lockedUntil = null;
+        lastLoginAt = now;
     }
 }

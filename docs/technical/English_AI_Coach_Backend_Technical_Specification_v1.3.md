@@ -1784,6 +1784,20 @@ locked_until
 
 The current database stores these fields for this purpose. 
 
+Quy tắc credentials-first đã được owner phê duyệt cho `BE-AUTH-003`:
+
+- Xác minh credentials trước khi trả trạng thái khóa; dùng dummy password hash khi
+  email không tồn tại hoặc provider không hỗ trợ password login.
+- Mọi credentials sai trả cùng `401 AUTH_INVALID_CREDENTIALS`, không tiết lộ
+  tài khoản tồn tại hay trạng thái khóa; chỉ credentials đúng nhưng tài khoản bị
+  khóa mới trả `423 AUTH_ACCOUNT_LOCKED`.
+- Khóa tạm dùng `locked_until`, không thay `status`; `status = LOCKED` là khóa
+  tài khoản riêng và không tự mở khi cooldown hết hạn.
+- Trong thời gian đang khóa, credentials sai không tăng counter hay gia hạn khóa.
+  Sau cooldown được thử lại: sai tiếp tăng counter liên tiếp và khóa lại khi đạt
+  ngưỡng; chỉ đăng nhập thành công reset counter, xóa `locked_until` và cập nhật
+  `last_login_at`.
+
 ---
 
 # 64. Authorization

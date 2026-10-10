@@ -271,3 +271,26 @@ trong auth response theo approval hiện có; database lưu SHA256 hash với
 expires_at. User insert, access issuing và refresh persistence nằm trong một
 transaction; lỗi issuing/persistence rollback toàn bộ. Register không cần
 body eventId, không thêm rotation/login/refresh/logout endpoints hay DB schema.
+
+
+## Đăng nhập và chống brute-force — BE-AUTH-003
+
+`POST /api/v1/auth/login` public nhận email/password theo LoginRequest, trả
+200 AuthResponse và initial refresh token hash-only giống register. Email giữ
+đúng input; không tự thêm normalization. Password login chỉ dành cho LOCAL;
+GOOGLE dùng flow riêng. Role lấy từ database, không nhận role do client gửi.
+
+Owner đã duyệt credentials-first: mọi credentials sai cùng 401
+AUTH_INVALID_CREDENTIALS, gồm unknown email và wrong password trên tài khoản
+khóa. Unknown/GOOGLE dùng dummy password verification. Chỉ password đúng nhưng
+status LOCKED hoặc locked_until còn hiệu lực trả 423 AUTH_ACCOUNT_LOCKED.
+Temporary cooldown không đổi status và không tự mở khóa manual.
+
+`app.login-protection.failed-attempts-threshold=5` và `lock-duration=5m` là
+baseline defaults, có thể cấu hình bằng Spring properties/env tương ứng.
+Sai trong cooldown không tăng counter hay kéo dài khóa; hết cooldown cho thử
+lại, sai tiếp tăng counter và khóa lại; chỉ success reset counter/xóa lock và
+cập nhật last_login_at. PostgreSQL row lock serialize request cùng tài khoản.
+Expected rejection commit counter; lỗi issuer/storage rollback state/token
+cùng transaction. Login dùng cùng prerequisite JWT_SECRET/refresh expiration
+như register. Không thêm refresh/logout/rotation endpoints hoặc migration.

@@ -8492,3 +8492,157 @@ MASTER_BACKLOG.md, giữ nguyên product diff đã review. Không contract/schem
 client/migration change, không proxy/global environment/tag/commit/push.
 Bước tiếp: Git workflow publish BE-AUTH-002 bằng một final task-scoped commit
 trên main khi root điều phối yêu cầu, rồi actual Required CI cho exact SHA.
+
+
+## BE-AUTH-003 — PLAN / APPROVED SECURITY FLOW — 2026-10-10
+
+GOV009_DIRECT_MAIN, M2/P0 Owner CBL, dependencies BE-AUTH-001/BE-FND-010/
+BE-AUTH-004 DONE; required SR/QAR, additional AR theo impact thay canonical
+security flow. Formal Git pre-task READY: clean main HEAD=origin/main=live main
+78e893608ca382092ab8ce52aa65d6e155a1be4c, Required CI 37908736586 success,
+HEALTHY, no Git operation/other active task; baseline tags unchanged. CI mode
+ACTUAL_CI_REPOSITORY_HEALTH. Sources SRS NFR-SEC-06, DB users/§19,
+Architecture §33, API §7.2/OpenAPI LoginRequest/AuthResponse, Technical §41,
+Backend §58–65, role/planning/governance.
+
+Owner đã duyệt: “Xác minh credentials trước: mọi credentials sai trả cùng401;
+chỉ đúngpassword nhưng bịkhóa mới trả423. Đồng bộbaselineflow (đềxuất)”.
+Đồng bộ flow credentials-first trong canonical downstream; không thay fields,
+paths/schema. Counter giữ baseline reset chỉ khi thành công; hết cooldown
+cho thử lại, sai tiếp tăng counter và khóa lại. Temporary lock dùng locked_until,
+không đổi status LOCKED của manual lock. Scope POST login, initial tokens/hash,
+configurable threshold/duration, atomic persistence, PostgreSQL race tests;
+refresh/logout/Google/Admin endpoints ngoài scope.
+
+Chronology correction: sau clean admission/owner approval, first patch đã
+được tạo nhầm trước lifecycle transition. Implementer lưu đầy đủ 11 owned files
+vào snapshot TEMP, khôi phục ONLY own tracked files và bỏ ONLY exact own new
+files sau khi bảo toàn snapshot; không reset/clean hay xóa unrelated changes.
+Fresh clean checkpoint: helper clean=true, task TODO, no operation/other active,
+HEAD=origin/main=live main 78e893608ca382092ab8ce52aa65d6e155a1be4c;
+fresh REST Required CI 37908736586 completed/success; baseline tags unchanged.
+Tại clean checkpoint này thực hiện PLAN TODO→IN_PROGRESS, sau đó mới reapply
+owned product patch. Original early-patch error/repair chronology giữ lại;
+không backdate hay waive admission. Không commit/push/proxy/tag mutation.
+
+
+## BE-AUTH-003 — IMPLEMENT / FOCUSED TEST — 2026-10-10
+
+Real PLAN đã thực hiện trước reapply product patch sau clean-order repair
+checkpoint. Implementation: LoginRequest/controller/service, configuration
+threshold5/duration5m, PESSIMISTIC_WRITE lookup, riêng LoginRejectedException
+noRollbackFor để expected401 counter commit, mọi lỗi hệ thống rollback;
+shared AuthTokenIssuer lấy logic từ register, giữ transaction ở caller.
+Hash/dummy generated runtime, không key/password/token log; provider LOCAL
+explicit, status LOCKED không trộn với temporary cooldown. Sources SRS/DB/
+Architecture/API/OpenAPI/Technical/Backend đồng bộ credentials-first đã duyệt.
+Additional AR theo canonical securityflow impact, DBR theo PR template database
+impact rule (equivalent repository evidence), giữ required backlog SR/QAR.
+
+Compile JDK21 PASS. Focused command đầu lỗi PowerShell parsing comma của
+-Dtest chưa quote, chưa chạy Maven; sửa quoting và chạy thực PASS9/9 gồm
+LoginIntegrationTests7, LoginRollbackIntegrationTests1, LoginOpenApiContractTests1,
+zero failures/errors/skips. PostgreSQL16/FlywayV1–V7/JPA thật. Cases:
+5 concurrent failures counter5/lock; exact cooldown boundary/relock/successreset;
+uniform unknown/known/GOOGLE/manualLOCKED invalid; proper423 onlycorrectpwd;
+ADMINclaims, BCrypt/Argonlong, requestvalidation, refreshhash/expiry,
+issuerfailure atomicrollback. Custom configuration test thêm để fullsuite.
+Baseline/CI/secret audits PASS, Python46/46 PASS, py_compile/diffcheck PASS.
+Chưa claim fullsuite/reviewerPASS; task IN_PROGRESS. Không commit/push/proxy.
+
+
+## BE-AUTH-003 — FULL TEST FAILURE / REMEDIATION — 2026-10-10
+
+First full clean verify: 176 tests, 174 PASS/2 FAIL/0 errors/skips. Hai foundation
+security tests còn mong POST login chưa có controller trả404; endpoint mới
+thiếu body đúng ra400VALIDATION_ERROR. Cập nhật expected400 cho login ở
+JwtAuthenticationIntegrationTests và SecurityFilterChainIntegrationTests,
+giữ kiểm tra public auth và trusted proxy rate-limit429 nguyên ý nghĩa;
+refresh/Google chưa implement tiếp tục404. Không đổi production để ép test.
+
+Trong lúc first run dùng compiled snapshot cũ, implementer phát hiện BCrypt
+matches(raw>72bytes) có fast-path không hash; LoginService dùng dummyLong hash
+cho trường hợp không tương thích rồi force invalid, bổ sung known/unknown
+long-password cùng401. Đây hardening thực thi dummy verification đã duyệt,
+không thay PasswordHashService hay claim crypto timing hoàn toàn đồng nhất.
+Full clean verify rerun sẽ kiểm tra exact final source + regression suite.
+
+
+## BE-AUTH-003 — TEST PASS / STOP TRƯỚC INDEPENDENT REVIEW — 2026-10-10
+
+Final exact-source JDK21 session-local Maven clean verify BUILD SUCCESS:
+176/176 tests, failures/errors/skips=0; 43 Surefire XML được tổng hợp trực tiếp;
+package JAR PASS. Login additions10/10, existing registration9/9 và dependent
+JWT/security/PostgreSQL/Flyway/catalog regressions PASS. Ngày fixture/Clock
+không phụ thuộc host time; PostgreSQL concurrency5fails không lost counter,
+correctlocked423/wronguniform401, hash-onlyrefresh/tokenexpiry/role,
+exactcooldown/relock/reset và issuerfailure transaction rollback verified.
+Baseline/CI/secret audits PASS; Python46/46 PASS; required py_compile PASS;
+diffcheck/cached empty PASS; untracked10files UTF8 whitespace/conflict PASS.
+Full tracked diff và mọi untracked contents đã đọc; scope28files chỉ currenttask,
+generated files không track. Tags 5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+và e3884521c3d497094961d015b7b32d12a8e55650 giữ nguyên. Main base78e8936,
+required admission CI37908736586successHEALTHY, no known failing remote check;
+remote CI cho uncommitted diff chưa chạy/chưa claim.
+
+Change/Why: public login theo AuthResponse và credentials-first ownerapproval,
+configurable brute-force5/5min, persisted counters và atomicinitialtokens.
+Affected docs: SRS/DBbehavior/Architecture/API/OpenAPI/Technical/Backend +
+README/planning, preserves unrelated approved sections. Affected API: login
+200/400/401/423/429 hiện hữu; API fields/path/error identifiers không mới.
+Affected DB: users counter/locked_until/last_login_at và refresh hash persistence,
+rowlocking/transaction behavior; schema/Flyway migration NONE. Affected clients:
+existing LoginRequest/AuthResponse/envelope; no DTO/UI sourcechange required.
+Backward compatibility: BCrypt/Argon verification giữ nguyên, role/provider
+explicit; register tokenissuance shared với outcome regression PASS. Runtime
+JWT_SECRET/refresh expiration vẫn prerequisite, không claim realdeployment.
+
+Task IN_PROGRESS, required independent SR/QAR plus impact AR/DBR gates pending.
+Không self-review/PASS, không finalize/DONE/commit/push/proxy/tag mutation.
+Historical earlypatch/orderrepair, commandparseerror và full176twoFAIL→remediation
+chronology được giữ nguyên. Bước tiếp: orchestrator gọi independent reviewers.
+
+
+## BE-AUTH-003 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-10
+
+Orchestrator cung cấp authoritative independent initial results cho cùng
+28-file tracked/untracked diff: SR PASS/APPROVE findings NONE; AR PASS/APPROVE
+findings NONE; DBR PASS/APPROVE findings NONE; QAR PASS/APPROVE findings NONE.
+Backlog mapping giữ SR/QAR; AR thêm theo canonical securityflow/layering impact;
+DBR thêm theo database-impact approval rule PR template và repository-level
+GOV009 equivalent evidence. Không reviewer FAIL/remediation/re-review finding;
+unresolved findings = NONE. Đây evidence reviewer độc lập được root chuyển,
+không phải implementation self-review.
+
+SR xác minh uniform401/correctlocked423, dummy/provider/password/token hash,
+role/counters/security boundaries, secret regressions22/22 và audits PASS.
+AR xác minh owner approval+7canonicalflow sync, layering và sharedissuer
+callertransaction atomicity PASS. DBR kiểm tra PostgreSQL rowlocking/JPA managed
+state, dirtychecking commit counters cho expected noRollbackFor exception,
+issuer/storage lỗi rollback, schema/Flyway unchanged và actual PG test evidence
+PASS. QAR trực tiếp chạy JDK21 focused LoginIntegrationTests,
+LoginRollbackIntegrationTests, LoginPolicyIntegrationTests,
+LoginOpenApiContractTests, RegistrationIntegrationTests:16/16 PASS,
+failures/errors/skips=0, exit0; baseline/py_compile/diff PASS, xác minh full176
+log/evidence và concrete earlypatch save→undo→freshclean→realPLAN chronology.
+
+Finalize recheck GOV009_DIRECT_MAIN OwnerCBL M2/P0 task IN_PROGRESS,
+BE-AUTH-001/BE-FND-010/BE-AUTH-004 DONE, main HEAD=origin/main=live main
+78e893608ca382092ab8ce52aa65d6e155a1be4c. No Git operation/other active task;
+fresh RequiredCI37908736586 completed/success, ACTUAL_CI_REPOSITORY_HEALTH
+HEALTHY admission/latest base, remoteCI newdiff not yet run/claimed.
+Full cleanverify176/176/package PASS, current43SurefireXML tổng176 zero
+failures/errors/skips. Finalize trực tiếp baseline/CI/secret audits PASS,
+Python46/46 PASS, py_compile/diff PASS, cached diff empty, new10 UTF8
+whitespace/conflict PASS, currenttask scope28files/generated/secret gates PASS.
+Baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650 unchanged. No known failingremote
+check; failed-check waiver NOT USED. Original earlyorder repair/commandparse
+error/full176twoFAIL→fix→full176PASS chronology giữ nguyên.
+
+Lifecycle IN_PROGRESS→DONE; M2 executable progress11/21 (52.38%), còn10tasks,
+milestone exit pending. Chỉ đồng bộ MASTER_BACKLOG/EXECUTION_LOG closure,
+không đổi reviewedproductdiff; currenttask gate checklist marked.
+Không commit/push/proxy/globalenv/tag mutation. Bước tiếp: Git workflow
+publish BE-AUTH-003 bằng one final task-scoped commit trên main, rồi required
+actual CI cho exact published SHA.

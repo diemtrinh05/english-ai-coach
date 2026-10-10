@@ -34,6 +34,9 @@ management:
           include: readinessState,db
 
 app:
+  login-protection:
+    failed-attempts-threshold: 5
+    lock-duration: 5m
   registration:
     minimum-length: 8
   jwt:

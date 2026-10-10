@@ -101,6 +101,11 @@ paths:
       - Auth
       security: []
       summary: Login with email and password
+      description: >-
+        Credentials are verified before lock state. All invalid credentials return
+        401 AUTH_INVALID_CREDENTIALS. Only valid credentials for a locked account
+        return 423 AUTH_ACCOUNT_LOCKED. Unknown email and non-LOCAL accounts use
+        dummy password verification. Temporary cooldown does not alter user status.
       operationId: login
       requestBody:
         required: true
