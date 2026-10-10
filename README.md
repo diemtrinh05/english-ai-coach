@@ -306,3 +306,15 @@ unknown/revoked/reuse/manual LOCKED401 AUTH_REFRESH_TOKEN_INVALID. Login
 cooldown không chặn session hợp lệ. Android serialized refresh lưu atomic
 token pair dưới cùng sessionId và không cập nhật phiên đã đổi. Token-family
 revocation và refresh eventId replay không thuộc scope. Không schema migration.
+
+### BE-AUTH-006 — logout
+
+`POST /api/v1/auth/logout` yêu cầu Bearer JWT hợp lệ và body `refreshToken`.
+Revoke đúng token thuộc principal, kể cả expired; retry token đã revoked trả
+204 và giữ thời điểm revoke ban đầu. Unknown/foreign token trả 401
+AUTH_REFRESH_TOKEN_INVALID, không mutation; body sai trả 400 VALIDATION_ERROR.
+Logout không sửa last_used_at, không revoke session khác/token family và
+không blacklist Access JWT đã cấp. Nếu refresh commit trước logout token cũ,
+token mới vẫn hợp lệ; client phải gửi token mới hiện tại để revoke token đó.
+Logout/refresh dùng cùng PostgreSQL row lock, persistence lỗi rollback.
+Không schema/migration hoặc UI client mới; client orchestration thuộc task sau.

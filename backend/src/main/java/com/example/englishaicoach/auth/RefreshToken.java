@@ -53,6 +53,12 @@ public class RefreshToken extends UuidEntity {
         lastUsedAt = now;
     }
 
+    public void revoke(Instant now) {
+        if (revokedAt == null) {
+            revokedAt = java.util.Objects.requireNonNull(now, "now");
+        }
+    }
+
     public UUID getUserId() {
         return userId;
     }

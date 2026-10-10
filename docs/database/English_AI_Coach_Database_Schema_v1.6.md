@@ -1532,6 +1532,26 @@ Refresh Token
 revoked_at = NOW()
 ```
 
+
+### Hợp đồng logout V1 — BE-AUTH-006 (owner phê duyệt)
+
+`POST /api/v1/auth/logout` yêu cầu Bearer Access Token hợp lệ và body
+`refreshToken` không trống. Chỉ revoke đúng token được gửi khi `user_id` thuộc
+principal hiện tại; token expired vẫn được revoke. Thành công trả `204 No Content`,
+không response body. Retry token đã revoked của chính user cũng trả 204 và giữ
+nguyên `revoked_at` lần đầu; logout không sửa `last_used_at`. Token không tồn tại
+hoặc thuộc user khác trả `401 AUTH_REFRESH_TOKEN_INVALID`, không mutation.
+Missing/invalid/expired Access Token trả `401 UNAUTHORIZED`; body thiếu/sai/blank
+trả `400 VALIDATION_ERROR` theo global validation contract.
+
+Logout không revoke session khác hoặc token mới được rotation từ token cũ,
+không revoke token family và không blacklist Access Token. Access JWT đã cấp
+vẫn hợp lệ đến expiry. Revoke chạy trong transaction, dùng cùng token row lock
+với refresh; lỗi persistence rollback. Nếu refresh commit trước logout token cũ,
+logout trả 204 cho token cũ đã revoked, token mới giữ nguyên. Nếu logout commit
+trước refresh, refresh trả `401 AUTH_REFRESH_TOKEN_INVALID`. Client gửi token
+cặp hiện tại; retry logout cần Access Token còn hợp lệ, không gửi body eventId.
+
 ---
 
 # 19. Brute-force Protection

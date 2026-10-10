@@ -8813,3 +8813,115 @@ milestoneexitpending. Chỉ closure MASTER_BACKLOG/EXECUTION_LOG, không đổi
 reviewedproduction/test/canonicalcontract source. No commit/push/proxy/global
 env/tagmutation. Bước tiếp Gitworkflow explicitpublish onefinaltaskcommit
 trênmain rồi requiredremoteCI cho exactpublishedSHA/repositoryhealth.
+
+
+## BE-AUTH-006 — OWNER APPROVAL / PLAN ADMISSION — 2026-10-10
+
+Owner chọn BE-AUTH-006 M2/P0 CBL, dependency BE-AUTH-005 DONE. Đã đọc
+PROJECT_RULES, AGENTS, planning/backlog/log, backend skill/source selection,
+CBL/SR instructions và canonical SRS→DB→Architecture→API/OpenAPI→Technical/
+Backend/client contracts. Helper readonly xác nhận GOV009_DIRECT_MAIN, CI
+foundation effective và common Git gates; live CI được Git workflow xác minh.
+Fresh root/Git PLANADMISSIONREADY: clean main HEAD=origin/main=live
+054db01905201f33e7a1bc558e54035a4e4b6564, no Git operation/otheractive,
+Required CI38050327685 completed/success exactSHA, HEALTHY,
+ACTUAL_CI_REPOSITORY_HEALTH; baseline tags unchanged.
+
+Contract gap đã được báo trước mutation: logout chưa định nghĩa retry/expired/
+unknown/foreign semantics. Owner duyệt JWT hợp lệ bắt buộc; revoke đúng token
+được gửi thuộc principal kể cả expired; alreadyrevoked retry204 giữ revoked_at;
+unknown/foreign401 AUTH_REFRESH_TOKEN_INVALID không mutation; các session khác
+giữ nguyên; AccessJWT stateless còn hiệu lực đến expiry. Invalidbody400
+VALIDATION_ERROR dùng global contract. Không revoke family/all-sessions, không
+thêm eventId/blacklist/schema/migration/UI hoặc FCM lifecycle thuộc task sau.
+
+PLAN TODO→IN_PROGRESS thực hiện trước mọi product mutation. Scope Controller→
+Service→Repository, hash-only lookup + cùng PostgreSQL row lock với refresh,
+transaction revoke riêng không đổi last_used_at; fixedClock tests retry, authz,
+expiry, race/rollback và OpenAPI; đồng bộ các baseline downstream cần thiết.
+Backlog reviewers SR,QAR giữ nguyên; additional DBR bắt buộc theo database
+impact PR template, AR theo cross-layer security-flow contract impact.
+Không selfreview, commit/push, proxy/globalenv hoặc tag mutation.
+
+
+## BE-AUTH-006 — IMPLEMENT / TEST PASS — 2026-10-10
+
+Sau PLAN, thêm LogoutController→LogoutService transactional→existing
+RefreshTokenRepository.findForRefresh PESSIMISTIC_WRITE; chỉ hash rawtoken
+đểlookup. Principal AccessTokenIdentity lấy từ verifiedJWT. Token ownership
+được kiểm tra trước mutation, ADMIN cũng không revoke token của user khác.
+RefreshToken.revoke chỉ set revoked_at khi null, không đổi last_used_at.
+Existing filter giữ authenticated logout, không public hóa hoặc đổi roleguard.
+
+Ownerapproved exacttoken/expired/retry204/unknownforeign401/statelessaccess/
+other-session contract đồng bộ 10canonicaldocs: SRS/DB/Architecture/API/OpenAPI/
+Technical/Backend/Android/Admin/Flutter; README usage summary. OpenAPI giữ
+Bearer inherited, RefreshTokenRequest body, 204 noContent, thêm global400
+ValidationError và mô tả 401/retry/concurrency. Existing RefreshRequestredacted
+DTO dùng lại; không field/endpoint/error mới, không migration/schema/provider/
+clientUI/FCM/all-session/token-family changes. Backwardcompatibility: request
+shape/Bearer/204 giữ nguyên, error/retry semantics được owner làm rõ trướcPLAN.
+
+Focused Maven lần đầu9/9 PASS (8PostgreSQL+1OpenAPI), không testfailure. Thêm
+1 deterministic refreshcommit→logoutold→newtokenunchanged test trước final
+sourcefreeze để cover refresh-winning branch; final logout suite10/10 PASS.
+Full required Maven cleanverify dưới process-only Temurin21: 196/196 PASS,
+failures/errors/skips=0, package/repackage BUILD SUCCESS, log
+TEMP/BE-AUTH-006-full.log; PostgreSQL/Testcontainers/Flyway/regression coverage.
+Tests fixedClock: ownership USER/ADMIN denial, no-body204, malformed/blank/missing
+body400, missing/invalid/expired/duplicateBearer401, expired revoke, priorrevoked
+retry giữ historicaltimestamps, other-session/JWTvalid, refreshafterlogout401,
+concurrent2logoutboth204, refresh-vlogoutrowlock, refresh-firstnewtokenpreserve,
+triggerupdatefailure500 atomicrollback và retry success. Không H2/waiver.
+
+Baselineaudit/CIworkflowaudit/secretaudit PASS; Python46/46 PASS và required
+py_compile PASS; gitdiffcheck/cachedcheckempty PASS; new4files UTF8/whitespace/
+conflict/scope PASS. Full tracked+untracked content inspected. Scope18files:
+14tracked+4new; generated/secrets/schema/clientimplementationnew NONE. Baseline
+tags 5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650 unchanged. RemoteCI currentdiff
+chưa chạy/chưa claim; base054db019 RequiredCI38050327685successHEALTHY.
+
+Task giữ IN_PROGRESS, independent SR/QAR và impact DBR/AR pending. Không
+selfreview/finalize/DONE/commit/push/proxy/globalenv/tagmutation. Execute
+dừng sau TEST, bước tiếp orchestrator independentreviews current18filediff.
+
+
+## BE-AUTH-006 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-10
+
+Root chuyển authoritative independent results trên final18-filediff: SR initial
+PASS/APPROVE findingsNONE (Bearer/ownership/hashonly/retry/statelessAccess/
+sensitiveerror/logs); DBR initialPASS/APPROVE findingsNONE (PostgreSQL same
+rowlock với refresh, transaction/rollback, historicaltimestamps, no migration);
+AR initialPASS/APPROVE findingsNONE (Controller→Service→Repository, đồng bộ
+ownerapprovedcontract/canonicalchain, scope/clientboundaries); QAR initial
+PASS/APPROVE findingsNONE (acceptance/regression/contract/lifecycle).
+BacklogSR,QAR giữ nguyên; additionalDBR/AR impacts đã được xác định ởPLAN.
+Không initialFAIL/finding/remediation của BE-AUTH-006; không rewrite lịch sử
+BE-AUTH-005 hoặc task khác. QAR snapshot từng ghi AR pending; latest actual
+AR PASS root forward là kết quả cuối authoritative, không còn gate pending.
+Final SR/DBR/AR/QAR PASS, unresolvedfindings=NONE; không selfreview.
+
+QAR independently chạy Maven focused LogoutIntegrationTests,
+LogoutOpenApiContractTests,RefreshIntegrationTests:18/18 PASS,9logoutPG+1OpenAPI
++8refresh, failures/errors/skips0. QAR kiểm tra full196/196,48XML và package
+evidence; không claim independentfullrerun. Implementation full Maven trước
+review196/196 PASS; final XML vẫn196/196 zeroFAIL/error/skip trên48reports,
+production/tests không đổi sau review. Python46/46 priorPASS còn áp dụng.
+
+Finalize recheck GOV009_DIRECT_MAIN CBL M2P0, dependencyBE-AUTH-005DONE,
+main HEAD=origin/main=live main054db01905201f33e7a1bc558e54035a4e4b6564,
+no Git operation/otheractive. FreshREST RequiredCI38050327685 completed/success
+exactSHA và RequiredCI job success, ACTUAL_CI_REPOSITORY_HEALTH HEALTHY
+latestbase. CI cho currentuncommitteddiff chưa chạy/chưa claim. Baseline/CI/
+secret audits/pycompile/diff/cachedcheckempty PASS, new4files UTF8/whitespace/
+conflict PASS. Scope18files14tracked4new, no schema/migration/generatedsecret/
+futureimplementation changes; baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+và e3884521c3d497094961d015b7b32d12a8e55650 unchanged. Failed-checkwaiver
+NOTUSED; acceptance, applicabletests và independentreviewersPASS.
+
+Lifecycle IN_PROGRESS→DONE; M2 executableprogress13/21 (61.90%), còn8tasks;
+milestoneexitpending. Closure chỉ MASTER_BACKLOG/EXECUTION_LOG, reviewed
+production/test/canonicaldocs giữ nguyên. No commit/push/proxy/globalenv/
+tagmutation. Bước tiếp Gitworkflow publish onefinaltaskcommit trênmain rồi
+requiredremoteCI/repositoryhealth cho exactpublishedSHA.

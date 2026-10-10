@@ -161,6 +161,14 @@ paths:
       - Auth
       summary: Revoke refresh token
       operationId: logout
+      description: >-
+        Bearer JWT bắt buộc. Revoke đúng supplied refreshToken thuộc principal,
+        kể cả expired; already revoked retry trả 204 giữ nguyên revoked_at và last_used_at.
+        Unknown hoặc foreign token trả 401 AUTH_REFRESH_TOKEN_INVALID; JWT sai/hết hạn
+        trả 401 UNAUTHORIZED. Không revoke session khác/token family; Access JWT còn
+        hiệu lực đến expiry. Logout và refresh serialize trên cùng token row lock.
+        Nếu refresh commit trước, token mới giữ nguyên; nếu logout commit trước,
+        refresh token cũ bị từ chối. Body sai trả 400 VALIDATION_ERROR.
       requestBody:
         required: true
         content:
@@ -170,6 +178,8 @@ paths:
       responses:
         '204':
           description: No Content
+        '400':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /auth/google:
