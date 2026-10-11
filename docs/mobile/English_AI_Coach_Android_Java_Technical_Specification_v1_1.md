@@ -605,6 +605,12 @@ navigate Login
 
 Do not retry endlessly.
 
+`AND-AUTH-001`: nếu protected request đã retry một lần sau refresh mà vẫn trả
+401, không refresh lần nữa; đây là thất bại xác thực terminal và chỉ clear khi
+rotated request snapshot vẫn là phiên/token pair hiện hành. Không clear phiên
+mới khi account switch hoặc token pair khác đã được cấp. 401 ban đầu đi kèm
+refresh network/408/429/5xx vẫn là lỗi tạm thời, giữ credentials để thử lại.
+
 ---
 
 # 24. Refresh Concurrency
@@ -668,6 +674,15 @@ Auth state
 +
 Onboarding state
 ```
+
+Phạm vi tạm thời được owner duyệt cho `AND-AUTH-001`: Splash restore bằng
+authenticated `GET /users/me`; thành công vào Main shell hiện có, không có phiên
+hoặc phiên không hợp lệ vào Login destination boundary. Biểu mẫu Login/Register
+thuộc `AND-AUTH-002`. Quyết định onboarding dành `AND-ONB`/`AND-ASMT`; không suy
+diễn `onboardingCompleted` từ profile/goals/CEFR hoặc tự tạo API/flag hoàn tất.
+Lỗi mạng hoặc refresh 408/429/5xx giữ credentials và cho thử lại; chỉ thất bại
+xác thực terminal của đúng phiên hiện hành mới kết thúc phiên. Main shell tạm
+thời không biểu thị onboarding đã hoàn tất.
 
 ---
 
@@ -2092,6 +2107,12 @@ navigate
 
 No heavy network business logic beyond necessary session/bootstrap checks.
 
+Ở `AND-AUTH-001`, bootstrap chỉ gọi `GET /users/me` và refresh khi 401; không gọi
+profile/goals/assessment để tự quyết định onboarding. Shared application
+SessionManager/ApiClient dùng chung cho bootstrap và các feature; refresh
+serialized cùng phiên, listener invalidation lifecycle-aware, callback phiên cũ
+không điều hướng dưới phiên mới. Invalid session xóa private navigation back stack.
+
 ---
 
 # 99. Onboarding Completion Flag
@@ -2103,6 +2124,9 @@ onboardingCompleted = true
 ```
 
 but server remains authoritative if the API exposes onboarding state.
+
+`AND-AUTH-001` không tạo completion flag; completion predicate được chốt tại
+task onboarding/assessment tương ứng trước khi thay interim Main routing.
 
 ---
 

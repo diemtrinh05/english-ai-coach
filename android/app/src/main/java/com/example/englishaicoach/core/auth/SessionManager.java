@@ -4,6 +4,14 @@ import androidx.annotation.Nullable;
 
 public final class SessionManager {
     private final TokenStore store;
+    public interface Listener { void onSessionChanged(); }
+    private final java.util.Set<Listener> listeners = new java.util.HashSet<>();
+
+    public synchronized void addListener(Listener listener) { listeners.add(listener); }
+    public synchronized void removeListener(Listener listener) { listeners.remove(listener); }
+    private void changed() {
+        for (Listener listener : new java.util.ArrayList<>(listeners)) listener.onSessionChanged();
+    }
 
     public SessionManager(TokenStore store) {
         this.store = store;
@@ -15,10 +23,12 @@ public final class SessionManager {
 
     public synchronized void start(String accessToken, String refreshToken) {
         store.write(TokenSession.start(accessToken, refreshToken));
+        changed();
     }
 
     public synchronized void clear() {
         store.write(null);
+        changed();
     }
 
     public synchronized boolean isCurrentSession(String sessionId) {
@@ -42,6 +52,9 @@ public final class SessionManager {
     }
 
     public synchronized void clearIfCurrent(TokenSession expected) {
-        if (expected.equals(store.read())) store.write(null);
+        if (expected.equals(store.read())) {
+            store.write(null);
+            changed();
+        }
     }
 }

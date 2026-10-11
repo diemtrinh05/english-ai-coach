@@ -282,7 +282,7 @@ public class NetworkFoundationTest {
         try (Response response = boundClient().newCall(protectedRequest()).execute()) {
             assertEquals(401, response.code());
         }
-        assertEquals("new-access", sessions.current().accessToken());
+        assertNull(sessions.current());
         assertEquals(3, server.getRequestCount());
         assertEquals("/api/v1/users/me", server.takeRequest().getPath());
         assertEquals("/api/v1/auth/refresh", server.takeRequest().getPath());

@@ -17,16 +17,22 @@ import org.junit.runner.RunWith;
 public final class MainNavigationInstrumentedTest {
     @Test
     public void mainTabsSwitchFragmentAndVietnameseTitle() {
+        com.example.englishaicoach.core.auth.AuthTestDependencies fixture;
+        try { fixture = new com.example.englishaicoach.core.auth.AuthTestDependencies(true); }
+        catch (Exception failure) { throw new AssertionError(failure); }
         var instrumentation = InstrumentationRegistry.getInstrumentation();
         Intent intent = new Intent(instrumentation.getTargetContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         MainActivity activity = (MainActivity) instrumentation.startActivitySync(intent);
+        instrumentation.waitForIdleSync();
         try {
             assertTab(activity, R.id.nav_home, R.string.nav_home, "HOME");
             assertTab(activity, R.id.nav_review, R.string.nav_review, "REVIEW");
             assertTab(activity, R.id.nav_profile, R.string.nav_profile, "PROFILE");
         } finally {
             activity.runOnUiThread(activity::finish);
+            instrumentation.waitForIdleSync();
+            try { fixture.close(); } catch (Exception failure) { throw new AssertionError(failure); }
         }
     }
 

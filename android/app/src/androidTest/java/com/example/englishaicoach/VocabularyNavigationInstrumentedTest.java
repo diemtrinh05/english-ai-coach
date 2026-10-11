@@ -18,10 +18,14 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class VocabularyNavigationInstrumentedTest {
     @Test public void learnOpensVocabularyAsSecondaryScreenAndBackRestoresLearn() {
+        com.example.englishaicoach.core.auth.AuthTestDependencies fixture;
+        try { fixture = new com.example.englishaicoach.core.auth.AuthTestDependencies(true); }
+        catch (Exception failure) { throw new AssertionError(failure); }
         var instrumentation = InstrumentationRegistry.getInstrumentation();
         Intent intent = new Intent(instrumentation.getTargetContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         MainActivity activity = (MainActivity) instrumentation.startActivitySync(intent);
+        instrumentation.waitForIdleSync();
         try {
             BottomNavigationView navigation = activity.findViewById(R.id.main_navigation);
             activity.runOnUiThread(() -> navigation.setSelectedItemId(R.id.nav_learn));
@@ -40,6 +44,8 @@ public final class VocabularyNavigationInstrumentedTest {
             assertNull(activity.findViewById(R.id.search_input));
         } finally {
             activity.runOnUiThread(activity::finish);
+            instrumentation.waitForIdleSync();
+            try { fixture.close(); } catch (Exception failure) { throw new AssertionError(failure); }
         }
     }
 }

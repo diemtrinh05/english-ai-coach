@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -19,12 +20,22 @@ public final class MainActivity extends AppCompatActivity {
     private static final String STATE_DESTINATION = "selected_destination";
     private ActivityMainBinding binding;
     private MainNavigationViewModel navigationViewModel;
+    private com.example.englishaicoach.feature.auth.AuthSessionViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        com.example.englishaicoach.core.auth.AppSessionDependencies dependencies =
+                com.example.englishaicoach.core.auth.AppSessionDependencies.get(this);
+        authViewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull @Override public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> type) {
+                return type.cast(new com.example.englishaicoach.feature.auth.AuthSessionViewModel(dependencies.sessions,
+                        dependencies.restoreSession));
+            }
+        }).get(com.example.englishaicoach.feature.auth.AuthSessionViewModel.class);
 
         navigationViewModel = new ViewModelProvider(this).get(MainNavigationViewModel.class);
         if (savedInstanceState != null) {
@@ -38,15 +49,35 @@ public final class MainActivity extends AppCompatActivity {
             navigationViewModel.select(MainDestination.fromMenuId(item.getItemId()));
             return true;
         });
-        navigationViewModel.getDestination().observe(this, this::renderDestination);
+        navigationViewModel.getDestination().observe(this, destination -> {
+            if (authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED)
+                renderDestination(destination);
+        });
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (binding != null) binding.mainNavigation.setVisibility(
-                    getSupportFragmentManager().getBackStackEntryCount() == 0
+                    authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED
+                    && getSupportFragmentManager().getBackStackEntryCount() == 0
                             ? View.VISIBLE : View.GONE);
         });
-        binding.mainNavigation.setVisibility(
-                getSupportFragmentManager().getBackStackEntryCount() == 0
-                        ? View.VISIBLE : View.GONE);
+        binding.mainNavigation.setVisibility(View.GONE);
+        authViewModel.state().observe(this, state -> {
+            boolean authenticated = state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED;
+            binding.mainNavigation.setVisibility(authenticated
+                    && getSupportFragmentManager().getBackStackEntryCount() == 0 ? View.VISIBLE : View.GONE);
+            if (authenticated) {
+                Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+                if (current == null || current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment)
+                    renderDestination(navigationViewModel.getDestination().getValue());
+            } else {
+                Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+                if (!(current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment)) {
+                    getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_content,
+                            new com.example.englishaicoach.feature.auth.AuthBoundaryFragment(), "AUTH_BOUNDARY").commit();
+                }
+                if (state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.UNKNOWN) authViewModel.restore();
+            }
+        });
         new ConnectivityMonitor(getApplicationContext()).observe(this, available ->
                 binding.offlineBanner.setVisibility(Boolean.TRUE.equals(available)
                         ? View.GONE : View.VISIBLE));
@@ -71,6 +102,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     public void openVocabulary() {
+        if (authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return;
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_content, new VocabularyListFragment(), "VOCABULARY_LIST")
                 .addToBackStack("VOCABULARY_LIST")
@@ -78,6 +110,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     public void openVocabularyDetail(String id) {
+        if (authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return;
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.main_content, VocabularyDetailFragment.forId(id), "VOCABULARY_DETAIL")
                 .addToBackStack("VOCABULARY_DETAIL")
@@ -91,6 +124,11 @@ public final class MainActivity extends AppCompatActivity {
                 destination == null ? MainDestination.HOME.name() : destination.name());
         super.onSaveInstanceState(outState);
     }
+
+    public androidx.lifecycle.LiveData<com.example.englishaicoach.feature.auth.AuthSessionViewModel.State> authState() {
+        return authViewModel.state();
+    }
+    public void retryAuth() { authViewModel.restore(); }
 
     @Override
     protected void onDestroy() {

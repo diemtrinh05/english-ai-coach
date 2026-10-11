@@ -1062,6 +1062,12 @@ Onboarding Check
 Home / Login / Onboarding
 ```
 
+Owner duyệt phạm vi tạm thời `AND-AUTH-001`: Splash authenticated `GET /users/me`
+thành công → Main shell hiện có; không phiên/phiên không hợp lệ → Login boundary.
+Onboarding Check và quyết định completion được triển khai tại `AND-ONB`/`AND-ASMT`;
+không suy diễn hoàn tất từ profile/goals/CEFR. Main shell tạm không xác nhận
+onboarding hoàn tất. Login/Register form thuộc `AND-AUTH-002`.
+
 ---
 
 # 21. Login Wireframe

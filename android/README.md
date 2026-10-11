@@ -11,6 +11,17 @@ Module Android V1 dùng Java, XML/ViewBinding và MVVM theo baseline Android v1.
 - `compileSdk` / `targetSdk` 36
 - `minSdk` 26
 
+## AND-AUTH-001 — khôi phục phiên
+
+Ứng dụng khởi động bằng Splash và xác minh session đã lưu qua GET `/users/me`.
+Kho token mã hóa, SessionManager và ApiClient dùng chung toàn ứng dụng. 401 dùng
+refresh serialized, lưu atomic token pair; terminal auth failure chỉ xóa đúng
+snapshot phiên và đưa về Login boundary, xóa private back stack. Lỗi mạng/refresh
+408/429/5xx giữ credentials, hiện thông báo thử lại. Không log token hoặc tự retry
+refresh chưa biết kết quả. Hiện Login là destination boundary; form ở AND-AUTH-002.
+Theo owner approval, phiên hợp lệ vào Main shell tạm, onboarding decision ở
+AND-ONB/AND-ASMT; không suy diễn completion từ profile/goals/CEFR.
+
 ## AND-VOC-001 — danh mục từ vựng
 
 Tab **Học** có lối vào **Khám phá từ vựng**. Màn danh sách gọi các GET

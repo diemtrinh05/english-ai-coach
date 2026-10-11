@@ -628,6 +628,13 @@ Progress
 
 # 26. Prototype Navigation Map
 
+Phạm vi tạm thời owner duyệt cho `AND-AUTH-001`: Splash restore session bằng
+authenticated `GET /users/me`; hợp lệ → existing Main shell, không phiên hoặc
+invalid session → Login destination boundary. Chưa triển khai Login/Register
+form (`AND-AUTH-002`) hoặc quyết định onboarding (`AND-ONB`/`AND-ASMT`). Sơ đồ
+đích bên dưới vẫn là journey đầy đủ; Main shell tạm không khẳng định completion,
+không tự tạo completion flag hoặc suy diễn từ profile/goals/CEFR.
+
 ```text
 Splash
  ↓

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="auth_restoring">Đang khôi phục phiên đăng nhập…</string>
+    <string name="auth_login_title">Đăng nhập</string>
+    <string name="auth_login_boundary">Vui lòng đăng nhập để tiếp tục.</string>
+    <string name="auth_expired">Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.</string>
+    <string name="auth_restore_error">Chưa thể xác minh phiên đăng nhập. Kiểm tra kết nối và thử lại.</string>
+    <string name="auth_retry">Thử lại</string>
     <string name="app_name">English AI Coach</string>
     <string name="app_logo_content_description">Biểu tượng English AI Coach</string>
     <string name="bootstrap_status_initializing">Đang khởi tạo ứng dụng…</string>

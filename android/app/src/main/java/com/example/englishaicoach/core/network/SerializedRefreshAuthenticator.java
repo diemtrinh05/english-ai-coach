@@ -28,11 +28,15 @@ public final class SerializedRefreshAuthenticator implements Authenticator {
     }
 
     @Nullable @Override public Request authenticate(@Nullable Route route, @NonNull Response response) {
-        if (responseCount(response) > 1 || isPublicAuth(response.request())) {
+        if (isPublicAuth(response.request())) {
             return null;
         }
         TokenSession bound = response.request().tag(TokenSession.class);
         if (bound == null) return null;
+        if (responseCount(response) > 1) {
+            sessions.clearIfCurrent(bound);
+            return null;
+        }
         synchronized (refreshLock) {
             TokenSession current = sessions.current();
             if (current == null || !current.sessionId().equals(bound.sessionId())) return null;

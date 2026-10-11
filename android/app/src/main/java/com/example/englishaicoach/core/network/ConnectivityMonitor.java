@@ -9,21 +9,31 @@ import androidx.lifecycle.LiveData;
 
 public final class ConnectivityMonitor extends LiveData<Boolean> {
     private final ConnectivityManager connectivityManager;
+    private Network observedNetwork;
+    private final Object networkLock = new Object();
     private final ConnectivityManager.NetworkCallback callback =
             new ConnectivityManager.NetworkCallback() {
                 @Override
                 public void onAvailable(Network network) {
-                    refresh();
+                    synchronized (networkLock) { observedNetwork = network; }
                 }
 
                 @Override
                 public void onLost(Network network) {
-                    refresh();
+                    synchronized (networkLock) {
+                        if (network.equals(observedNetwork)) {
+                            observedNetwork = null;
+                            postValue(false);
+                        }
+                    }
                 }
 
                 @Override
                 public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
-                    refresh();
+                    synchronized (networkLock) {
+                        if (network.equals(observedNetwork)) postValue(capabilities
+                                .hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                    }
                 }
             };
 
@@ -42,6 +52,7 @@ public final class ConnectivityMonitor extends LiveData<Boolean> {
     @Override
     protected void onInactive() {
         connectivityManager.unregisterNetworkCallback(callback);
+        synchronized (networkLock) { observedNetwork = null; }
         super.onInactive();
     }
 

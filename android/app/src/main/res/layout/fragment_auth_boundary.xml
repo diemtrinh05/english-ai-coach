@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="center"
+    android:padding="@dimen/spacing_large" android:background="@color/background">
+    <ImageView android:layout_width="96dp" android:layout_height="96dp"
+        android:src="@drawable/ic_app_logo" android:contentDescription="@string/app_name" />
+    <TextView android:id="@+id/auth_title" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.Material3.TitleLarge" />
+    <ProgressBar android:id="@+id/auth_loading" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:contentDescription="@string/auth_restoring" />
+    <TextView android:id="@+id/auth_message" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:gravity="center"
+        android:accessibilityLiveRegion="polite" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/auth_retry"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="@string/auth_retry" android:minHeight="48dp" />
+</LinearLayout>
