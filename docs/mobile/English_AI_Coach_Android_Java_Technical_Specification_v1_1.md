@@ -5324,3 +5324,26 @@ trước refresh, refresh trả `401 AUTH_REFRESH_TOKEN_INVALID`. Client gửi t
 cặp hiện tại; retry logout cần Access Token còn hợp lệ, không gửi body eventId.
 
 Triển khai UI/logout orchestration thuộc task client tương ứng; BE-AUTH-006 chỉ đồng bộ contract.
+
+
+### Hợp đồng current user/profile V1 — BE-USER-001 (owner duyệt 2026-10-11)
+
+Ba operation `GET /users/me`, `GET /users/me/profile`, `PUT /users/me/profile`
+yêu cầu Bearer JWT hợp lệ; ownership chỉ lấy từ identity đã xác minh, kể cả ADMIN
+chỉ sửa hồ sơ của chính mình. JWT có user không còn tồn tại trả `401 UNAUTHORIZED`.
+Không nhận quyền, userId hoặc CEFR từ client để thay đổi trạng thái.
+
+GET profile không tạo dữ liệu: khi chưa có `user_profiles`, trả `404 NOT_FOUND`;
+client chuyển sang hoàn tất hồ sơ/onboarding. Không tự gán thời gian học hoặc múi giờ.
+PUT create-or-update nguyên tử `users.full_name` và `user_profiles`, trả `200` profile.
+`fullName` bắt buộc, nonblank 1–100 ký tự, bảo toàn input không trim;
+`dailyLearningMinutes` bắt buộc, integer 5–180;
+`timezone` bắt buộc, tối đa 50 ký tự, đúng thành viên `ZoneId.getAvailableZoneIds()`
+của backend TZDB (bao gồm `UTC`), không trim/normalize; raw offset và short ID không
+nằm trong tập bị từ chối. Validation sai trả `400 VALIDATION_ERROR`.
+`avatarUrl` tùy chọn nullable; thiếu hoặc null trong PUT xóa avatar, không fetch URL.
+PUT thay các trường chỉnh sửa, không phải partial PATCH; không thêm body `eventId`.
+CEFR chỉ backend quyết định; PUT giữ nguyên `current_cefr_level_id`, lần tạo đầu null.
+Response omit `currentCefrLevel` khi chưa có; khi có dùng `CefrLevelResponse`.
+Không tiết lộ password hash, auth/session/refresh token qua các response này.
+Không thay đổi Daily Plan snapshot đã tạo trong ngày. Schema/migration giữ nguyên.

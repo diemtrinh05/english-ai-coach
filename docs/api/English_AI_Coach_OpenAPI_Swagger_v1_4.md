@@ -224,6 +224,7 @@ paths:
       tags:
       - Users
       summary: Get current profile
+      description: Read-only current authenticated owner profile. Missing profile returns 404 NOT_FOUND without creating defaults. Missing CEFR is omitted. Missing user returns 401 UNAUTHORIZED.
       operationId: getCurrentProfile
       responses:
         '200':
@@ -232,10 +233,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
       tags:
       - Users
       summary: Update current profile
+      description: Atomic create-or-update for authenticated owner only, including fullName. Missing or null avatarUrl clears avatar. Preserves server-owned CEFR. No default timezone or daily minutes. Missing user returns 401 UNAUTHORIZED. No eventId.
       operationId: updateCurrentProfile
       requestBody:
         required: true
@@ -245,13 +251,15 @@ paths:
               $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
         '200':
-          description: Updated profile
+          description: Created or updated profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserProfileResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /goals:
     get:
       tags:
@@ -1969,10 +1977,13 @@ components:
       properties:
         fullName:
           type: string
+          minLength: 1
           maxLength: 100
+          description: Nonblank; input preserved without trim.
         avatarUrl:
           type: string
           nullable: true
+          description: Missing or null clears avatar.
         dailyLearningMinutes:
           type: integer
           minimum: 5
@@ -1980,6 +1991,7 @@ components:
         timezone:
           type: string
           maxLength: 50
+          description: Exact member of backend ZoneId.getAvailableZoneIds() TZDB set including UTC; no trim or normalization, no raw offsets or IDs outside the set.
     UserProfileResponse:
       type: object
       required:
@@ -1993,6 +2005,7 @@ components:
           type: string
           nullable: true
         currentCefrLevel:
+          description: Server-owned; omitted when not yet assigned.
           $ref: '#/components/schemas/CefrLevelResponse'
         dailyLearningMinutes:
           type: integer

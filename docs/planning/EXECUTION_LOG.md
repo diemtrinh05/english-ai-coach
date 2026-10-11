@@ -8925,3 +8925,129 @@ milestoneexitpending. Closure chỉ MASTER_BACKLOG/EXECUTION_LOG, reviewed
 production/test/canonicaldocs giữ nguyên. No commit/push/proxy/globalenv/
 tagmutation. Bước tiếp Gitworkflow publish onefinaltaskcommit trênmain rồi
 requiredremoteCI/repositoryhealth cho exactpublishedSHA.
+
+
+## BE-USER-001 — OWNER APPROVAL / PLAN ADMISSION — 2026-10-11
+
+Owner chọn BE-USER-001, CBL M2/P0, dependencies BE-AUTH-004 và BE-FND-004 DONE.
+Đã đọc PROJECT_RULES, AGENTS, planning/backlog/log, backend skill/source selection,
+role instructions và canonical SRS→DB→Architecture→API/OpenAPI→Technical/Backend/client.
+GOV009_DIRECT_MAIN, ACTUAL_CI_REPOSITORY_HEALTH; Git workflow xác minh fresh clean
+main HEAD=origin/main=live ec033faa98214074597ec2db5d45d8e6d7264f0b, no operation
+or other active direct-main, baseline tags unchanged; Required CI38052405983
+completed/success đúng SHA và Required CI job success, repository HEALTHY.
+
+Contract gap đã được báo trước mutation. Owner duyệt GET profile chưa tồn tại
+trả404 NOT_FOUND không ghi; PUT create-or-update required fullName/dailyLearningMinutes/
+timezone, avatarUrl thiếu hoặc null xóa; CEFR chỉ backend ghi, chưa có CEFR thì omit
+currentCefrLevel. JWT hợp lệ nhưng user không tồn tại trả401 UNAUTHORIZED. Timezone
+phải thuộc ZoneId.getAvailableZoneIds(), gồm UTC; không raw offset/short alias không
+nằm trong tập, không trim/normalize, max50. fullName nonblank1..100 giữ input nguyên
+văn; dailyLearningMinutes5..180 giữ contract hiện hành. Không tạo default profile
+trong register hoặc GET; không thêm mutation CEFR, goals, UI, migration hoặc schema.
+
+PLAN TODO→IN_PROGRESS thực hiện trước product patch. Scope user Controller→Service→
+JDBC Repository, atomic full_name/profile upsert với PostgreSQL UNIQUE(user_id),
+Clock audit timestamps, ownership từ verified JWT; canonical downstream sync và
+PostgreSQL/API/validation/concurrency/rollback/OpenAPI tests. Backlog SR,QAR giữ
+nguyên; impact DBR bắt buộc do database write, thêm AR vì cross-layer lifecycle
+contract. Không self-review, commit/push, proxy/global environment hoặc tag mutation.
+
+
+## BE-USER-001 — IMPLEMENT / TEST PASS — 2026-10-11
+
+Sau real PLAN checkpoint, thêm user ProfileController→ProfileService→ProfileRepository
+JDBC, UpdateProfileRequest/UserProfileResponse. Ownership từ AccessTokenIdentity
+đã xác minh, DTO summary dùng AuthUserSummary hiện hành; không trả entity/secrets.
+GET user và GET profile chỉ đọc, profile thiếu404 NOT_FOUND không default/write;
+user thiếu401 UNAUTHORIZED. PUT lock hàng users rồi cập nhật users.full_name và
+upsert user_profiles bằng ON CONFLICT(user_id) trong cùng transaction, tránh
+unique-race500 ở lần tạo đầu và giữ response coherent. Chỉ ghi avatar/timezone/
+daily minutes; CEFR/created_at đã có được bảo toàn. Injectable Clock ghi audit
+timestamps; không dùng timezone máy chủ. CEFR null omit response đã kiểm chứng.
+
+Ownerapproved contract đồng bộ 10 canonical docs SRS/DB/Architecture/API/OpenAPI/
+Technical/Backend/Android/Flutter/Admin; giữ approved content khác. OpenAPI thêm
+profile401/404, PUT upsert/clear semantics, fullName minLength1/nonblank, timezone
+TZDB membership; required/range/nullable giữ phù hợp DTO. Các client chưa có
+profile API DTO/implementation (Android chỉ package shell), nên chỉ cập nhật
+client contract docs; không triển khai UI hoặc later task. Không schema/migration,
+goals, CEFR writes, default profile trong register, eventId hay Daily Plan changes.
+
+Chronology validation: focused invocation đầu dừng testCompile do Swagger raw
+Schema.properties trả Object; sửa hai assertion cast Schema<?> test-only. Rerun
+11/11 PASS. Bổ sung concrete JSON type-risk test trước sourcefreeze; focused1
+FAIL vì Jackson ép20.5 thành20 và trả200. Remediation DTO-only StrictInteger và
+StrictString deserializers giữ nguyên OpenAPI types, reject fractional/string/bool
+integer và nonstring text, null tiếp tục validation/nullable; không sửa global
+Jackson config. Final focused ProfileIntegrationTests6 + OpenAPI1 + existing
+JWT4 =11/11 PASS, zero failures/errors/skips. JWT foundation fixture chuyển sang
+/api/v1/test/jwt-identity để không trùng actual /users/me controller; filter
+identity/RBAC tests giữ behavior, actual user APIs được profile suite kiểm chứng.
+
+Sau final production/test/canonical sourcefreeze, required Maven clean verify
+dưới process-only Temurin21 PASS203/203, failures/errors/skips0 trên50XML,
+package/repackage BUILD SUCCESS, log TEMP/BE-USER-001-full.log. PostgreSQL16
+Testcontainers/Flyway7migrations; meaningful coverage read-only missing profile,
+create/update/null-avatar/preservedCEFR/created_at, names kept verbatim,5/180
+boundaries, missing/null/blank/invalid timezone/types, malformed/missing body,
+USER/ADMIN ownership và unknown JWT user, concurrent firstPUT coherent responses
+và một profile, trigger-induced storagefailure500 rolls back both name/profile
+và retry succeeds. Existing JWT expired/invalid/future/wrongkey/duplicateBearer
+coverage và allauth/catalog/foundation regressions PASS; không H2/waiver.
+
+Baseline/CIworkflow/secret audits PASS, Python46/46 PASS và required py_compile
+PASS, git diff/check cachedempty PASS. Full tracked diff và untracked source
+inspected. Current added lines/new7files UTF8/whitespace/conflict PASS; diagnostic
+whole-markdown trailing spaces là approved existing hardbreaks, giữ nguyên và
+không counted current-change defect. Scope20files13tracked7new, generated/secrets/
+migrations/future implementation NONE. Baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+và e3884521c3d497094961d015b7b32d12a8e55650 unchanged. Base ec033faa latest
+RequiredCI38052405983 PASS/HEALTHY; remoteCI cho uncommitted diff chưa chạy/chưa claim.
+
+Task giữ IN_PROGRESS; backlogSR/QAR và impactDBR/AR independent reviews pending,
+không self-review/finalize/DONE/commit/push/proxy/globalenv/tagmutation. Backend
+execute dừng sau TEST; root orchestrator gọi independent reviews final20filediff.
+
+
+## BE-USER-001 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-11
+
+Root chuyển authoritative independent results cho final20-file diff: SR initial
+PASS/APPROVE findingsNONE (JWT ownership USER/ADMIN, no-sensitive-response/log,
+strict input/CEFR server authority); DBR initialPASS/APPROVE findingsNONE
+(PostgreSQL unique upsert, user row serialization, atomic names/profile, rollback
+and timestamps, no schema/migration); AR initialPASS/APPROVE findingsNONE
+(Controller→Service→Repository, module/contract boundaries, ownerapproved
+canonical downstream sync); QAR initialPASS/APPROVE findingsNONE (acceptance,
+regression, lifecycle, actual tests and closure readiness). BacklogSR,QAR giữ
+nguyên; additional impactDBR và AR đã xác định ởPLAN. Không reviewer FAIL/finding/
+remediation/re-review của task này. FinalSR/DBR/AR/QAR PASS, unresolvedfindingsNONE.
+Implementation chỉ synchronize independent evidence, không self-review.
+
+QAR trực tiếp chạy focused ProfileIntegrationTests, ProfileOpenApiContractTests,
+JwtAuthenticationIntegrationTests11/11 PASS, failures/errors/skips0; kiểm chứng
+full203/203 trên50XML/package evidence, không claim independentfullrerun. QAR
+baseline/CI/secret audits, py_compile và diff PASS. Implementation pre-review
+full Maven cleanverify203/203/packagePASS và Python46/46PASS còn áp dụng; final
+XML hiện tại203/203zeroFAIL/error/skip trên50reports. Production/tests/canonical
+contract sources không đổi sau review. Giữ pre-review testCompile assertion cast
+FAIL→testfix và fractional JSON coercion FAIL→DTO-only stricttype fix→focused11/
+full203PASS; đây validation chronology, không rewrite thành initialtestPASS.
+
+Finalize recheck GOV009_DIRECT_MAIN CBL M2P0 dependencies004/FND004DONE, main
+HEAD=origin/main=live ec033faa98214074597ec2db5d45d8e6d7264f0b, no operation
+or other active direct-main. Fresh REST RequiredCI38052405983 completed/success
+đúng SHA và RequiredCI job success; ACTUAL_CI_REPOSITORY_HEALTH HEALTHY latest
+base, CI cho currentuncommitteddiff chưa chạy/chưa claim. Finalize baseline/CI/
+secret audits/py_compile/diff/cachedcheckempty PASS; new7filesUTF8/whitespace/
+conflictPASS, actualscope20files13tracked7new, no generated/secrets/schema/
+migration/later-task implementation. Actual inventory không có README diff;
+10canonicaldocs +2planningfiles +existingJWTtest và7newsource/testfiles.
+Baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308 và
+e3884521c3d497094961d015b7b32d12a8e55650 unchanged; failed-checkwaiverNOTUSED.
+
+Applicable acceptance/tests/independentreviewers PASS, findingsNONE. Lifecycle
+IN_PROGRESS→DONE; M2progress14/21 (66.67%), còn7tasks, milestoneexitpending.
+Closure chỉ MASTER_BACKLOG/EXECUTION_LOG, không sửa reviewed product/test/contracts.
+No commit/push/proxy/globalenv/tagmutation. Bước tiếp Gitworkflow explicitpublish
+onefinaltaskcommit trênmain và requiredremoteCI cho exactpublishedSHA.

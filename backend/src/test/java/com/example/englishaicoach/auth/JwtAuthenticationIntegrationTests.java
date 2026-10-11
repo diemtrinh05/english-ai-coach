@@ -43,7 +43,7 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
 
     @Test
     void deniesUnauthenticatedProtectedRequestsAndLogoutWithCanonicalError() throws Exception {
-        for (String path : new String[] {"/api/v1/users/me", "/api/v1/admin/users", "/api/v1/learning/today"}) {
+        for (String path : new String[] {"/api/v1/test/jwt-identity", "/api/v1/admin/users", "/api/v1/learning/today"}) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                     .andExpect(jsonPath("$.status").value(401))
@@ -56,7 +56,7 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
     @Test
     void authenticatesIdentityAndDeniesUserAdminAccessWithoutLeakingToken() throws Exception {
         String token = tokens.issue(USER, UserRole.USER);
-        var result = mvc.perform(get("/api/v1/users/me").header("Authorization", "Bearer " + token))
+        var result = mvc.perform(get("/api/v1/test/jwt-identity").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.userId").value(USER.toString())).andReturn();
         assertThat(result.getResponse().getContentAsString()).doesNotContain(token);
         mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + token))
@@ -64,7 +64,7 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
         mvc.perform(get("/api/v1/admin/users").header("Authorization", "Bearer " + tokens.issue(USER, UserRole.ADMIN)))
                 .andExpect(status().isOk());
         // Request kế tiếp không được kế thừa SecurityContext của request trước.
-        mvc.perform(get("/api/v1/users/me")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/test/jwt-identity")).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -77,15 +77,15 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
                 new JwtProperties(randomSecret(), Duration.ofMinutes(15)), clock);
         for (String token : new String[] {"invalid", expired.issue(USER, UserRole.USER),
                 future.issue(USER, UserRole.USER), wrongKey.issue(USER, UserRole.ADMIN)}) {
-            var response = mvc.perform(get("/api/v1/users/me").header("Authorization", "Bearer " + token))
+            var response = mvc.perform(get("/api/v1/test/jwt-identity").header("Authorization", "Bearer " + token))
                     .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                     .andReturn().getResponse();
             assertThat(response.getContentAsString()).doesNotContain(token);
         }
         String header = "Bearer " + tokens.issue(USER, UserRole.USER);
-        mvc.perform(get("/api/v1/users/me").header("Authorization", header, header))
+        mvc.perform(get("/api/v1/test/jwt-identity").header("Authorization", header, header))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/v1/users/me").header("Authorization", "Basic ignored"))
+        mvc.perform(get("/api/v1/test/jwt-identity").header("Authorization", "Basic ignored"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -122,7 +122,7 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
 
     @RestController
     static class FixtureController {
-        @GetMapping({"/api/v1/users/me", "/api/v1/admin/users"})
+        @GetMapping({"/api/v1/test/jwt-identity", "/api/v1/admin/users"})
         Map<String, String> identity(java.security.Principal principal) {
             return Map.of("userId", principal.getName());
         }
