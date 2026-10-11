@@ -1707,6 +1707,33 @@ Server validates again.
 
 ---
 
+
+### Hợp đồng goals — BE-GOAL-001 (owner-approved 2026-10-11)
+
+`GET /api/v1/goals` là public, trả plain array chỉ các goal active, sắp xếp
+`name,id`. `GET /api/v1/users/me/goals` yêu cầu JWT và chỉ đọc lựa chọn của
+người gọi, kể cả goal sau đó inactive; chưa chọn trả `{"goals":[]}`.
+Mỗi item dùng `id=goals.id`, `name`, `isPrimary`, sắp xếp `name,id`.
+
+`PUT /api/v1/users/me/goals` thay thế toàn bộ lựa chọn bằng `goalIds` (UUID
+array bắt buộc, ít nhất một, không null/trùng). `primaryGoalId` là UUID
+optional/nullable: thiếu hoặc null nghĩa là không có primary; nếu có phải
+thuộc `goalIds`. Tối đa một primary được bảo vệ cả service và partial unique
+index `uq_user_goals_primary`; không bắt buộc có một primary.
+Duplicate IDs/primary ngoài danh sách/inactive goal trả `400 VALIDATION_ERROR`;
+goal không tồn tại trả `404 NOT_FOUND`. JWT hợp lệ nhưng user không tồn tại
+trả `401 UNAUTHORIZED` cho hai operation `/users/me/goals`. Invalid request
+không đổi lựa chọn. PUT thành công trả `200` với cùng `UserGoalsResponse`
+như GET; goal bỏ khỏi request bị xóa khỏi lựa chọn, các goal mới phải active.
+
+Toàn bộ thay thế là một transaction; các PUT cùng user được tuần tự hóa,
+không trộn hai bộ lựa chọn hoặc tạo hai primary, retry cùng request giữ kết quả.
+Không thêm eventId/version hay thay schema. Goal/profile changes không rerank
+Daily Plan đã persist của ngày hiện tại; clients chỉ gửi/lưu lựa chọn qua API,
+không tự tính recommendation hoặc CEFR.
+
+---
+
 # 79. Daily Time Selection
 
 Allowed values come from product config/API contract.

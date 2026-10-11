@@ -266,6 +266,7 @@ paths:
       - Goals
       security: []
       summary: List active goals
+      description: Public active-only goals ordered by name,id.
       operationId: listGoals
       responses:
         '200':
@@ -281,6 +282,7 @@ paths:
       tags:
       - Goals
       summary: Get user goals
+      description: Authenticated owner selections including inactive goals; empty goals array when none; id is goals.id; ordered by name,id. Unknown authenticated user returns 401 UNAUTHORIZED.
       operationId: getMyGoals
       responses:
         '200':
@@ -289,10 +291,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGoalsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     put:
       tags:
       - Goals
       summary: Replace user goals
+      description: Atomic full replacement for authenticated owner; optional or null primaryGoalId means no primary. Duplicate IDs or primary outside goalIds or inactive goals return 400 VALIDATION_ERROR; unknown goals return 404 NOT_FOUND; unknown authenticated user returns 401 UNAUTHORIZED. Concurrent replacements serialize without mixed selections; same request can safely retry.
       operationId: setMyGoals
       requestBody:
         required: true
@@ -311,6 +316,8 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /cefr-levels:
     get:
       tags:
@@ -2035,6 +2042,7 @@ components:
         id:
           type: string
           format: uuid
+          description: goals.id
         name:
           type: string
         isPrimary:
@@ -2052,17 +2060,18 @@ components:
       type: object
       required:
       - goalIds
-      - primaryGoalId
       properties:
         goalIds:
           type: array
           minItems: 1
+          uniqueItems: true
           items:
             type: string
             format: uuid
         primaryGoalId:
-          type: string
+          type: [string, 'null']
           format: uuid
+          description: Optional; omitted or null means no primary, otherwise must belong to goalIds.
     CefrCode:
       type: string
       enum:

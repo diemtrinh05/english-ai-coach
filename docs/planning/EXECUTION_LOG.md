@@ -9051,3 +9051,143 @@ IN_PROGRESS→DONE; M2progress14/21 (66.67%), còn7tasks, milestoneexitpending.
 Closure chỉ MASTER_BACKLOG/EXECUTION_LOG, không sửa reviewed product/test/contracts.
 No commit/push/proxy/globalenv/tagmutation. Bước tiếp Gitworkflow explicitpublish
 onefinaltaskcommit trênmain và requiredremoteCI cho exactpublishedSHA.
+
+
+## BE-GOAL-001 — PLAN / admission và owner-approved contract — 2026-10-11
+
+Command execute BE-GOAL-001; GOV009_DIRECT_MAIN, CBL M2/P0, dependencies
+BE-USER-001 và DB-FND-004 DONE; backlog DBR,QAR giữ nguyên, additional SR
+do ownership/authz và AR do cross-layer contract impact. Fresh Git admission
+READY trước mutation: clean main HEAD=origin/main=live
+47be675da2340db70c6e48e75fe7817d43909fd6, no Git operation hoặc active
+direct-main task khác, task TODO. Actual Required CI38106050467 và job114371703030
+completed/success đúng latest SHA, ACTUAL_CI_REPOSITORY_HEALTH HEALTHY;
+GOV009/CI-FND-001 effective, PRE_CI expired, waiver NOT USED, tags unchanged.
+
+Đã đọc PROJECT_RULES, AGENTS, planning/backlog/current execution evidence,
+CBL và reviewer instructions, canonical SRS→DB→Architecture→API/OpenAPI→
+Technical/Backend→Android/Flutter/Admin relevant sections. Cross-check phát hiện
+SRS optional primary và max-one DB/API/Android mâu thuẫn OpenAPI required
+nonnullable primaryGoalId. Owner duyệt trước PLAN: primaryGoalId optional/nullable,
+omitted/null không primary, vẫn >=1goal; duplicate goalIds/outsideprimary trả
+400 VALIDATION_ERROR, unknown goal404 NOT_FOUND, inactive goal400 VALIDATION_ERROR,
+JWT hợp lệ nhưng user không tồn tại401 UNAUTHORIZED; invalid không ghi DB.
+Catalog public active-only; own selected goals kể cả inactive, freshuser goals[],
+response id=goals.id; hai lists stable ORDER BY name,id. Đồng bộ dependent baseline.
+
+PLAN scope GET /goals, GET/PUT /users/me/goals qua Controller→Service→Repository
+onboarding; UUID DTO, ownership AccessTokenIdentity. PUT transaction lock users
+row trước selected goals ORDER BY id FOR SHARE, validate trước mutation, clear
+oldprimary/remove unselected/upsert retained preserve id/created_at rồi setprimary;
+existing V1 unique pair/FK và V2 partialunique giữ nguyên. Read queries no writes/N+1.
+Tests PostgreSQL/API/OpenAPI/authz/validation/replacement/zero-primary/retry/
+concurrency/rollback/directconstraints; required Maven cleanverify + baseline/CI/
+secret/Python/pycompile/diff/untracked/scope/generated/tag gates. Không migration,
+UI/onboarding flow/assessment/recommendation/DailyPlan algorithms/eventId/newfields.
+
+Real PLAN TODO→IN_PROGRESS thực hiện trước mọi product/test/canonical patch.
+Không self-review/finalize/commit/push/proxy/globalenv/tag mutation.
+
+
+## BE-GOAL-001 — IMPLEMENT / TEST — 2026-10-11
+
+Sau real PLAN checkpoint thêm onboarding GoalController→GoalService→GoalRepository/
+UserGoalRepository JDBC, bốn record DTO. Public catalog active-only orderedname,id;
+authenticated own GET inclinactive/emptyarray, idgoals.id. PUT controller validation
+UUIDarrayrequired≥1nonnull và strict standardUUIDstring (không shortened/Base64/
+nonstring coercion); optional/nullprimary zero. Service duplicate/outsideprimary/
+inactive400, unknownID404, missinguser401, validation trướcwrite. DTO onlyfields
+OpenAPI, extrauserId không override verified AccessTokenIdentity ownership.
+
+Transaction usersrowFORUPDATE tuần tự hóa concurrent firstselection và primary
+switch; selectedgoalsORDERid FORSHARE giữactive tới commit. Hạ oldprimary trước
+mutation để partialunique không transientconflict; deleteunselected, ONCONFLICT
+user_id/goal_id DONOTHING giữretainedid/created_at, setnewprimary rồi response
+snapshot cùngtransaction. Cácfailure rollback toàn bộ. GETjoinedquery khôngN+1
+và khôngmutation. Existing V1FK/unique và V2partialunique không sửa, khôngmigration.
+Injectable Clock dùngcreated_at cho newlinks, retry giữexistingmetadata.
+
+Owner-approved contract tích hợp10canonicaldocs SRS/DB/Architecture/API/OpenAPI/
+Technical/Backend/Android/Flutter/Admin, giữ unrelatedapprovedcontent. Primary
+optional/nullable đồng bộOpenAPI3.1 với type[string,null], uniqueItemsgoalIds,
+exact401/400/404 vàresponse/auth/read/replace semantics. Client implementation
+chưa cógoalsAPI DTO (shell/laterANDONB), khôngcreateUI/Flutter/Adminfeature; chỉ
+clientcontractdocs. KhôngCEFR/defaultprofile/recommendation/DailyPlan mutations,
+eventId/version/newschema/config/globalproxy/secret fallback.
+
+Validation chronology: firstfocused9tests PG8PASS/OpenAPI1FAIL do nullable3.0
+keyword bịOpenAPI3.1parserbỏ, getNullable null. Sửanewprimary schema thành
+type[string,null] và assertgetTypes; không đổi unrelatedlegacynullablefields.
+Sau đó thêmstrictUUID/riskcases và cập nhậtexisting JWTpublicfixture GETgoals404
+sang200 vìactualcontroller đãcó (test-only, giữauth/filter checks). Rerunfocused
+GoalIntegrationTests8+GoalOpenApiContractTests1+JwtAuthenticationIntegrationTests4
+13/13PASS, failures/errors/skips0; TEMP/BE-GOAL-001-focused-rerun.log.
+
+Sourcefreeze saufocusedPASS, required process-onlyTemurin21 Maven cleanverify
+212/212PASS, failures/errors/skips0, package/repackage BUILD SUCCESS; Surefire
+52XML, TEMP/BE-GOAL-001-full.log. MeaningfulPostgreSQL16Testcontainers/Flyway7
+migrations tests publicactivecatalog/nullableDTO/order, read-onlyempty/unknown
+user, replace/remove/zero-primary/nulloromitted, metadata/retry, inactiveGET,
+validation/unknown/inactive/no-write, USER/ADMINownership/extrauserId, concurrent
+firstPUT/primaryswitch mỗiresponse khớp ownrequest vàfinalsetno-mix/oneprimary,
+directDBunique-pair/partialprimary constraints, trigger-inducedstoragefailure500
+rollback removals/primary rồiretry200. Existingauth/profile/catalog/foundation
+regressionsPASS; khôngH2/waiver.
+
+Baseline/CIworkflow/secret auditsPASS, Python46/46PASS, py_compilePASS, gitdiff/
+cachedcheckPASS. Đãđọc fulltracked diff và10newfiles; UTF8/untrackedwhitespace/
+conflict/scopePASS. Actual23files13tracked10new; generated/secrets/migration/
+unrelatedfutureimplementationNONE. Baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+vàe3884521c3d497094961d015b7b32d12a8e55650 giữnguyên. Latestbase47be675
+actualCI38106050467PASS/HEALTHY admission; currentdiff chưaremoteCI/chưaclaim.
+
+Task giữIN_PROGRESS, backendexecute STOPsauTEST; backlogDBR/QAR và additional
+SR/AR independentreviews pending. Khôngselfreview/finalize/DONE/commit/push/
+proxy/globalenv/tagmutation. Rootorchestrator nhậnsourcefreeze vàgọi reviewers.
+
+
+## BE-GOAL-001 — INDEPENDENT REVIEW EVIDENCE / FINALIZE — 2026-10-11
+
+Root chuyển authoritative independent reviewer verdicts trên final 23-file diff:
+
+| Reviewer | Owner agent | Initial / final result | Findings | Nội dung kiểm chứng |
+|---|---|---|---|---|
+| SR | oct11_goal001_sr | PASS / PASS | NONE | JWT ownership USER/ADMIN, UUID validation, no-sensitive response/log, transaction và scope security. |
+| DBR | oct11_goal001_dbr | PASS / PASS | NONE | FK/unique pair/partial primary, ordered shared goal locks và user row serialization, atomic replacement/rollback/metadata, không migration. |
+| AR | oct11_goal001_ar | PASS / PASS | NONE | Onboarding boundaries Controller→Service→Repository, owner-approved cross-layer contract sync, scope và backend authority. |
+| QAR | oct11_goal001_qa | PASS / PASS | NONE | Acceptance, actual test evidence, lifecycle, PostgreSQL/API/OpenAPI/concurrency/rollback và closure gates. |
+
+Backlog DBR,QAR giữ nguyên; additional SR và AR theo impact đã xác định từ PLAN.
+QAR snapshot từng ghi AR pending; authoritative AR owner verdict mới nhất đã
+PASS, nên final gate AR không còn pending. Không có reviewer FAIL/finding của
+task này; unresolved findings = NONE. Implementation chỉ đồng bộ evidence từ
+reviewers độc lập, không self-review.
+
+QAR trực tiếp chạy focused GoalIntegrationTests8 + GoalOpenApiContractTests1 +
+JwtAuthenticationIntegrationTests4: 13/13 PASS, exit0 BUILD SUCCESS, không
+failure/error/skip; đọc 52 Surefire XML tổng 212/212 PASS, không claim independent
+full rerun. Full Maven clean verify/package 212/212 và Python46/46 của
+implementation vẫn hiện hành; production/tests/canonical docs không đổi sau
+source freeze/review. Giữ initial focused OpenAPI nullable FAIL → sửa riêng
+primary schema OpenAPI3.1 type[string,null] → rerun13/full212 PASS; không
+rewrite thành initial test PASS. Giữ toàn bộ owner approvals và real PLAN trước
+product mutation.
+
+Finalize recheck GOV009_DIRECT_MAIN, CBL M2/P0, dependencies BE-USER-001 và
+DB-FND-004 DONE, branch main HEAD=origin/main=live
+47be675da2340db70c6e48e75fe7817d43909fd6, no operation hoặc task direct-main khác
+active. Fresh GitHub REST run38106050467 completed/success đúng SHA và
+Required CI job success: ACTUAL_CI_REPOSITORY_HEALTH HEALTHY cho latest base;
+remote CI cho current uncommitted task diff chưa chạy/chưa claim. PRE_CI expired,
+failed-check waiver NOT USED. Baseline/CI-workflow/secret audits, py_compile,
+git diff/check cached empty PASS. New10 files UTF8/whitespace/conflict/scope PASS;
+actual scope23 files (13 tracked +10 new), không generated/secrets/migration/
+unrelated future implementation. Baseline tags5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+và e3884521c3d497094961d015b7b32d12a8e55650 giữ nguyên.
+
+Applicable acceptance/tests/independent reviewers và closure audits PASS,
+findings NONE. Finalize IN_PROGRESS→DONE; M2 15/21 DONE (71.43%), còn6 task;
+milestone exit vẫn pending. Closure chỉ MASTER_BACKLOG/EXECUTION_LOG; không
+sửa reviewed product/test/contracts. Không commit/push/proxy/global env/tag
+mutation. Bước tiếp Git workflow publish đúng một final task commit trên main,
+push fast-forward và xác minh Required CI cho exact published SHA.
