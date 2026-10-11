@@ -158,7 +158,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `AND-ONB-001` | Profile goals + daily time selection | AFL | `AND-AUTH-002`<br>`BE-GOAL-001`<br>`BE-USER-001` | P0 | QAR | Save profile/goals/time through API; no client CEFR logic. | Theo global DoD + acceptance. | TODO |
+| `AND-ONB-001` | Profile goals + daily time selection | AFL | `AND-AUTH-002`<br>`BE-GOAL-001`<br>`BE-USER-001` | P0 | QAR | Save profile/goals/time through API; no client CEFR logic. | Theo global DoD + acceptance. | DONE |
 
 ## Android Catalog
 
@@ -744,7 +744,7 @@ P0 tasks:
 [ ] QA-IDCAT-001
 [ ] AND-AUTH-001
 [ ] AND-AUTH-002
-[ ] AND-ONB-001
+[x] AND-ONB-001
 [ ] ADM-AUTH-001
 ```
 

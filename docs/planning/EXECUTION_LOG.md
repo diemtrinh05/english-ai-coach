@@ -9692,3 +9692,272 @@ Task device cleanup sau finalize: adb emu avd name xác minh emulator-5554 đún
 emulator, bye bye. Chỉ đóng task emulator; giữ AVD/images/config và thiết bị khác,
 không global SDK/environment/proxy change. Independent device verification đã
 hoàn tất trước cleanup; không còn Gradle writer hoặc task device session active.
+
+
+## AND-ONB-001 — PLAN — 2026-10-11
+
+Mode GOV009_DIRECT_MAIN; Owner AFL, milestone M2, P0. Canonical task TODO,
+dependencies AND-AUTH-002 / BE-GOAL-001 / BE-USER-001 DONE. Acceptance: lưu
+profile/goals/daily time qua API, không client CEFR logic. Required tests theo
+global DoD + acceptance. Canonical reviewer QAR giữ nguyên; SR bổ sung do
+ownership/session/private data, AR bổ sung do composition và routing cross-layer.
+
+Fresh admission từ Git skill và kiểm tra readonly implementation: main sạch,
+HEAD = origin/main = live 8367c13127567b002e08a6e8f46518ac8cfd8f45; không Git
+operation hoặc task direct-main khác active. Actual Required CI run38140579804 /
+job114473447698 completed/success cho đúng SHA, ACTUAL_CI_REPOSITORY_HEALTH =
+HEALTHY; PRE_CI expired, failed-check waiver NOT USED. Baseline tags object/peeled
+không đổi theo fresh Git evidence. Admission READY trước mọi mutation.
+
+Sources: PROJECT_RULES, AGENTS, IMPLEMENTATION_PLAN, MASTER_BACKLOG, EXECUTION_LOG,
+ANTIGRAVITY_FRONTEND_LEAD, SRS v1.2, Architecture v1.3, API/OpenAPI v1.4,
+Android Java v1.1 và Mobile UI/UX, Wireframe, High-Fidelity, Prototype approved.
+
+Owner duyệt ba quyết định ngày 2026-10-11 trước PLAN: giữ Splash/auth success vào
+Main tạm; thêm entry thiết lập trên Main, save thành công hiển thị xác nhận rồi
+trở về Main, không completion flag hoặc gọi Placement; thêm profile trước Goals,
+prefill server/fullName, timezone nhập/chọn có xác nhận, daily/timezone chưa chọn
+khi chưa profile, giữ avatar hiện tại; PUT profile trước rồi goals, lỗi goals báo
+đã lưu một phần và giữ draft, retry explicit goals khi profile draft không đổi,
+không rollback/blind replay, inactive goals cần chọn active thay thế. Main tạm
+không biểu thị personalized Home hoặc onboarding hoàn tất. Placement/assessment
+và completion predicate giữ task AND-ASMT tương ứng; không tự suy diễn CEFR.
+
+Planned scope: typed onboarding DTO/API/repository/usecase/ViewModel/Fragment,
+Main entry/navigation và layout/resource strings Việt; unit/HTTP contract/session/
+partial-save tests và device validation. Daily chips theo wireframe, custom
+integer 5–180; timezone exact ID do backend TZDB validation authoritative, không
+claim Android TZDB đồng nhất backend. GET profile404 là missing, không lỗi giả;
+GET goals public active và own selection gồm inactive phải reconcile rõ.
+
+API dùng GET /users/me, GET/PUT /users/me/profile, GET /goals và GET/PUT
+/users/me/goals; không đổi API/OpenAPI/schema/backend/migration. Không thêm
+CEFR/recommendation/Daily Plan algorithm, avatar editor, notifications, learning
+queue/offline sync/V2. Đồng bộ Android và mobile docs cùng README/evidence.
+
+Validation dự kiến: Gradle wrapper lintDebug testDebugUnitTest assembleDebug
+assembleRelease và connectedDebugAndroidTest/install khi device task sẵn;
+focused validation/offline/lifecycle/session A-B/staged failure/retry/DTO tests;
+baseline/CI-workflow/secret audits, Python46 regression, py_compile, diff/cached,
+untracked whitespace/conflict/scope/secret/generated guards, baseline tag integrity.
+Existing Required CI Android gates bao phủ lint/unit/debug/release, không weaken.
+
+PLAN chỉ sửa MASTER_BACKLOG/EXECUTION_LOG và chuyển TODO → IN_PROGRESS; chưa
+product/test/spec patch, chưa tự review/finalize/commit/push. Remote CI cho
+uncommitted task diff NOT RUN / NOT CLAIMED. Dừng ở planning checkpoint để
+orchestrator xác minh trước IMPLEMENT/TEST.
+
+
+## AND-ONB-001 — IMPLEMENT / TEST — 2026-10-11
+
+Task giữ IN_PROGRESS, GOV009_DIRECT_MAIN, M2/P0/AFL. PLAN checkpoint chỉ hai
+planning files đã được orchestrator xác minh trước product/test/spec patch.
+Implementation theo đủ ba owner approvals, không tự bổ sung contract.
+
+Main có entry thiết lập, bootstrap/auth vẫn Main shell tạm; Hồ sơ → Mục tiêu →
+Thời gian → xác nhận đã lưu → Main. Không completion flag, placement API hoặc
+CEFR logic. Typed immutable profile/goal/selection/snapshot, DTO parser nghiêm
+JSON primitive types/UUID/minutes/primary; Fragment → ViewModel → UseCase →
+Repository → Retrofit API. Composition dùng shared AppSessionDependencies.
+GET current user/profile/catalog/own selection; profile404 là chưa có profile,
+không default thời gian/múi giờ. Prefill tên/profile server, xác nhận exact
+IANA timezone ID, backend validation authoritative; không trim/normalize.
+Daily chips và custom5–180 giữ server value; retain avatar hiện tại trong PUT.
+Goal inactive hiển thị rõ và cần người dùng bỏ/chọn active, primary optional.
+Known goal code có display label Việt từ strings.xml, DTO/name/ID không đổi.
+
+Hai PUT explicit profile trước goals, không transaction chung. Profile200 hợp lệ
+được xác nhận trước stage goals; goals lỗi báo đã lưu một phần và giữ draft.
+Retry explicit bỏ profile chỉ khi draft profile đã xác nhận lưu không đổi;
+profile đổi lưu profile lại trước goals. Không rollback, blind transport retry,
+queue hoặc eventId mới. Shared ApiClient explicit-requests factory tắt connection
+retry, giữ access token/session binding/serialized refresh guard chung. Mỗi
+stage được tạo dưới snapshot phiên + session lock; A không gửi stage hoặc
+publish dưới B. Cancel/generation/public main Executor và listener xóa private
+draft/back stack khi invalidation. Draft ViewModel chỉ bộ nhớ qua rotation,
+không saved-state persistence private fields hoặc completion state.
+
+Frozen scope26files =14tracked +12new. Tracked: MainActivity, AppSessionDependencies,
+FoundationDestinationFragment, ApiClient, foundation XML, strings.xml, README,
+five approved mobile docs, MASTER_BACKLOG, EXECUTION_LOG. New production8Java:
+OnboardingData, OnboardingDtos, OnboardingApi, RetrofitOnboardingRepository,
+OnboardingRepository, ConfigureOnboardingUseCase, OnboardingViewModel,
+OnboardingFragment; new layout fragment_onboarding.xml. New tests3:
+OnboardingRepositoryTest, OnboardingViewModelTest, OnboardingInstrumentedTest.
+API/OpenAPI/backend/database/schema/migration/CI files unchanged. No CEFR/SRS/
+recommendation/Daily Plan algorithm, avatar editor, future assessment/notification,
+V2 or offline synchronization. Mobile notes append approval, preserve unrelated
+approved content. UI resource Việt, scrollable, label/48dp controls/error recovery.
+
+Validation chronology preserved, không waive:
+- assembleDebug compile probe PASS, TEMP/AND-ONB-001-compile.log,26s.
+- focused18/18 (repository9 + ViewModel9), TEMP/AND-ONB-001-focused.log,20s.
+- Lệnh gộp Python file patches + hidden emulator launch + Gradle bị automatic
+  approval review từ chối trước execution, reason chỉ “blocked by policy”.
+  Không mutation từ lệnh đó, không đổi wrapper để bypass. File patch riêng được
+  chấp nhận; standalone cùng exec tool, verified emulator.exe/task AVD/Hidden,
+  process-only environment được chấp nhận, không unresolved policy block.
+- Full clean lintDebug/testDebugUnitTest/assembleDebug/assembleRelease/
+  assembleDebugAndroidTest PASS, unit82/82, TEMP/AND-ONB-001-full.log,1m23s.
+- First installDebug/connectedDebugAndroidTest FAIL, TEMP/AND-ONB-001-device.log,
+ 18tests:17PASS/1FAIL, zero errors/skips. Rotation test NPE: HOME observer lúc
+ recreate đã thay onboarding fragment bằng Main. Đây TEST failure, không phải
+ independent reviewer finding. Sửa scoped HOME+OnboardingFragment+back-stack
+ guard; destination khác vẫn navigation bình thường, invalid session vẫn clear.
+- Rerun lint/unit/debug/release/install/device PASS82unit/18device,
+ TEMP/AND-ONB-001-final-rerun.log,2m09s; rotation/success-return/expiry PASS.
+- Bổ sung Vietnamese display labels cho known server goal codes và device fixture
+ TRAVEL assert Du lịch; required affected validation rerun trên nguồn cuối PASS,
+ TEMP/AND-ONB-001-localized-final.log,2m08s,129tasks (47executed82uptodate).
+- Supporting tag read command unquoted ^{} gặp PowerShell parser error, không
+ mutate tags; corrected quoted arguments verify đúng peeled IDs, PASS.
+
+Final command: android/gradlew.bat --no-daemon -p android lintDebug
+ testDebugUnitTest assembleDebug assembleRelease installDebug
+ connectedDebugAndroidTest. Actual final XML14unit suites82/82 và device18/18,
+ failures/errors/skips0. Lint0errors30warnings (28existing + formatting/resource
+ warnings mới), không suppress/waive. Debug/release packaging/install PASS.
+Java17 source/target, process-only Temurin JDK21.0.12.1+1, Gradle8.13/AGP8.13.2,
+compile/targetSDK36,min26, SDK C:/Users/Hi/AppData/Local/Android/Sdk.
+
+New unit18 cover exact API/payload/primary omission/avatar preservation,
+profile404/read403, strict malformed profile/selection, partial save/goals-only
+retry, no stage after failed profile, cancel and A→B between stage; ViewModel
+prefill/no defaults/bounds/inactive/offline/duplicate/changed draft retry/
+queued session publication/clear. Actual device five new + thirteen existing
+regression =18PASS on eac_auth001_api36_d/emulator-5554, Android16/API36;
+verified boot1/airplane0/wifi1. Vietnamese labels, partial/loading guards,
+confirmation→Main, memory rotation and expiry/late callback private clear PASS.
+Task emulator remains available for independent QAR. No global environment,
+proxy, SDK configuration change; AVD runtime reused D:/Temp/eac-auth001-avd.
+Profile/goals/daily fixture screenshots at TEMP/AND-ONB-001-profile.png,
+-goals.png,-daily.png inspected: readable Vietnamese form/CTA, optional primary,
+custom minutes, scrollable daily controls. Initial current.png was launcher and
+is explicitly not UI acceptance evidence; no fake screenshot success claimed.
+
+Baseline/CI-workflow/secret audits PASS, Python46/46 and py_compile PASS;
+diff/cached(empty),12untracked UTF8/whitespace/conflict/scope/generated/secret
+checks PASS. Read tracked diff and task new files. Baseline object+peeled local/
+remote unchanged:5ccf0650d81ffbbd3d96eb523d097e0b9b022308→
+ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Change: Android profile/goals/time orchestration + approved staged-save/temporary
+routing. Why: AND-ONB-001 acceptance and owner-approved source gaps. Affected
+documents: Android + four mobile design/UX docs, README/planning. Affected API:
+consume existing six operations, contract unchanged. Database/migration NONE;
+client Android only. Backward compatibility: existing auth/Main/catalog session
+foundations maintained; no backend algorithms or completion predicate invented.
+
+IMPLEMENT → TEST → STOP, source frozen for independent review. Canonical QAR,
+mandatory impact SR and additional AR NOT RUN; findings not fabricated, no
+self-review. Task IN_PROGRESS, no finalize/DONE/commit/push. Admission base CI
+PASS/HEALTHY; uncommitted diff remote CI NOT RUN / NOT CLAIMED. No proxy/tag/
+global environment/publication mutation. Required CI Android gates unchanged.
+
+
+## AND-ONB-001 — SYNCHRONIZE INDEPENDENT REVIEWER EVIDENCE — 2026-10-11
+
+Operation chỉ đồng bộ actual authoritative independent reports được orchestrator
+chuyển; không implementation hoặc self-review. Frozen scope26files không đổi.
+
+| Reviewer | Authoritative owner | Initial / final verdict | Findings |
+|---|---|---|---|
+| SR | oct11_and_onb001_sr | PASS / PASS | NONE |
+| AR | oct11_and_onb001_ar | PASS / PASS | NONE |
+| QAR | oct11_and_onb001_qa | PASS / PASS | NONE |
+
+Canonical backlog reviewer QAR giữ nguyên; mandatory SR theo ownership/session/
+private data impact và additional AR theo composition/cross-layer routing. Không
+initial reviewer FAIL, finding OPEN, remediation hoặc re-review. Unresolved
+findings = NONE. Older NOT RUN/pending snapshots được supersede bằng actual
+initial PASS của đúng independent owners; không manufacture review từ TEST.
+
+QAR độc lập chạy55/55 unit (onboarding18 + auth/session/network/offline37) và
+18/18 device, failures/errors/skips0. Actual command exit0, BUILD SUCCESSFUL
+1m47s, TEMP/AND-ONB-001-qa-independent.log. Current focused XML55 thay artifact
+full82; implementation full82/82 vẫn được chứng minh bởi actual final-source
+TEMP/AND-ONB-001-localized-final.log trên cùng nguồn reviewed, không claim QAR
+chạy full82 hoặc focused55 là toàn bộ unit suite. Device18 bao gồm five
+onboarding + thirteen regression; task emulator/API36 thực tế, không skips.
+
+Lint0errors30warnings, builds/install, Python46/46, audits/diff/new-file/scope/
+secret/generated/tag guards PASS theo independent evidence. Product/tests/
+canonical mobile specs không đổi sau source freeze. Không backend/API/schema/
+migration impact hoặc reviewer DBR bắt buộc ngoài canonical/impact mapping.
+
+Giữ TEST chronology: initial device17/18 FAIL do HOME observer thay onboarding
+khi recreation → scoped HOME/back-stack guard →18/18 PASS; final localized
+label/current source82unit/18device PASS. Mixed-command automatic approval
+rejection “blocked by policy” trước mutation → file patch riêng và cùng-tool
+verified scoped hidden emulator standalone accepted; không wrapper bypass.
+Supporting tag helper PowerShell unquoted ^{} parser error → quoted arguments
+verified unchanged tag object/peeled IDs. Không suppress hoặc waiver test/check,
+không chuyển TEST failure thành independent reviewer finding.
+
+Synchronization chỉ mutation EXECUTION_LOG; task IN_PROGRESS, scope26files giữ
+nguyên. Không finalize/DONE/commit/push/tag/proxy/global environment mutation.
+Uncommitted diff remote CI NOT RUN / NOT CLAIMED; admission published base CI
+PASS/HEALTHY không thay thế CI của task diff. Next operation: finalize
+AND-ONB-001 sau orchestrator xác minh synchronized gates.
+
+
+## AND-ONB-001 — FINALIZE — 2026-10-11
+
+Operation finalize riêng bằng Android implementation skill, không review hoặc
+Git publication. Authoritative independent reviewer evidence đã synchronize:
+canonical QAR và mandatory impact SR/additional AR đều initial/final PASS,
+findings NONE, unresolved NONE. Không reviewer FAIL/finding/remediation history;
+giữ đầy đủ TEST failure và approval chronology, không stale snapshot override.
+
+Acceptance verified theo ba owner approvals: shared bootstrap giữ Main tạm,
+Main entry profile→goals→daily time→confirmation→Main; no completion flag hoặc
+Placement/CEFR algorithm. Server prefill/profile404 no defaults, exact timezone
+confirm + backend authority, primary optional/inactive explicit replacement,
+custom daily5–180 và avatar retained. Hai PUT staged explicit; partial notice/
+keep draft/goals-only retry khi profile không đổi; không rollback/blind retry.
+MVVM/lifecycle/current-session guards, cancellation/public Executor + draft/
+back-stack privacy; Vietnamese resources và known goal labels/IDs unchanged.
+API/schema/backend/migration/future algorithms/V2/offline sync không thay đổi.
+
+Implementation full-source82/82 unit, device18/18 PASS; independent QAR55/55
+unit +18/18 device PASS, failures/errors/skips0. Current unit XML55 là focused
+QAR artifact; full82 evidence giữ actual implementation final log trên cùng
+reviewed source. Lint0errors30warnings, debug/release builds/install và
+Python46/46 PASS. Device17/18 rotation FAIL → scoped HOME recreation guard →
+18PASS chronology giữ nguyên; localization final-current-source validation
+PASS. Mixed-command policy rejection trước mutation → same-tool scoped hidden
+standalone accepted, và tag helper quoting failure→verified PASS giữ nguyên.
+Không suppress/waive test/check hoặc manufacture independent findings.
+
+Fresh closure checks: main, HEAD = origin/main = live
+8367c13127567b002e08a6e8f46518ac8cfd8f45; no Git operation hoặc other active
+normal task. AND-AUTH-002 / BE-GOAL-001 / BE-USER-001 vẫn DONE. Exact base GitHub
+REST run38140579804 completed/success, Required CI job114473447698 completed/
+success; ACTUAL_CI_REPOSITORY_HEALTH HEALTHY cho published base, PRE_CI expired,
+failed-check waiver NOT USED. Uncommitted task diff remote CI NOT RUN / NOT
+CLAIMED; không lấy base CI thay remote CI của task chưa publish.
+
+Fresh baseline/CI-workflow/secret audits, py_compile, diff/cached(empty),
+12new-file UTF8/whitespace/conflict/scope/generated checks PASS. Scope26files
+=14tracked +12new, reviewed product/tests/mobile specs giữ nguyên. Không APK/
+AVD/SDK/local config/generated output tracked. Baseline local/remote object+
+peeled unchanged:5ccf0650d81ffbbd3d96eb523d097e0b9b022308→
+ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Tất cả applicable acceptance/validation/reviewer/closure gates PASS. Finalize
+IN_PROGRESS → DONE; chỉ MASTER_BACKLOG/EXECUTION_LOG lifecycle/evidence mutation,
+không product/test/spec patch hoặc commit/push/tag/proxy/global environment.
+M2 18/21 DONE (85.71%), còn3 task; milestone exit vẫn pending. Publication riêng:
+english-ai-coach-git-workflow publish AND-ONB-001; đúng một final task commit
+trên main, fast-forward push, sau đó exact-SHA actual Required CI gate. Không
+PLAN task mới khi repository CI_PENDING/BLOCKED.
+
+
+Task emulator cleanup sau finalize: readonly adb devices và emu avd name xác minh
+emulator-5554 đúng eac_auth001_api36_d, rồi scoped adb -s emulator-5554 emu kill
+trả OK: killing emulator, bye bye. Chỉ đóng task emulator sau QAR device gates
+PASS; giữ AVD/image/runtime/config, không delete dữ liệu hoặc đụng user device.
+Không proxy/global environment/SDK configuration mutation. Không Gradle writer
+hoặc device validation còn active trước publication.

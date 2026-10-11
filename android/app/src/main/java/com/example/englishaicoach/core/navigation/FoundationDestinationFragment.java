@@ -37,6 +37,10 @@ public final class FoundationDestinationFragment extends Fragment {
         String name = requireArguments().getString(ARG_DESTINATION, MainDestination.HOME.name());
         MainDestination destination = MainDestination.valueOf(name);
         binding.destinationTitle.setText(destination.getTitleId());
+        if (destination == MainDestination.HOME) {
+            binding.openOnboarding.setVisibility(View.VISIBLE);
+            binding.openOnboarding.setOnClickListener(ignored -> ((MainActivity) requireActivity()).openOnboarding());
+        }
         if (destination == MainDestination.LEARN) {
             binding.openVocabulary.setVisibility(View.VISIBLE);
             binding.openVocabulary.setOnClickListener(ignored ->

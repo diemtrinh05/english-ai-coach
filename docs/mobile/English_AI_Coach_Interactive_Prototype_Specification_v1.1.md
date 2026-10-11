@@ -851,3 +851,39 @@ nối existing GET /users/me restore gate, dùng interim Main shell đã duyệt
 AND-AUTH-001. Flow Welcome/onboarding đầy đủ giữ nguyên làm đích cho AND-ONB/ASMT,
 không inference completion. Validation inline, loading, lỗi credentials/lock/
 network/rate-limit, explicit resubmit và offline block có Vietnamese resource copy.
+
+
+## AND-ONB-001 — Thiết lập hồ sơ, mục tiêu và thời gian (owner-approved 2026-10-11)
+
+Splash/auth success giữ Main shell tạm. Main có entry “Thiết lập hồ sơ và mục
+tiêu”; luồng Hồ sơ → Mục tiêu → Thời gian học → Xác nhận đã lưu → Main shell.
+Không completion flag, suy diễn onboarding từ profile/goals/CEFR hoặc gọi
+Placement. Placement/completion thuộc AND-ASMT; Main tạm không biểu thị
+personalized Home plan hoặc onboarding hoàn tất.
+
+GET /users/me, GET /users/me/profile, GET /goals và GET /users/me/goals dùng shared
+session/API. Profile404 là chưa có profile; không tự ghi/default thời gian/múi
+giờ. Prefill server/fullName, người dùng nhập exact IANA timezone ID có xác nhận;
+backend TZDB authoritative (400 nếu sai), không trim/normalize hoặc giả định
+Android TZDB đồng nhất backend. Profile chưa có thì daily/timezone chưa chọn.
+Giữ avatarUrl hiện tại trong PUT; không avatar editor hoặc client CEFR logic.
+
+Chọn ít nhất một active goal, primary optional/null và tối đa một. Goal inactive
+đã lưu hiển thị rõ, người dùng phải bỏ/chọn active thay thế trước save, không tự
+bỏ lựa chọn trên server. Daily chips5/10/20/30/45/60 theo wireframe, custom integer
+5–180 theo API, bảo toàn giá trị server đã lưu.
+
+Save explicit PUT /users/me/profile trước, PUT /users/me/goals sau. Hai operation
+không transaction chung: goals lỗi sau profile thành công báo đã lưu một phần,
+giữ draft; retry explicit chỉ goals nếu profile draft đã xác nhận lưu không đổi.
+Profile đổi thì lưu lại profile trước goals; không rollback/blind transport retry
+hoặc thêm eventId. Response sai/timeout không giả định rollback hoặc thành công.
+Offline chặn save, loading chặn duplicate. Draft chỉ ViewModel bộ nhớ cho
+rotation; không persistence private draft/completion. Session invalidation hủy
+stage, xóa draft/back stack; late A không publish/request dưới B. Resource tiếng
+Việt, Loading/Empty/Error/Offline/Partial/Success, form scrollable/touch≥48dp.
+API/schema/migration và backend CEFR/recommendation/Daily Plan giữ nguyên.
+
+Tên goal canonical có display label Việt từ strings.xml; giữ nguyên name/ID
+trong DTO/API. Goal name mới chưa có resource hiển thị nội dung server, không
+tự tạo code hoặc đổi lựa chọn.

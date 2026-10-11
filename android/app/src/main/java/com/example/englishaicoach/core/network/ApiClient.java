@@ -11,6 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class ApiClient {
     private final Retrofit retrofit;
     private final Retrofit publicAuth;
+    private final Retrofit explicitRequests;
     private final ApiErrorParser errorParser = new ApiErrorParser();
 
     public ApiClient(String baseUrl, SessionManager sessions) {
@@ -33,6 +34,9 @@ public final class ApiClient {
                 .addNetworkInterceptor(new SessionGuardNetworkInterceptor(sessions))
                 .authenticator(new SerializedRefreshAuthenticator(sessions, refreshService))
                 .build();
+        explicitRequests = new Retrofit.Builder().baseUrl(baseUrl)
+                .callFactory(new SessionBindingCallFactory(client.newBuilder().retryOnConnectionFailure(false).build(), sessions))
+                .addConverterFactory(GsonConverterFactory.create()).build();
         retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .callFactory(new SessionBindingCallFactory(client, sessions))
@@ -52,6 +56,9 @@ public final class ApiClient {
 
     // Mutation auth không tự retry và không gắn credential của phiên đang tồn tại.
     public <T> T createPublicAuth(Class<T> service) { return publicAuth.create(service); }
+
+    // Hai PUT thiết lập chỉ retry khi người dùng yêu cầu; vẫn dùng session/refresh guards chung.
+    public <T> T createExplicitRequests(Class<T> service) { return explicitRequests.create(service); }
 
     public ApiErrorParser errors() {
         return errorParser;

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="@dimen/spacing_screen">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/onboarding_title" android:textSize="@dimen/text_headline" />
+    <TextView android:id="@+id/onboarding_message" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:accessibilityLiveRegion="polite" android:text="@string/onboarding_intro" />
+    <ProgressBar android:id="@+id/onboarding_loading" android:layout_width="48dp" android:layout_height="48dp" android:visibility="gone" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/onboarding_retry"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+        android:text="@string/onboarding_reload" android:visibility="gone" />
+    <LinearLayout android:id="@+id/onboarding_form" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+        <LinearLayout android:id="@+id/onboarding_profile" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_profile_step" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_name" android:labelFor="@id/onboarding_name" />
+            <EditText android:id="@+id/onboarding_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:inputType="textPersonName" android:maxLength="100" android:saveEnabled="false" android:importantForAutofill="no" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_zone" android:labelFor="@id/onboarding_zone" />
+            <EditText android:id="@+id/onboarding_zone" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:hint="@string/onboarding_zone_hint" android:inputType="textNoSuggestions" android:maxLength="50" android:saveEnabled="false" android:importantForAutofill="no" />
+            <CheckBox android:id="@+id/onboarding_zone_confirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="@string/onboarding_zone_confirm" android:saveEnabled="false" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/onboarding_goals" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_goals_step" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_goal_help" />
+            <LinearLayout android:id="@+id/onboarding_goal_items" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/onboarding_daily" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_daily_step" />
+            <LinearLayout android:id="@+id/onboarding_time_choices" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_daily_label" android:labelFor="@id/onboarding_minutes" />
+            <EditText android:id="@+id/onboarding_minutes" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:inputType="number" android:maxLength="3" android:saveEnabled="false" android:importantForAutofill="no" />
+        </LinearLayout>
+        <com.google.android.material.button.MaterialButton android:id="@+id/onboarding_next"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/onboarding_continue" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/onboarding_back"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/onboarding_back" />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/onboarding_success" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboarding_saved" android:accessibilityLiveRegion="polite" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/onboarding_done"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/onboarding_done" />
+    </LinearLayout>
+</LinearLayout>
+</ScrollView>

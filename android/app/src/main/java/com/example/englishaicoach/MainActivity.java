@@ -88,6 +88,10 @@ public final class MainActivity extends AppCompatActivity {
             binding.mainNavigation.setSelectedItemId(destination.getMenuId());
         }
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+        // Observer HOME khi recreate không được thay thế flow thiết lập đang mở.
+        if (destination == MainDestination.HOME
+                && current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment
+                && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         if (destination == MainDestination.LEARN
                 && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         if (current == null || !destination.name().equals(current.getTag())) {
@@ -99,6 +103,13 @@ public final class MainActivity extends AppCompatActivity {
                             destination.name())
                     .commit();
         }
+    }
+
+    public void openOnboarding() {
+        if (authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return;
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, new com.example.englishaicoach.feature.onboarding.OnboardingFragment(), "ONBOARDING")
+                .addToBackStack("ONBOARDING").commit();
     }
 
     public void openVocabulary() {
