@@ -5398,3 +5398,16 @@ CEFR chỉ backend quyết định; PUT giữ nguyên `current_cefr_level_id`, l
 Response omit `currentCefrLevel` khi chưa có; khi có dùng `CefrLevelResponse`.
 Không tiết lộ password hash, auth/session/refresh token qua các response này.
 Không thay đổi Daily Plan snapshot đã tạo trong ngày. Schema/migration giữ nguyên.
+
+### Phạm vi tích hợp AND-AUTH-002
+
+Login/Register email/password nối vào shared application session của AND-AUTH-001.
+Sau response hợp lệ, lưu atomic accessToken/refreshToken; existing auth listener
+khôi phục qua GET /users/me và dùng interim Main shell đã được owner duyệt. Không
+thêm quyết định onboarding hoặc completion flag; luồng Welcome/onboarding đầy đủ
+thuộc AND-ONB/AND-ASMT. Client kiểm required/email, Login password1–100, Register
+password8–100/name1–100/email≤255/confirm-password khớp; backend xác thực lại.
+423 AUTH_ACCOUNT_LOCKED dùng thông báo khóa chung, không tự timer/unlock.
+Password không saved state/log; loading chống duplicate, offline block; auth
+mutation không automatic retry và callback cũ không thay phiên mới. Google cần
+BE-AUTH-007, Forgot Password chưa có API V1; không triển khai provider/flow giả.

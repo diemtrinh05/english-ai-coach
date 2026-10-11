@@ -152,7 +152,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `AND-AUTH-001` | Splash/auth/token lifecycle | AFL | `AND-FND-002`<br>`BE-AUTH-006` | P0 | SR,QAR | Splash restore session; 401 refresh serialized; expired/revoked → login; no token logs. | Theo global DoD + acceptance. | DONE |
-| `AND-AUTH-002` | Login/Register UI | AFL | `AND-AUTH-001`<br>`BE-AUTH-003` | P0 | QAR | Validation, brute-force locked UI, loading/error; Vietnamese copy. | Theo global DoD + acceptance. | TODO |
+| `AND-AUTH-002` | Login/Register UI | AFL | `AND-AUTH-001`<br>`BE-AUTH-003` | P0 | QAR | Validation, brute-force locked UI, loading/error; Vietnamese copy. | Theo global DoD + acceptance. | DONE |
 
 ## Android Onboarding
 

@@ -842,3 +842,12 @@ Android Java implementation
 # Reconciled V1 Contract Binding
 
 UI behavior must bind to Android Technical Specification v1.1 and API/OpenAPI v1.4. Daily Plan is a stable persisted snapshot (including aggregate QUIZ item); assessment/SRS/personalization/gamification are backend authoritative; V1 is online-first; notification uses FCM/device preferences; all learner-facing copy is Vietnamese.
+
+### Phạm vi Android AND-AUTH-002
+
+Login/Register email/password dùng API thật; Google/Forgot Password chưa nằm
+trong task và không dùng production mock. Auth success lưu atomic token pair và
+nối existing GET /users/me restore gate, dùng interim Main shell đã duyệt tại
+AND-AUTH-001. Flow Welcome/onboarding đầy đủ giữ nguyên làm đích cho AND-ONB/ASMT,
+không inference completion. Validation inline, loading, lỗi credentials/lock/
+network/rate-limit, explicit resubmit và offline block có Vietnamese resource copy.

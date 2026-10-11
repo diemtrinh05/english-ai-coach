@@ -10,6 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public final class ApiClient {
     private final Retrofit retrofit;
+    private final Retrofit publicAuth;
     private final ApiErrorParser errorParser = new ApiErrorParser();
 
     public ApiClient(String baseUrl, SessionManager sessions) {
@@ -23,6 +24,7 @@ public final class ApiClient {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RefreshService refreshService = refreshRetrofit.create(RefreshService.class);
+        publicAuth = refreshRetrofit;
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .followRedirects(false)
@@ -47,6 +49,9 @@ public final class ApiClient {
     public <T> T create(Class<T> service) {
         return retrofit.create(service);
     }
+
+    // Mutation auth không tự retry và không gắn credential của phiên đang tồn tại.
+    public <T> T createPublicAuth(Class<T> service) { return publicAuth.create(service); }
 
     public ApiErrorParser errors() {
         return errorParser;

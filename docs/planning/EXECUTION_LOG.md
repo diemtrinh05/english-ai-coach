@@ -9429,3 +9429,266 @@ closure; không sửa product/test/canonical contract. Không commit/push/proxy/
 env/tag mutation. Publication riêng: english-ai-coach-git-workflow publish
 AND-AUTH-001; đúng một final task commit trên main, fast-forward push rồi xác minh
 Required CI của exact published SHA. Không PLAN task mới khi CI pending/fail.
+
+## AND-AUTH-002 — PLAN — 2026-10-11
+
+Operation: plan AND-AUTH-002; GOV009_DIRECT_MAIN; M2/P0, Owner AFL.
+Fresh admission từ Git skill và kiểm tra implementation agent: branch main,
+worktree tracked/staged/untracked sạch trước PLAN, HEAD = origin/main = live
+1db57c268fbe7c674d5e7de700c756eef56ba1fd; no Git operation, no other active
+direct-main task. Exact task TODO; dependencies AND-AUTH-001 / BE-AUTH-003 DONE.
+Actual Required CI run38124422948, job114425703578 completed/success đúng SHA,
+repository HEALTHY; ACTUAL_CI_REPOSITORY_HEALTH. Baseline tags unchanged theo
+fresh pre-task. PRE_CI expired, failed-check waiver NOT USED.
+TODO → IN_PROGRESS trước product/test/canonical document mutation; checkpoint
+chỉ MASTER_BACKLOG và EXECUTION_LOG, chưa implementation.
+
+Sources: PROJECT_RULES, AGENTS, IMPLEMENTATION_PLAN, MASTER_BACKLOG, EXECUTION_LOG,
+ANTIGRAVITY_FRONTEND_LEAD; SRS FR-AUTH, System Architecture client/auth boundaries,
+API §7.1/7.2, OpenAPI RegisterRequest/LoginRequest/AuthResponse; Android Technical
+Spec §21–27/93–99/101/208/265; Mobile UI/UX, Wireframe §21/22/72, High-Fidelity
+shared design/accessibility, Interactive Prototype §20/21/22. Backend existing
+RegisterRequest/LoginRequest và shared SessionManager/ApiClient được cross-check.
+
+Scope: email/password Login và fullName/email/password/confirm-password Register,
+client validation theo contract (register password8–100, name1–100, email≤255;
+login password1–100), confirm-password chỉ client, server authority giữ nguyên.
+Loading/duplicate-submit guard, canonical401/423/409/429/errors, generic locked
+Vietnamese copy không expose lock internals hoặc tự timer/unlock; offline block,
+password visibility/accessibility, lifecycle-safe MVVM/use-case/repository/DTO.
+Token pair lưu atomic vào application SessionManager; listener existing auth gate
+UNKNOWN → shared restore GET /users/me dùng owner-approved interim routing valid
+→ Main shell, invalid → Login boundary. Không tạo route mới, Welcome/Onboarding
+completion inference hoặc API/flag. Wireframe future flow giữ nguyên, thêm note
+interim integration để xác định task boundary khi cần.
+
+Out of scope: Google provider (BE-AUTH-007 chưa DONE), Forgot Password endpoint
+không có V1 contract, onboarding/assessment, logout/FCM/profile UI, backend/API/
+OpenAPI/schema/migration changes, offline mutation/sync/V2. Không mock provider
+production hoặc link giả chức năng chưa triển khai.
+
+Expected files: auth form XML/resources/Fragment/ViewModel/state/validator,
+Login/Register use case + typed repository/API/DTO, shared application composition,
+MainActivity navigation integration tối thiểu, unit/network/session-race tests,
+auth instrumentation/navigation/validation smoke, relevant Android/Wireframe/
+Prototype/README notes và planning. No database impact/migration.
+Reviewers canonical QAR unchanged; mandatory SR auth/session security impact và
+additional AR application composition/navigation/cross-layer impact.
+
+Required tests: actual wrapper Gradle8.13/AGP8.13.2, process-only JDK21/SDK36,
+Java17/minSDK26; clean lintDebug testDebugUnitTest assembleDebug assembleRelease
+assembleDebugAndroidTest; actual device install + auth form/rotation/navigation/
+validation/offline smoke, existing instrumentation regression. Unit/network tests
+validation, success/errors, cancellation/generation, A→B late callback safety,
+secure pair/session restore and no auto mutation retries. Baseline/CI/secret audits,
+Python audit regression/py_compile, diff/cached/untracked whitespace/conflict,
+scope/generated/secret/tag integrity. Existing Required CI Android gates verified
+at implementation/test; no weakening. No password/token sensitive logging.
+
+PLAN checkpoint IN_PROGRESS; implementation/tests/independent review NOT RUN.
+Admission remote CI PASS; uncommitted task diff remote CI NOT RUN / NOT CLAIMED.
+No commit/push/proxy/global environment/tag mutation. Đợi orchestrator xác minh
+planning-only checkpoint trước operation implement/test.
+
+## AND-AUTH-002 — IMPLEMENT / TEST / STOP — 2026-10-11
+
+GOV009_DIRECT_MAIN, M2/P0/AFL giữ IN_PROGRESS; dependencies AND-AUTH-001 và
+BE-AUTH-003 DONE. Exact assignment email/password Login/Register; canonical
+reviewer QAR giữ nguyên, SR mandatory auth/session impact và AR additional
+application composition/cross-layer integration impact, chưa reviewer verdict.
+
+Implementation: existing AuthBoundaryFragment có Material XML Login/Register,
+ViewBinding → AuthFormViewModel → SubmitAuthFormUseCase → AuthFormsRepository →
+RetrofitAuthFormsRepository → typed AuthFormsApi/DTO. View không gọi network,
+password/token không state/report/log; password và confirmation không saved state
+hoặc autofill, mode switch/back xóa sensitive text. Register Back về Login; form
+scrollable, labels/password-toggle/min48dp/Vietnamese inline và live-region error.
+Login email/password, Register fullName/email/password/confirm-password với bounds
+API/OpenAPI; confirmation không gửi backend. Loading chặn duplicate, connectivity
+block offline, lỗi401 credentials/423 locked/409 CONFLICT/400 validation/429 rate
+limit/network/server có resource copy. Lock chỉ thông báo chung, không timer/
+client unlock hoặc tiết lộ counter. Retry chỉ explicit submit, không queue/retry tự.
+
+Auth HTTP dùng shared ApiClient public-auth boundary: HTTPS/pinned base path,
+không Authorization/session replay/refresh, retryOnConnectionFailure=false,
+followRedirects=false. Strict AuthResponse parser từ chối token/expiry sai JSON
+primitive type, fraction expiry, missing user/required fields hoặc invalid pair.
+Repository giữ cancel + SessionManager generation, commit token pair atomic dưới
+cùng lock; late A→B hoặc null→A→null response không tạo/thay phiên mới. Session
+listeners giữ existing gate UNKNOWN → GET /users/me restore; auth success chỉ nối
+owner-approved interim Main shell của AND-AUTH-001, không onboarding inference.
+Cancellation linearize với commit; callbacks về public main Executor và generation
+check ở lúc publication, không old result overwrite mode/new request/cleared model.
+No Google/Forgot Password provider/mock, Welcome/onboarding quyết định task sau.
+
+Scope frozen22files =12tracked +10new. Tracked: android README, AppSessionDependencies,
+SessionManager, ApiClient, AuthBoundaryFragment, boundary XML, strings.xml,
+Android Technical Spec, Wireframe, Prototype, MASTER_BACKLOG, EXECUTION_LOG.
+New7 production: AuthFormsApi, AuthFormDtos, RetrofitAuthFormsRepository,
+AuthFormsRepository, SubmitAuthFormUseCase, AuthFormValidator, AuthFormViewModel.
+New3 tests: AuthFormsRepositoryTest, AuthFormViewModelTest, AuthFormsInstrumentedTest.
+MainActivity/backend/API/OpenAPI/database/schema/migrations/CI files unchanged.
+No client business algorithm/offline learning/V2/generated/config artifact tracked.
+Docs append scoped integration notes, preserve existing approved/future flows.
+
+Validation chronology, không waive:
+- Compile probe assembleDebug/assembleDebugAndroidTest BUILD SUCCESSFUL1m30s,
+  TEMP/AND-AUTH-002-compile.log.
+- Focused repository7 + ViewModel7 =14/14 PASS, TEMP/AND-AUTH-002-focused.log.
+- Full clean lintDebug/testDebugUnitTest/assembleDebug/assembleRelease/
+  assembleDebugAndroidTest: unit64/64 và packaging PASS nhưng lint FAIL do
+  RestrictedApi gọi AndroidX internal ArchTaskExecutor.executeOnMainThread;
+  TEMP/AND-AUTH-002-full.log, BUILD FAILED2m25s. Không suppress/waive lint.
+- Sửa sang public ContextCompat.getMainExecutor(applicationContext), inject Executor
+  vào ViewModel và deterministic queued-result regression; thêm Register Back
+  integration/test. Final sources rerun command dưới đây PASS.
+- Supporting Python patch helper từng lỗi đọc default cp1252; không thay source,
+  sửa explicit UTF-8 trước final rerun. Không bỏ qua validation.
+
+Process-only JDK21 Temurin21.0.12.1+1, Android SDK C:/Users/Hi/AppData/Local/Android/Sdk,
+wrapper Gradle8.13/AGP8.13.2, Java source/target17, compile/targetSDK36/min26.
+Final command từ root:
+android/gradlew.bat --no-daemon -p android lintDebug testDebugUnitTest assembleDebug
+assembleRelease installDebug connectedDebugAndroidTest
+→ BUILD SUCCESSFUL3m09s,129tasks (30executed99uptodate), exit0;
+TEMP/AND-AUTH-002-final-rerun.log. Actual XML unit12suites64/64 và device13/13,
+failures/errors/skips0. Lint0errors28warnings (existing warnings), debug/release
+packaging and debug install PASS. Required CI existing Android lint/unit/debug/
+release gates unchanged, no skip/weakening.
+
+New unit14 verify validation/confirm/bounds/offline, loading duplicate/explicit
+retry/locked UI state, mode/cancel/clear, queued stale result; real MockWebServer
+exact payload/status/confirmation absence, canonical errors no credential/retry,
+malformed response no commit, old response→B, canceled response and session ABA.
+Actual emulator eac_auth001_api36_d, emulator-5554, Android16/API36,
+sdk_gphone64_x86_64: newform5 + existing8 =13/13 PASS, no skip/failure/error.
+Form tests Vietnamese validation, Register mismatch/Back/password clear,
+loading/locked/duplicate, existing shared restore success+Main backstack,
+recreation password not persisted. Existing session/navigation/Keystore/
+connectivity regressions PASS; airplane0/wifi1 restored.
+
+Connected test runner uninstalls debug APK after suite; independent blank Login
+visual smoke reinstalled same local APK via adb install -r (Success), am start -W
+Status ok. Emulator System UI briefly displayed platform ANR dialog after cold
+start; dismissed System UI dialog, then observed blank Login without obstruction,
+Vietnamese copy/labels, password toggle, readable CTA/no bottom tabs. No product
+change or credential entry. Screenshot TEMP/AND-AUTH-002-login.png inspected.
+No Google/backend-provider credential smoke claimed. Emulator remains available
+for independent QAR; no global SDK/environment/proxy mutation (process-only AVD
+home D:/IDE/Android/avd with reused task data D:/Temp/eac-auth001-avd).
+
+Fresh final-source baseline/CI-workflow/secret audits PASS; Python46/46 and
+py_compile PASS; git diff/check cached(empty), untracked UTF8/whitespace/conflict,
+scope/secret/log/generated guards PASS. Read current tracked diff +10newfiles.
+Baseline local/remote object+peeled unchanged: 5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+→ff6e13f4fe1444879b28d846801d0caa555bf4a7; e3884521c3d497094961d015b7b32d12a8e55650
+→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Change: Login/Register UI+API/session integration. Why: task validation/locked/
+loading/error/Vietnamese acceptance. Affected documents: Android/Wireframe/
+Prototype/README/planning; affected API contract NONE (consume existing auth),
+database/migration NONE; client Android only. Backward compatibility: existing
+secure store, serialized refresh and Main/Vocabulary session gate maintained;
+server contract unchanged. No onboarding completion or provider scope expansion.
+
+IMPLEMENT → TEST → STOP, source frozen for independent QAR/SR/AR. Task remains
+IN_PROGRESS; reviewer results NOT RUN, findings not fabricated. Admission exact
+base Required CI38124422948 PASS/HEALTHY; uncommitted task diff remote CI NOT RUN /
+NOT CLAIMED. No self-review/finalize/DONE/commit/push/tag/proxy mutation.
+
+## AND-AUTH-002 — SYNCHRONIZE INDEPENDENT REVIEWER EVIDENCE — 2026-10-11
+
+Operation chỉ đồng bộ authoritative independent owner reports do orchestrator
+chuyển sau review frozen22-file diff; không implementation hoặc self-review.
+
+| Reviewer | Authoritative owner | Initial / final verdict | Findings |
+|---|---|---|---|
+| QAR | oct11_and_auth002_qa | PASS / PASS | NONE |
+| SR | oct11_and_auth002_sr | PASS / PASS | NONE |
+| AR | oct11_and_auth002_ar | PASS / PASS | NONE |
+
+Canonical backlog QAR giữ nguyên; SR mandatory theo authentication/session
+security impact và AR additional composition/routing/cross-layer impact đã ghi
+PLAN. Không initial reviewer FAIL, finding OPEN, remediation hoặc re-review;
+unresolved findings = NONE. Không manufacture reviewer result từ local TEST.
+Older pending snapshots được supersede bằng actual initial PASS của đúng owners;
+không stale report nào reopen finding của reviewer khác.
+
+QAR independently rerun49/49 unit: focused23 (AuthFormsRepository7,
+AuthFormViewModel7, AuthSessionRepository9) và regression26 (NetworkFoundation18,
+SessionLifecycle2, AuthSessionViewModel6), failures/errors/skips0. Wildcards
+SessionManagerTest/ApiClientTest không match actual suites nên không được tính
+thêm tests. Current unit XML26 từ lần focused regression thay prior full64;
+implementation actual final command/log vẫn chứng minh full64/64 trên cùng
+reviewed sources, không claim QAR rerun full64 hoặc current XML26 là full64.
+QAR device13/13 PASS, zero failure/error/skip, exit0; logs TEMP/AND-AUTH-002-QAR-
+focused.log, -device.log, -session.log. Lint0errors28warnings, debug/release
+packaging/install, Python46/audits/diff/scope/generated/secret/tags PASS theo actual
+independent evidence. Product/tests/canonical specifications unchanged sau freeze.
+
+Giữ toàn bộ TEST chronology: first full lint RestrictedApi FAIL do internal
+ArchTaskExecutor dispatch → public ContextCompat main Executor, injected executor
+và queued callback generation regression → full validation PASS; supporting
+Python helper default cp1252 failure → explicit UTF-8 trước final run. Không
+suppress/waive failure và không biến test failures thành reviewer findings.
+Blank Login screenshot verified; register.png không chứng minh Register visual,
+Register behavior được kiểm bởi actual device tests, không fabricate screenshot PASS.
+
+Synchronization chỉ sửa EXECUTION_LOG; scope vẫn22files (12tracked10new), task
+IN_PROGRESS. Không finalize/DONE/commit/push/proxy/global environment/tag mutation.
+Remote CI cho uncommitted task diff NOT RUN / NOT CLAIMED. Next operation chỉ
+finalize AND-AUTH-002 sau orchestrator xác minh synchronized gates.
+
+## AND-AUTH-002 — FINALIZE — 2026-10-11
+
+Operation finalize bằng Android implementation skill, không review/publication.
+Actual independent reviewer evidence được synchronized từ owner reports:
+canonical QAR và mandatory SR/additional AR theo impact đều initial/final PASS,
+findings NONE. Không reviewer FAIL/remediation/findings history của task này;
+unresolved findings = NONE. Không stale pending snapshot override owner verdict.
+
+Acceptance verified: Login/Register validation, confirm-password chỉ client,
+loading/duplicate/offline guards, canonical401/423/409/400/429/error Vietnamese UI,
+password visibility và không sensitive persistence/logging; lifecycle-safe MVVM,
+public auth client no automatic retry/Authorization/refresh, atomic token pair,
+session generation/CAS + cancellation chống A→B/ABA late commit, main Executor
+publication fencing. Existing GET /users/me gate dùng interim routing đã duyệt;
+không onboarding inference, Google/Forgot Password hoặc future task implementation.
+Register Back→Login clear sensitive fields; API/database/schema/migration unchanged.
+
+Implementer full64/64 unit và QAR independent49/49 (23focused+26regression) PASS;
+device13/13 ở implementation và QAR, zero fail/error/skip. Current unit XML26 là
+QAR focused regression, không full64; full64 evidence giữ actual final log trên
+reviewed sources. Lint0errors28warnings, debug/release packaging/install và
+Python46/46 PASS. RestrictedApi lint FAIL → public Executor + queued generation
+regression → PASS và supporting UTF-8 helper failure chronology giữ nguyên;
+không waiver/suppression. Login screenshot được inspect; không claim Register
+visual từ register.png. Product/tests/canonical specs không đổi sau freeze.
+
+Fresh closure: main, HEAD=origin/main=live1db57c268fbe7c674d5e7de700c756eef56ba1fd;
+no Git operation, no other active direct-main task; dependencies AND-AUTH-001 /
+BE-AUTH-003 DONE. GitHub REST exact base SHA run38124422948 completed/success,
+Required CI job114425703578 completed/success. ACTUAL_CI_REPOSITORY_HEALTH HEALTHY
+cho published base; uncommitted task diff remote CI NOT RUN / NOT CLAIMED.
+PRE_CI expired, failed-check waiver NOT USED.
+
+Fresh baseline/CI-workflow/secret audits, py_compile, diff/cached(empty), untracked
+UTF8/whitespace/conflict/scope/generated/secret guards PASS. Scope22files =12tracked
++10new, reviewed product unchanged; no generated APK/SDK/AVD/local config tracked.
+Baseline local/remote object+peeled unchanged: 5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+→ff6e13f4fe1444879b28d846801d0caa555bf4a7; e3884521c3d497094961d015b7b32d12a8e55650
+→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+All applicable acceptance/validation/reviewer/closure gates PASS, unresolved NONE.
+Finalize IN_PROGRESS → DONE; M2 17/21 DONE (80.95%), còn4 task; milestone exit
+vẫn pending. Mutation chỉ MASTER_BACKLOG/EXECUTION_LOG closure, không product/
+test/spec change hoặc Git publication/proxy/global environment/tag mutation.
+Publication riêng: english-ai-coach-git-workflow publish AND-AUTH-002; đúng một
+final task commit trên main, fast-forward push, rồi exact-SHA Required CI gate.
+Không PLAN task mới khi repository health CI_PENDING/BLOCKED.
+
+Task device cleanup sau finalize: adb emu avd name xác minh emulator-5554 đúng
+ eac_auth001_api36_d, rồi scoped adb -s emulator-5554 emu kill trả OK: killing
+emulator, bye bye. Chỉ đóng task emulator; giữ AVD/images/config và thiết bị khác,
+không global SDK/environment/proxy change. Independent device verification đã
+hoàn tất trước cleanup; không còn Gradle writer hoặc task device session active.

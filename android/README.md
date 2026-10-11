@@ -129,3 +129,17 @@ thư mục `android` sau khi chọn JDK 21 và Android SDK như trên:
 emulator mất cả Wi-Fi và mạng di động, rồi ẩn lại khi mạng được khôi phục.
 Test khôi phục kết nối trong `finally`. Thiết bị thật được bỏ qua vì test có
 thao tác bật/tắt mạng của emulator.
+
+## AND-AUTH-002 — Login/Register
+
+Biểu mẫu email/password dùng Material XML, Vietnamese strings.xml, ViewModel →
+UseCase → Repository → typed Retrofit API. Đăng ký gồm fullName và confirm password
+chỉ ở client; validation cuối cùng thuộc backend. Loading chặn duplicate submit,
+423 hiển thị thông báo khóa chung, không countdown hoặc tự mở khóa. Offline chặn
+submit; lỗi mạng không tự retry mutation. Password không SavedState/autofill/log.
+Public auth HTTP không gửi Authorization, không refresh và không automatic retry.
+Session generation/CAS cùng cancellation bảo vệ callback cũ sau logout/account
+switch. Thành công lưu atomic token pair rồi existing shared auth gate restore
+GET /users/me; dùng interim Main shell đã duyệt tại AND-AUTH-001. Không suy diễn
+onboarding hoàn tất; Welcome/onboarding dành AND-ONB/AND-ASMT. Google/Forgot Password
+không có hành động giả hoặc production mock trong task này.
