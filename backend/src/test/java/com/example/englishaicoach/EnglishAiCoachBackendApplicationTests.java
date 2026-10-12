@@ -15,6 +15,9 @@ import com.example.englishaicoach.auth.UserRepository;
 class EnglishAiCoachBackendApplicationTests {
 
     @MockitoBean
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @MockitoBean
     private JdbcTemplate jdbcTemplate;
 
     @MockitoBean

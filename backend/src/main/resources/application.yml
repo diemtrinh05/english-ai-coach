@@ -34,6 +34,9 @@ management:
           include: readinessState,db
 
 app:
+  google-identity:
+    # Server web client ID; thiếu cấu hình chỉ làm Google login trả 503.
+    client-id: ${GOOGLE_CLIENT_ID:}
   login-protection:
     failed-attempts-threshold: 5
     lock-duration: 5m

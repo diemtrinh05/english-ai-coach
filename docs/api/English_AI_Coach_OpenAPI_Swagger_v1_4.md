@@ -189,6 +189,14 @@ paths:
       security: []
       summary: Login with Google ID token
       operationId: googleLogin
+      description: >-
+        Verify Google signature/issuer/expiry/sub/email_verified and aud GOOGLE_CLIENT_ID.
+        Invalid token returns 401 UNAUTHORIZED; unavailable configuration/JWKS returns
+        503 INTERNAL_ERROR. Lookup GOOGLE/sub preserves DB metadata and role; new subject
+        creates only if exact email free, collision returns 409 CONFLICT, no auto-link.
+        New account requires verified email and nonblank name 1–100, USER/ACTIVE.
+        Manual LOCKED returns 423 AUTH_ACCOUNT_LOCKED; local cooldown/counters unchanged.
+        Last login and token pair commit atomically. No profile/avatar/goals creation.
       requestBody:
         required: true
         content:
@@ -202,8 +210,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '423':
+          description: Manually locked account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Google verification unavailable, INTERNAL_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /users/me:
     get:
       tags:
@@ -1886,6 +1912,8 @@ components:
       properties:
         idToken:
           type: string
+          minLength: 1
+          description: Nonblank Google ID token; never logged.
           writeOnly: true
     RefreshTokenRequest:
       type: object

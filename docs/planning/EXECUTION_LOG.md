@@ -10301,3 +10301,181 @@ expected trước Gitrestage; chưa claimcachedPASS. Nextoperation Gitworkflow
 explicitcontinue restage correctedAuthProvider+latestplanningevidence, rerun
 cachedguard/requiredpublicationgates rồi onefinalcommit/ffpush. NoCIwaiver,
 fulltestrerun/logicchange/proxy/environment hoặc self-review.
+
+## BE-AUTH-007 — PLAN / OWNER CONTRACT APPROVAL — 2026-10-12
+
+Command execute; mode GOV009_DIRECT_MAIN, task M2/P1/CBL. Fresh admission
+main clean HEAD=origin/main=live 01a7ed7116a8ea5e7e22b3b583ebf22af1395059;
+no Git operation/other active direct-main task. Dependencies BE-AUTH-004 and
+BE-FND-011 DONE. GOV-009/CI-FND-001 effective, PRE_CI expired. Actual GitHub
+Required CI run38197386791/job114642988685 completed/success for exact baseSHA;
+ACTUAL_CI_REPOSITORY_HEALTH HEALTHY, failed-check waiver NOT USED.
+
+Canonical sources: PROJECT_RULES, AGENTS, implementation plan/backlog, SRS
+FR-AUTH-02, Database §4.1/4.2, Architecture §30–32, API §7.5, OpenAPI googleLogin,
+Technical/Backend §58/62 and CBL/SR/QAR/AR/DBR instructions. Canonical reviewers
+SR,QAR; impact-based additional AR (provider/composition) and DBR (transaction/
+concurrency). Acceptance: verify Google identity server-side and resolve/create
+account without trusting client profile; AuthTokenIssuer shared token pair.
+
+Owner approved three contract bundles before PLAN: real Google fixed-HTTPS JWKS
+verifier, signature/iss/aud GOOGLE_CLIENT_ID/expiry/sub/email/email_verified=true;
+invalid token401 UNAUTHORIZED, unavailable config/JWKS503 INTERNAL_ERROR, invalid
+body400 VALIDATION_ERROR and existing429. No client secret or live-account test
+required. Lookup(GOOGLE,sub), existing DB metadata/role preserved; new subject only
+creates if exact email free, collision LOCAL/other Google409 CONFLICT, no auto-link
+or normalization. New GOOGLE password null USER/ACTIVE, verified email<=255, name
+nonblank1–100 or401, no fallback/profile/avatar/goals. Existing manual LOCKED423
+AUTH_ACCOUNT_LOCKED; Google login ignores local cooldown and keeps local counters/
+locked_until, updates last_login_at/updated_at; mutation+token pair atomic.
+
+PLAN TODO→IN_PROGRESS performed before product changes. Implement Controller→
+Service→typed verifier port/JWKS adapter + Repository→PostgreSQL, ON CONFLICT-safe
+creation and row-lock existing users; bounded HTTP/JWKS cache and no credential
+logs. Synchronize affected baselines/OpenAPI, signed JWT/fake JWKS unit and real
+PostgreSQL API/collision/concurrency/rollback tests. Run Maven clean verify, Python
+regression/audits/py_compile, tracked/untracked diff/EOF/secret/generated/scope/tag
+guards. No new schema/migration/client feature/OAuth linking flow/eventId/offline/
+AI/V2 logic. Task stays IN_PROGRESS after TEST for independent reviews; no
+commit/push/self-review/DONE or machine proxy/global environment changes.
+
+## BE-AUTH-007 — IMPLEMENT / FOCUSED TEST — 2026-10-12
+
+Controller→GoogleLoginService→typed GoogleIdentityVerifier/JWKS adapter and
+GoogleAccountRepository→PostgreSQL implemented. Fixed Google HTTPS URI, no
+redirect/token URLs, bounded128KiB JWKS/read5s/connect3s/cache-control cache,
+unknown-kid refresh throttled30s. Reuse existing Nimbus JWT dependency; no
+new Maven dependency. Existing subject metadata retained; name validated only
+for creation. ON CONFLICT both unique constraints + locked reread resolve
+concurrent same-subject login versus different-subject email collision.
+Network verification precedes DB transaction; account updates+AuthTokenIssuer
+refresh persistence atomic. No password/counter/cooldown/profile mutation.
+
+Focused command Maven test GoogleIdentityVerifierTests,GoogleLoginIntegrationTests,
+GoogleLoginRollbackIntegrationTests,GoogleLoginOpenApiContractTests: PASS16/16,
+zero failures/errors/skips, BUILD SUCCESS1m09s; log
+C:/Users/Hi/AppData/Local/Temp/BE-AUTH-007-focused.log. Tests signedRSA JWT, fake
+JWKS cache/invalid/outage, realPG response/hash/role/metadata/collision/locks,
+concurrent same-subject/different-subject and issuer rollback/create+lastlogin.
+No real credential or external Google network needed for tests. Existing
+no-DB smoke fixture adds mock PlatformTransactionManager for composition.
+
+Initial diff guard found new extraEOFblankline in6 appended baseline docs;
+corrected only trailing supplement whitespace before final validation.
+Production transport adjusted before final source freeze to HttpsURLConnection
+explicit read timeout so bounded stream read does not wait indefinitely for
+body data; no semantic/contract change. Full Maven clean verify and audits
+next; no full-suite PASS/reviewer verdict claimed yet.
+
+## BE-AUTH-007 — FULL TEST FAILURE / DEPENDENT FIXTURE CORRECTION — 2026-10-12
+
+First required full Maven clean verify: 228 tests,227PASS/1FAIL/0errors/skips,
+BUILD FAILURE1m53s, log C:/Users/Hi/AppData/Local/Temp/BE-AUTH-007-full.log.
+JwtAuthenticationIntegrationTests.keepsExactPublicOperationsAvailableAndProtectsOtherMethods
+expected404 for unimplemented public POST /auth/google, actual400 for now
+implemented required body. Updated only dependent foundation fixture to400,
+added deterministic missing client ID503 INTERNAL_ERROR assertion; production
+behavior unchanged. This fixture adds one tracked file to scope31=16tracked15new.
+
+Audit helper initial Pythonunittest discovery -s tools/tests failed because
+directory does not exist; corrected actualcommand python -m unittest discover
+-s tools -p test_*.py PASS46/46. Baseline/CI/secret audits/py_compile/diffcached
+(empty)/new15UTF8+EOF+whitespace/conflict/scope/generated/tags local+remote PASS.
+Full cleanverify rerun required after fixture correction; no failing check waiver
+or reviewer PASS claimed. Task stays IN_PROGRESS.
+
+## BE-AUTH-007 — FINAL IMPLEMENTATION TEST / REVIEW HANDOFF — 2026-10-12
+
+Exact final-source JDK21 process-local required command:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+BUILD SUCCESS2m09s, exit0;228/228 tests PASS across56SurefireXML, zero failures,
+errors or skips. Log C:/Users/Hi/AppData/Local/Temp/BE-AUTH-007-final.log.
+All16Google tests and dependent JWTpublic-route regression PASS. PostgreSQL16.15
+realcontainers/Flyway V1–V7/Hibernate validate/API/OpenAPI, existing auth/profile/
+goals/catalog/foundation regression and executablejar packaging run in fullverify.
+Firstfull228tests227PASS/1FAIL old404fixture→400/503dependentfixture correction
+→final228PASS chronology retained, no productionbehavior changed for test.
+
+Pythonunittest discover -s tools -p test_*.py PASS46/46; baseline/CIworkflow/secret
+audits PASS; py_compile PASS; git diff --check and emptyindex --cached --check
+PASS. New15Java files UTF8/trailingwhitespace/oneEOFnewline/noextrablankline/
+conflict/scope/generated guards PASS. Secret audit covers untracked files.
+Local+remote baseline tag objects and peeled IDs unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Sourcefreeze31files=16tracked+15new (10productionJava+5test/helperJava). Tracked
+scope: applicationconfig,2dependent testfixtures, README,7serverbaselines incl
+OpenAPI,3clienttechbaselines,2planningdocs. No Mavendependency/lock/schema/Flyway
+/clientUI/SDKfeature/CIchanges. API adds approved documented errors to existing
+Google operation; requestfield/200AuthResponse pair preserved. Existing LOCAL
+register/login/refresh/logout/profile/goals behavior unchanged; migration NONE.
+Runtime clientID+Google HTTPS JWKS required for real sign-in; deterministic tests
+verify algorithm/pipeline but not live Google-account/environment configuration.
+
+STOP after TEST IN_PROGRESS. SR/QAR canonical + impact AR/DBR independent
+review required next, reviewer verdicts PENDING, unresolved reviewer findings
+not yet assessed; no self-review or fabricatedPASS. No concurrentMavenwriter now,
+no commit/push/index/tag mutation or machine proxy/globalenv change.
+
+## BE-AUTH-007 — INDEPENDENT REVIEW SYNCHRONIZATION / FINALIZE — 2026-10-12
+
+Command finalize; mode GOV009_DIRECT_MAIN. Root điều phối cung cấp actual
+independent owner reports: canonical SR/QAR và additional impact AR/DBR đều
+initial PASS/final applicable PASS, findings NONE; không có reviewer FAIL hoặc
+finding cần remediation, không tự tạo verdict. Source frozen31=16tracked15new.
+
+| Gate | Independent owner | Current result | Evidence / scope |
+|---|---|---|---|
+| SR canonical | /root/oct12_google_sr | PASS | Chữ ký/issuer/audience/sub/email_verified/expiry, HTTP/cache bounds fail closed; DB role/metadata, defaults/status, token/secret isolation. |
+| QAR canonical | /root/oct12_google_qa | PASS | Full31file acceptance; independent20/20 Google16+JWTpublic-route4, zero failures/errors/skips, BUILD SUCCESS1m02s; baseline/CI/secret/py_compile/15newEOF/diff/baseCI PASS. |
+| AR impact | /root/google_ar_finish | PASS | Full31file layering/typed verifier port/JWKS adapter, verify-before-transaction, shared issuer/JDBC-JPA transaction, row locks/ON CONFLICT, seven server/three client baseline consistency; independent audit/py_compile/diff PASS. |
+| DBR impact | /root/oct12_google_dbr | PASS | PostgreSQL16.15 fresh Flyway V1–V7/Hibernate validate, atomic JDBC/JPA issuance, concurrent creation/collision and rollback tests; no schema/migration change. |
+
+QAR actual JDK21 independent20/20 log:
+C:/Users/Hi/AppData/Local/Temp/BE-AUTH-007-qa-independent.log.
+Final implementation exact-source full clean verify228/228 across56XML, zero
+failures/errors/skips, BUILD SUCCESS2m09s remains valid:
+C:/Users/Hi/AppData/Local/Temp/BE-AUTH-007-final.log.
+Fresh closure observed56XML totals228/0fail/0error/0skip; independent subset
+execution is not claimed as a second full228 rerun. Python46/46 prior final
+source regression remains valid, product/test/spec source unchanged at closure.
+
+Preserve earlier actual full-suite227/228FAIL old Google404 fixture→400/503
+fixture correction→228/228PASS; wrong Python discovery tools/tests→tools46PASS;
+appended-doc EOF guard FAIL→scoped whitespace fix→PASS. Additional readonly
+closure tag query initially failed PowerShell parsing because ^{} ref arguments
+were unquoted; exact quoted refs rerun PASS, no tag mutation. AR migration-file
+lookup used a wrong filename before rg found canonical V1/V2 files; readonly
+lookup diagnostic corrected, no product finding or test waiver.
+
+Fresh closure baseline_audit/ci_workflow_audit/secret_audit/py_compile PASS;
+git diff --check and empty-index cached check PASS. All15new Java UTF8,
+trailing-whitespace/one-final-newline/no-extra-EOFblank/conflict/scope/generated
+checks PASS. Worktree31scope remains same reviewed source; only planning
+lifecycle/evidence changes in this finalize, no generated outputs tracked.
+
+Fresh main HEAD=origin/main=live01a7ed7116a8ea5e7e22b3b583ebf22af1395059;
+index empty/no Git operation/no other active direct-main task. Dependencies
+BE-AUTH-004/BE-FND-011 DONE. Actual REST run38197386791 Required CI job114642988685
+completed/success for exact published baseSHA; ACTUAL_CI_REPOSITORY_HEALTH HEALTHY,
+PRE_CI expired, failed-check waiver NOT USED. Uncommitted task remote CI NOT RUN/
+NOT CLAIMED: baseCI does not prove CI for future task commit.
+Local and remote immutable baseline object→peeled IDs remain:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Acceptance/required tests/reviewers/closure guards PASS; unresolved findings NONE.
+Finalize IN_PROGRESS→DONE; canonical SR,QAR mapping unchanged, additional AR/DBR
+recorded by impact. M2 now20/21DONE (95.24%), remaining QA-IDCAT-001; milestone
+exit still pending, not claimed complete. Existing Google operation retains
+idToken and200AuthResponse pair; approved errors/baselines synchronized. No
+schema/migration/dependency/clientUI/CI change; existing LOCAL lifecycle retained.
+Runtime real login still requires configured GOOGLE_CLIENT_ID and reachable
+Google HTTPS JWKS; signed-JWT/fake-JWKS/realPG tests do not prove live account
+or deployment configuration. No auto-link or profile/goals creation introduced.
+
+STOP after finalize before separate Git workflow publish BE-AUTH-007: one final
+task commit on main and fast-forward push; push sets CI_PENDING until exact
+Required CI passes. No commit/push/index/tag/proxy/global-environment mutation
+or self-review performed by Backend finalize.

@@ -2595,3 +2595,52 @@ CEFR chỉ backend quyết định; PUT giữ nguyên `current_cefr_level_id`, l
 Response omit `currentCefrLevel` khi chưa có; khi có dùng `CefrLevelResponse`.
 Không tiết lộ password hash, auth/session/refresh token qua các response này.
 Không thay đổi Daily Plan snapshot đã tạo trong ngày. Schema/migration giữ nguyên.
+
+## Hợp đồng Google Login V1 — BE-AUTH-007 (owner phê duyệt 2026-10-12)
+
+`POST /api/v1/auth/google` là public, body chỉ cần `idToken` không blank; response
+200 dùng AuthResponse/token pair hiện có. Backend xác minh chữ ký RS256 bằng
+Google public JWKS cố định `https://www.googleapis.com/oauth2/v3/certs`, không lấy
+URL từ JWT/client hoặc redirect, không dùng tokeninfo làm production verifier.
+`iss` phải là `accounts.google.com` hoặc `https://accounts.google.com`; `aud` chứa
+server web client ID `GOOGLE_CLIENT_ID`, `exp` còn hiệu lực (now < exp), `sub`
+nonblank tối đa 255; email hợp lệ tối đa 255 và `email_verified=true`. Chỉ claims
+đã verify được chuyển qua typed `VerifiedGoogleIdentity`; không trust email,
+profile, role hoặc account ID do client gửi ngoài ID token. ID token, token pair
+và nội dung lỗi provider không được ghi log hoặc đưa vào error response.
+
+Verifier thực được triển khai qua port; không cần `GOOGLE_CLIENT_SECRET` cho ID
+token verification. Thiếu `GOOGLE_CLIENT_ID` hoặc JWKS không khả dụng trả
+`503 INTERNAL_ERROR`, không fallback hoặc cấp token. Token/claims sai trả
+`401 UNAUTHORIZED`; body thiếu/sai/blank trả `400 VALIDATION_ERROR`; giữ auth
+rate limit `429 RATE_LIMITED`. Tests dùng signed JWT, fake JWKS và PostgreSQL,
+không cần credential Google hoặc live-account smoke. Runtime thật cần cấp client
+ID đúng và kết nối HTTPS đến JWKS; tests không chứng minh cấu hình tài khoản thật.
+
+Identity lookup dùng `(GOOGLE, sub)`, không dùng email làm provider identity.
+Account đã tồn tại giữ nguyên email/full_name/role/status trong DB, kể cả email
+claim đổi; name claim chỉ bắt buộc khi tạo account. Subject mới chỉ tạo khi exact
+email chưa tồn tại: không trim/lowercase/normalize email, không tự liên kết LOCAL,
+không đổi auth_provider/password của account khác. Email collision với LOCAL
+hoặc Google subject khác trả `409 CONFLICT`, không mutation hoặc token mới.
+Liên kết LOCAL cần flow xác thực riêng trong scope tương lai. Google lưu ý
+email_verified của email bên thứ ba không luôn chứng minh sở hữu hiện tại;
+quy tắc không auto-link áp dụng cả khi email_verified=true.
+
+Account mới có auth_provider=GOOGLE, provider_user_id=sub, password_hash=NULL,
+role=USER, status=ACTIVE, failed_login_attempts=0. Email chỉ từ verified claim;
+name claim mới phải nonblank 1–100, thiếu/sai trả `401 UNAUTHORIZED`, không
+fallback tên từ email. Không tạo user_profiles, avatar, goals hoặc completion
+flag qua Google login. Account đã có status=LOCKED trả `423 AUTH_ACCOUNT_LOCKED`.
+Google identity hợp lệ không bị password-login cooldown locked_until chặn;
+failed_login_attempts và locked_until giữ nguyên. Login thành công cập nhật
+last_login_at/updated_at và cấp access token + hashed refresh token trong cùng
+transaction; lỗi issuer/persistence rollback toàn bộ.
+
+JWKS verify trước transaction; existing account dùng row lock. Concurrent create
+được resolve bởi UNIQUE(email), unique(auth_provider,provider_user_id) và
+PostgreSQL ON CONFLICT DO NOTHING, không catch unique violation rồi tiếp tục
+failed transaction. Cùng subject concurrent resolve cùng account; khác subject
+trùng email không tạo/link account thứ hai. Không thêm eventId/token family hoặc
+schema/migration; các API profile/goals và client flow hiện tại giữ nguyên.
+Nguồn kỹ thuật: [Google ID token verification](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).

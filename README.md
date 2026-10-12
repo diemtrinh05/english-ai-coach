@@ -318,3 +318,13 @@ không blacklist Access JWT đã cấp. Nếu refresh commit trước logout tok
 token mới vẫn hợp lệ; client phải gửi token mới hiện tại để revoke token đó.
 Logout/refresh dùng cùng PostgreSQL row lock, persistence lỗi rollback.
 Không schema/migration hoặc UI client mới; client orchestration thuộc task sau.
+
+### BE-AUTH-007 — Google Login backend
+
+POST /api/v1/auth/google verify Google ID token server-side qua JWKS HTTPS cố
+định. Runtime cần GOOGLE_CLIENT_ID đúng server web client ID và HTTPS JWKS;
+không cần GOOGLE_CLIENT_SECRET. Thiếu cấu hình/provider trả503 INTERNAL_ERROR,
+không fallback. Không auto-link LOCAL theo email. Signed JWT/fake JWKS và
+PostgreSQL tests chạy không credential thật; Google client UI/SDK chưa thuộc
+task này. Chi tiết policy/errors/atomicity trong API Specification §7.5 và
+supplement BE-AUTH-007. Không thay machine proxy hoặc browser token storage.

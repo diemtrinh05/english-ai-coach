@@ -39,6 +39,7 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
     @DynamicPropertySource
     static void jwtConfiguration(DynamicPropertyRegistry registry) {
         registry.add("app.jwt.secret", () -> SECRET);
+        registry.add("app.google-identity.client-id", () -> "");
     }
 
     @Test
@@ -101,9 +102,11 @@ class JwtAuthenticationIntegrationTests extends PostgreSqlIntegrationTestSupport
         mvc.perform(post("/api/v1/auth/register")).andExpect(status().isBadRequest());
         mvc.perform(post("/api/v1/auth/login")).andExpect(status().isBadRequest());
         mvc.perform(post("/api/v1/auth/refresh")).andExpect(status().isBadRequest());
-        for (String route : new String[] {"google"}) {
-            mvc.perform(post("/api/v1/auth/" + route)).andExpect(status().isNotFound());
-        }
+        mvc.perform(post("/api/v1/auth/google")).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/v1/auth/google").contentType("application/json")
+                        .content("{\"idToken\":\"fixture-token\"}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"));
         mvc.perform(post("/api/v1/vocabulary")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/topics/one/extra")).andExpect(status().isUnauthorized());
         mvc.perform(get("/actuator/health")).andExpect(status().isOk());

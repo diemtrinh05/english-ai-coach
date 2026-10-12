@@ -2151,3 +2151,15 @@ Server204 xác nhận revoke đúng token theo BE-AUTH-006. Timeout/offline/serv
 lỗi chỉ xác nhận đã đăng xuất trên trình duyệt, báo chưa xác nhận thu hồi phiên
 trên máy chủ; không claim revoke thành công hoặc rollback local logout.
 Các màn hình/flow tương lai và nội dung approved ngoài phạm vi giữ nguyên.
+
+### Hợp đồng backend Google Login — BE-AUTH-007 (2026-10-12)
+
+Backend public POST /api/v1/auth/google nhận idToken và trả token pair/AuthResponse
+hiện có; server verify chữ ký Google/iss/aud GOOGLE_CLIENT_ID/expiry/sub/email và
+email_verified=true, không trust client profile. Client không tự link account
+theo email: collision LOCAL/subject khác trả409 CONFLICT; invalid token/claims
+401 UNAUTHORIZED; manual LOCKED423 AUTH_ACCOUNT_LOCKED; thiếu cấu hình/JWKS
+503 INTERNAL_ERROR; validation400 vàrate429. Backend giữ metadata/role đã lưu
+cho subject hiện có, không tạo profile/avatar/goals. Google UI/SDK flow riêng
+chưa triển khai bởi task backend này; các flow Login/Register/Splash hiện tại
+giữ scope đã phê duyệt. Xem API §7.5 và supplement BE-AUTH-007 cho đủ semantics.
