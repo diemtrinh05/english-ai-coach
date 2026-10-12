@@ -29,4 +29,40 @@ public record SrsProperties(
         int masteredMinimumQuality,
         int masteredMinimumRepetitions,
         int masteredMinimumIntervalDays) {
+
+    public SrsProperties {
+        if (!"sm2-ext-v1".equals(algorithmVersion)
+                || !positive(initialEaseFactor) || !positive(minimumEaseFactor)
+                || initialEaseFactor.compareTo(minimumEaseFactor) < 0
+                || minimumIntervalDays < 1 || maximumIntervalDays < minimumIntervalDays
+                || firstSuccessIntervalDays < minimumIntervalDays
+                || firstSuccessIntervalDays > maximumIntervalDays
+                || secondSuccessIntervalDays < firstSuccessIntervalDays
+                || secondSuccessIntervalDays > maximumIntervalDays
+                || !positiveMillis(responseTimeReference) || !positiveMillis(responseTimeFloor)
+                || !positive(minimumTimeFactor) || !positive(maximumTimeFactor)
+                || minimumTimeFactor.compareTo(maximumTimeFactor) > 0
+                || correctQualityThreshold != 3
+                || masteredMinimumQuality < correctQualityThreshold || masteredMinimumQuality > 5
+                || masteredMinimumRepetitions < 1
+                || masteredMinimumIntervalDays < minimumIntervalDays
+                || masteredMinimumIntervalDays > maximumIntervalDays) {
+            throw new IllegalArgumentException("Cấu hình sm2-ext-v1 không hợp lệ");
+        }
+    }
+
+    private static boolean positive(BigDecimal value) {
+        return value != null && value.signum() > 0;
+    }
+
+    private static boolean positiveMillis(Duration value) {
+        if (value == null || value.isNegative() || value.isZero()) {
+            return false;
+        }
+        try {
+            return value.toMillis() > 0 && value.equals(Duration.ofMillis(value.toMillis()));
+        } catch (ArithmeticException exception) {
+            return false;
+        }
+    }
 }

@@ -3005,6 +3005,29 @@ public SrsResult calculate(
 
 The exact formula must follow the separately approved AI Personalization specification and its tests. The backend must have one implementation only.
 
+### Nền tảng tính thuần — BE-SRS-001
+
+`learning.srs.SrsCalculator` là phần tính toán thuần để `SrsService` sử dụng khi
+triển khai state transitions ở `BE-SRS-002`. `SrsCalculationInput` nhận các giá trị
+oldEaseFactor/oldIntervalDays/oldRepetitions/answerQuality/responseTimeMs và `Instant now`
+do caller lấy từ Clock foundation. `SrsCalculationResult` trả newEaseFactor,
+newIntervalDays/newRepetitions/nextReviewAt/isCorrect/algorithmVersion; không nhận
+entity, không lưu DB, không quyết định status hoặc gọi clock ngầm.
+
+Sử dụng existing `SrsProperties` defaults `sm2-ext-v1`; cấu hình không hợp lệ bị
+từ chối tại binding để tránh biên clamp đảo ngược, duration không biểu diễn chính
+xác theo milliseconds hoặc threshold correctness khác 3. Đây là validation nội bộ,
+không bổ sung error code hay thay đổi HTTP contract. EF dùng BigDecimal theo công
+thức AI §7; interval làm tròn HALF_UP cho số không âm đúng worked example
+`round(15 × 1.10) = 17`. Base interval được round trước response-time extension,
+time ratio không bị làm tròn sớm; interval được clamp trước chuyển về integer.
+Failure reset repetition/interval, không áp response-time extension. Initial helper
+lấy EF từ typed properties, interval/repetition=0; không tạo progress row hoặc profile.
+
+Persistence, state transitions, transaction/idempotency, learning endpoint và
+full state-boundary matrix vẫn thuộc các task kế tiếp; nền tảng này không claim
+hoàn thành `BE-SRS-002` hoặc `QA-SRS-001`.
+
 ---
 
 # 111. Daily Plan Service Skeleton

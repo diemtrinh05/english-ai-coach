@@ -10644,3 +10644,136 @@ documented approved fixture boundary, not waived runtime validation.
 STOP after finalize: separate Git workflow may publish one final QA-IDCAT-001
 commit on main/fast-forward push, then exact Required CI boundary. No commit/push/
 stage/index/tag/proxy/globalenvironment mutation by QA implementer.
+
+## BE-SRS-001 — PLAN / ADMISSION — 2026-10-12
+
+Backend-task execute, GOV009_DIRECT_MAIN, M3/P0/CBL. Owner chọn NEXT rõ ràng;
+root Git pre-task READY: main sạch, HEAD=origin/main=live
+cb6069e12656de66659fb1df74ec501a0a005343; no Git operation/other active task.
+Required CI run38244712769/job114795604195 completed/success exact base SHA,
+ACTUAL_CI_REPOSITORY_HEALTH HEALTHY. Dependencies BE-FND-003/BE-FND-010 DONE.
+PRE_CI expired, failed-check waiver NOT USED; future task CI not claimed.
+
+Đọc PROJECT_RULES, AGENTS, plan/backlog/log, CBL skill/source-selection/report,
+role instructions và SRS→DB→Architecture→AI→API/OpenAPI→Technical/Backend.
+Cross-check PASS: AI §7.4–7.12 EF_new trước base interval; success hai lần round,
+worked example round(16.5)=17; failure repetitions=0/interval=1 không time extension;
+final clamp1–180, initial2.50/0/0. Không phát hiện mâu thuẫn cần owner phê duyệt.
+
+PLAN TODO→IN_PROGRESS trước product patch. Scope: existing typed SrsProperties
+validation; immutable calculation input/result; pure SrsCalculator nhận Instant
+now explicit, không Spring/JPA/Clock bên trong, caller tương lai dùng Clock foundation.
+BigDecimal exact EF/rational time extension, HALF_UP positive interval như example.
+Internal input/config fail-fast, không invent HTTP errors. Initial helper dùng typed
+properties; correctness quality>=3. Không state/status transitions SrsService,
+DB persistence/schema/migration/API/controller/client/gamification/later QA matrix.
+Canonical AR,QAR PENDING; independent reviews sau TEST, không tự claim PASS.
+
+Required TEST: targeted arithmetic/property/config boundaries, Maven clean verify,
+real existing PostgreSQL/Flyway regression, Python46, baseline/CI/secret/py_compile,
+diff/new-file UTF8/EOF/whitespace/conflict/scope/generated/tag guards. Process-only
+JDK21, một Maven writer. Execute STOP IN_PROGRESS sau TEST; không finalize/Git/
+proxy hoặc global environment mutation.
+
+## BE-SRS-001 — IMPLEMENT / FINAL TEST / REVIEW HANDOFF — 2026-10-12
+
+Pure immutable SrsCalculationInput/Result + SrsCalculator dùng existing typed
+SrsProperties. Không annotation Spring hoặc phụ thuộc entity/repository/clock
+trong pure model; explicit Instant, caller tương lai sử dụng Clock foundation.
+BigDecimal exact EF_new; base round HALF_UP trước rational response-time round;
+cross-multiplication clamp factor tránh quotient approximation; final clamp trước
+integer conversion tránh overflow. Failure không response-time extension. Quality
+0..5, backend derives correctness; initial helper2.50/interval0/repetitions0.
+Typed config constructor từ chối null/zero/negative/inverted bounds, millis không
+biểu diễn exact, algorithm identifier sai/correctness threshold khác3. Validation
+nội bộ không đổi API status/error codes. BackendTech§110 thêm implementation note,
+giữ nguyên skeleton/formula và tương lai SrsService/state/persistence scope.
+
+Actual final process-only JDK21 command:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+PASS270/270 across59SurefireXML, zero failures/errors/skips, exit0 BUILD SUCCESS
+2m43s. Log C:/Users/Hi/AppData/Local/Temp/BE-SRS-001-final.log. Includes existing
+234 regression +20 arithmetic/input/determinism tests +16 config tests; existing
+ConfigurationPropertiesTests verifies canonical defaults. PostgreSQL16.15 isolated
+Testcontainers/FlywayV1–V7/Hibernate validate, API/OpenAPI/auth/catalog/idempotency
+and transaction regression remain PASS; executablejar packaging PASS.
+
+Chronology: initial focused40 tests had34PASS/6FAIL, all six assertion
+BigDecimal.equals(2.50) versus YAML-bound numeric2.5 (scale only), log
+C:/Users/Hi/AppData/Local/Temp/BE-SRS-001-focused.log. Changed test to numeric
+compareTo, not product formula/approved defaults; final full270PASS above confirms
+all focused cases. No reviewer finding or waiver claimed, history preserved.
+
+Python unittest discover -s tools -p test_*.py PASS46/46; baseline/CIworkflow/
+secret audits/py_compile PASS. git diff --check/cached(empty), new5Java UTF8/
+oneEOFnewline/noextraEOFblank/trailingwhitespace/conflict/scope/generated guards
+PASS. Scope9files=4tracked(properties,BackendTech,2planning)+5new(3math,2tests).
+No generated files added, dependencies/API/OpenAPI/database/schema/migrations/
+client/security/state transitions/learning endpoints/gamification/V2 unchanged.
+Old EF remains unrounded BigDecimal; no new DB precision policy introduced.
+Internal responseTimeMs required integer>=0 follows learning DTO/OpenAPI required;
+DB historical nullable timing is unchanged, not generalized into learning input.
+
+HEAD=origin/main cb6069e12656de66659fb1df74ec501a0a005343, main/indexempty/noGit
+operation; dependencies DONE. Admission baseRequiredCI38244712769/job114795604195
+completed/success HEALTHY, uncommitted task CI NOT RUN/NOT CLAIMED. Local+remote
+baseline object→peeled unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+PRE_CI expired, failed-check waiver NOT USED. Canonical AR,QAR PENDING; independent
+reviews next, no self-review/PASS or findings assessment by implementer.
+
+STOP after execute PLAN→IMPLEMENT→TEST, task IN_PROGRESS. Source frozen9files;
+no Maven writer active. No finalize/DONE/commit/push/index/tag/proxy/globalenvironment
+mutation. Current M3 remains0/16DONE; this calculation groundwork does not claim
+BE-SRS-002 state machine or QA-SRS-001 full state-boundary matrix complete.
+
+## BE-SRS-001 — INDEPENDENT REVIEW SYNCHRONIZATION / FINALIZE — 2026-10-12
+
+Backend-task command finalize, GOV009_DIRECT_MAIN. Root giao authoritative
+independent reports; đồng bộ evidence external, không self-review:
+
+| Gate | Independent owner | Result | Evidence / scope |
+|---|---|---|---|
+| AR canonical | /root/srs001_ar | PASS | Full9 tracked+untracked source/diff; pure layering, existing typed defaults, explicit Instant/caller Clock, EF_new/two HALF_UP/rational factor clamp, phase scope; independent baseline/pycompile/diff PASS; full270 log reviewed. |
+| QAR canonical | /root/srs001_qa | PASS | Full9 acceptance/defaults/formula/determinism/boundaries; actual focused40/40 zero failures/errors/skips EXIT0 BUILD SUCCESS8.281s; independent baseline/CI/secret/pycompile/new5guards/diff/tags/baseCI PASS. |
+
+QAR independent command: Maven -Dtest=SrsCalculatorTests,SrsPropertiesValidationTests,ConfigurationPropertiesTests test.
+Log C:/Users/Hi/AppData/Local/Temp/BE-SRS-001-qa-independent.log. Own40 includes
+20math/16config/4existing binding; full implementation270/27059XML BUILD SUCCESS
+2m43s logBE-SRS-001-final remains valid, not claimed own full270 rerun. Python46
+prior final-source PASS retained. QAR run updates focusedXML but full log/source
+remain valid. No extra Maven required for planning-only closure.
+
+AR/QAR initial PASS/final applicable PASS, unresolved findings NONE; no reviewer
+FAIL/finding/remediation invented. Preserve initial focused34PASS/6FAIL solely
+scale-sensitive BigDecimal equals2.50 vs2.5 → numeric compareTo fixture correction
+→ finalfull270PASS → independent40PASS. Product formula was not changed to satisfy
+fixture. Canonical reviewers AR,QAR unchanged; no DB/schema/security impact to
+require DBR/SR. Helper cannot prove external reviewer gates; actual owner reports
+above satisfy them, no gate waiver.
+
+Fresh closure baseline/CIworkflow/secret audits/py_compile/diff/cached(empty) PASS;
+new5JavaUTF8/oneEOFnewline/noextraEOFblank/trailingwhitespace/conflict/scope/generated
+checks PASS. Source9files unchanged after reviews; this finalize changes only two
+planning files. No generated output tracked, dependency/API/OpenAPI/schema/Flyway/
+client changes or migration. Existing approved math unchanged; additive BackendTech
+note remains reviewed. No status transition/service/learning endpoint/fullmatrix.
+
+Fresh main HEAD=origin/main=live cb6069e12656de66659fb1df74ec501a0a005343;
+index empty, no Git operation/other active task; two dependencies DONE. REST run
+38244712769 Required CI job114795604195 completed/success exactbaseSHA,
+ACTUAL_CI_REPOSITORY_HEALTH HEALTHY. PRE_CI expired, failed-check waiver NOT USED;
+future task commit remoteCI NOT RUN/NOT CLAIMED. Local+remote baseline object→peeled
+remain unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Acceptance/tests/reviewers/closure guards PASS; finalize IN_PROGRESS→DONE.
+M3 now1/16DONE (6.25%), remaining15; current task checkbox updated only, historical
+snapshots preserved. Milestone exit QA-E2E-001 still pending; no vertical-slice or
+release completion claim. Backward compatibility retained, migration NONE.
+
+STOP before separate Git workflow publish BE-SRS-001: one final scoped commit on
+main + fast-forward push; post-push health CI_PENDING until exact Required CI PASS.
+No commit/push/stage/tag/proxy/globalenvironment mutation by Backend finalize.
