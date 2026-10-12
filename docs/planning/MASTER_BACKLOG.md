@@ -170,7 +170,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `ADM-AUTH-001` | Admin auth + route guard | AFL | `ADM-FND-002`<br>`BE-AUTH-004` | P0 | SR,QAR | ADMIN role required; USER cannot enter protected route; 401/403 behavior đúng spec. | Theo global DoD + acceptance. | TODO |
+| `ADM-AUTH-001` | Admin auth + route guard | AFL | `ADM-FND-002`<br>`BE-AUTH-004` | P0 | SR,QAR | ADMIN role required; USER cannot enter protected route; 401/403 behavior đúng spec. | Theo global DoD + acceptance. | DONE |
 
 # M3 — First Vertical Slice — Learning/SRS
 
@@ -745,7 +745,7 @@ P0 tasks:
 [ ] AND-AUTH-001
 [ ] AND-AUTH-002
 [x] AND-ONB-001
-[ ] ADM-AUTH-001
+[x] ADM-AUTH-001
 ```
 
 ## M3 — First Vertical Slice — Learning/SRS

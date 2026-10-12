@@ -1680,3 +1680,27 @@ Admin Web Implementation
 # Reconciled V1 Binding
 
 This design-system/wireframe document binds to Admin Web Technical Specification v1.1 and Admin UI/UX v1.2. Any AI CEFR suggestion affordance is Future/V2 only; V1 uses manual CEFR selection.
+
+### ADM-AUTH-001 — Quyết định owner cho phiên Admin V1 (2026-10-12)
+
+Token pair accessToken/refreshToken chỉ giữ nguyên tử trong bộ nhớ tab; reload
+hoặc đóng tab cần đăng nhập lại. Không lưu token trong localStorage,
+sessionStorage, IndexedDB hoặc cookie; không bổ sung backend/BFF/cookie contract.
+Role USER/ADMIN lấy từ auth response/current user đã xác minh trên backend;
+frontend guard là tiện ích UX, backend tiếp tục thực thi quyền ADMIN.
+
+Trong ADM-AUTH-001, ADMIN vào protected shell hiện có tại /admin hoặc
+/admin/dashboard, hiển thị rõ Tổng quan/chức năng quản trị chưa triển khai.
+Không gọi statistics API hoặc hiển thị metric giả; Dashboard giữ ADM-DASH-001.
+USER hoặc HTTP403 hiện màn hình không đủ quyền; không render protected content.
+HTTP401 refresh serialized, atomic pair trong cùng session generation;
+refresh lỗi/terminal401 clear phiên và private cache, chuyển Login với thông báo.
+Request/callback của phiên cũ không được replay hoặc publish dưới phiên thay thế.
+
+Logout explicit chờ refresh đang chạy rồi gửi current pair đúng auth/logout
+một lần, không blind retry. Luôn xóa local token/private cache và rời protected
+route bằng replace; history cũ không thể render lại dữ liệu private do guard.
+Server204 xác nhận revoke đúng token theo BE-AUTH-006. Timeout/offline/server
+lỗi chỉ xác nhận đã đăng xuất trên trình duyệt, báo chưa xác nhận thu hồi phiên
+trên máy chủ; không claim revoke thành công hoặc rollback local logout.
+Các màn hình/flow tương lai và nội dung approved ngoài phạm vi giữ nguyên.

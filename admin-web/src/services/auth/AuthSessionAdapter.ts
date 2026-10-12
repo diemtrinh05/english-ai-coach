@@ -11,4 +11,6 @@ export interface AuthSessionAdapter {
   refreshAccessToken: (expectedSessionGeneration: AuthSessionGeneration) => Promise<void>
   // Concrete adapter chỉ được clear nếu generation này vẫn đang active.
   clearSession: (expectedSessionGeneration: AuthSessionGeneration) => void | Promise<void>
+  // Concrete logout có thể giữ cleanup đến sau một lần thử revoke cặp hiện tại.
+  clearSessionAfterAuthFailure?: (expectedSessionGeneration: AuthSessionGeneration) => void | Promise<void>
 }

@@ -9961,3 +9961,343 @@ trả OK: killing emulator, bye bye. Chỉ đóng task emulator sau QAR device g
 PASS; giữ AVD/image/runtime/config, không delete dữ liệu hoặc đụng user device.
 Không proxy/global environment/SDK configuration mutation. Không Gradle writer
 hoặc device validation còn active trước publication.
+
+## ADM-AUTH-001 — PLAN — 2026-10-12
+
+GOV009_DIRECT_MAIN, M2/P0/AFL; canonical reviewers SR,QAR, additional AR do
+composition/routing/session impact. Fresh main clean HEAD=origin/main/live
+ d23c24db5dd3377b4b90cccadfb00d077758bc88. Actual Required CI admission
+run38143439830/job114481798119 completed/success, HEALTHY; dependencies
+ADM-FND-002/BE-AUTH-004 DONE; no Git operation/other active normal task;
+immutable baseline tags unchanged theo Git pre-task. PRE_CI expired.
+
+Owner duyệt ba quyết định: token pair chỉ memory/tab, reload/đóng tab login
+lại; ADMIN vào protected existing shell /admin hoặc /admin/dashboard chưa có
+Dashboard/statistics; logout chờ refresh đang chạy rồi gửi current pair một
+lần, luôn clear local/private cache/back stack và báo chưa xác nhận revoke
+khi lỗi server. Không browser persistence/cookie/new API/backend/database.
+
+Sources PROJECT_RULES/AGENTS/AFL, plan/backlog/execution, approved Admin Tech
+§7–10/47–48/62/70–73, UIUX/high-fidelity/prototype permission/session states,
+SRS/Architecture authentication và API/OpenAPI auth/login/refresh/logout,
+GET users/me đã cross-check; docs cập nhật additive theo owner approval.
+
+Scope login form, typed service/session adapter memory/generation guards,
+composition/hook/route guard, logout/session/permission UI và tests. No later
+Dashboard/CRUD/AI/V2/business algorithms. Validation npm ci/typecheck/lint/
+test:run/build, API/session concurrency and component/accessibility tests,
+baseline/CI/secret audits+Python regression, diff/cached/untracked hygiene,
+scope/generated/secret/tag guards. Chuyển TODO→IN_PROGRESS trước productpatch.
+Remote CI uncommitted NOT RUN / NOT CLAIMED. Không tự review/finalize/Git.
+## ADM-AUTH-001 — IMPLEMENT / TEST — 2026-10-12
+
+Task giữ IN_PROGRESS, GOV009_DIRECT_MAIN. Product patch chỉ sau real PLAN,
+không self-review hoặc Git publication. Ba owner approvals đã tích hợp.
+
+Page/feature→auth hook→typed auth service→central HTTP boundary; public
+login/refresh không gửi Authorization/cookie, redirect:error/cache:no-store,
+15s timeout và không tự retry. Exact login200/refresh200/logout204, strict
+UUID/role/status/primitive/token pair DTO. Memory/tab session, generation CAS,
+atomic rotated pair và GET users/me server role sau refresh. Pair/password
+không persist/browser history/query mutation cache hoặc log; form xóa password
+khi submit. Serialized refresh giữ generation; callback phiên cũ không ghi,
+không GET me hoặc publish private200 dưới B. API client guards cả trước/sau
+body parse và hook HTTP403 hiện permission page, không refresh khi403.
+
+Login Vietnamese validation/loading/error/423/429, ADMIN ACTIVE vào existing
+shell; USER/LOCKED/HTTP403 không protected content. /admin/* guard bao gồm
+/admin/dashboard, không tạo Dashboard/CRUD/statistics data/API. Shell có logout.
+Logout chờ inflight refresh rồi gửi pair hiện tại một lần, duplicate bị chặn;
+clear local/private QueryClient cache và replace về Login, browser Back vẫn
+bị guard. Server lỗi báo chỉ logout trình duyệt/chưa xác nhận revoke.
+Sessionexpiry clear cache và Login notice. No token decode authority, local
+SRS/CEFR/AI/business algorithm, offlinequeue/V2/API/backend/schema/migration.
+
+Scope26files =15tracked +11new. Tracked: README/ARCHITECTURE, AppProviders,
+AppRouter, AdminBootstrapShell, messages.vi, index.css, apiClient; five Admin
+approved specs; MASTER_BACKLOG/EXECUTION_LOG. New AuthProvider/useAdminAuth,
+useAdminLogin/LoginPage/AdminRouteGuard/AdminSessionShell/AdminAuthFlow.test,
+authService/AdminAuthSession/authComposition/AdminAuthSession.test. Package
+manifest/lock/CI/backend/API/database/Android unchanged. Docs additive preserving
+approved unrelated content; no new dependency or generated output tracked.
+
+Validation actual, không waive/fabricate:
+- Node24.21.0/npm11.19.0; npm ci PASS,261packages, lock unchanged.
+- Initial typecheck FAIL TS1294 constructor parameterproperties incompatible
+  erasableSyntaxOnly; explicit fields fix; rerun typecheck PASS.
+- Initial lint FAIL react-refresh/only-export-components mixed hook/component
+  exports; separate useAdminAuth module, no suppression; rerun lint PASS0errors.
+- npm run typecheck; npm run lint; npm run test:run; npm run build sequential
+  final-source PASS. Vitest9files/66tests PASS,58.65s, no skips/failures. New29
+  tests=session/HTTP20 +component9, existing37regression. Vite7.3.6 build102
+  modules PASS2.43s; build includes second typecheck PASS. Production artifacts
+  ignored, no dist/node_modules tracked. No dependency/tool lock mutations.
+- baseline_audit/ci_workflow_audit/secret_audit PASS; Python unittest46/46 PASS;
+  CI-equivalent py_compile PASS. git diff --check/cached(empty) PASS; eleven
+  new UTF8/whitespace/conflict/scope/generated guards PASS; no secret logs.
+- npm audit --json exit1 reports existing dev-only source-map-js1.2.1 HIGH
+  GHSA-68fv-2mgg-jv7q indexed source-map section-offset event-loop DoS. Dependency
+  paths vite7.3.6→postcss8.5.28 and jsdom30.1.0→css-tree3.2.1; exact HEAD lock
+  already contains dev:true1.2.1, current lock unchanged. npm audit --omit=dev
+  PASS0vulnerabilities. Existing Required CI has npm ci/lint/typecheck/test/build,
+  no npm-audit gate; advisory remains disclosed for SR/QAR, not auto-fixed or
+  presented as full audit PASS. Supporting ls/prod-audit initially wrong repo
+  cwd ENOLOCK; corrected admin-web cwd passes, original failure preserved.
+- Immutable tags unchanged local objects/peeled:5ccf0650d81ffbbd3d96eb523d097e0b9b022308→
+  ff6e13f4fe1444879b28d846801d0caa555bf4a7; e3884521c3d497094961d015b7b32d12a8e55650→
+  34362780eb7ffeb9391ade95220cf895a4592f70, remote integrity Git admission PASS.
+
+Acceptance tests cover anonymous deep link, ADMIN/USER guard, form labels/error
+associations/password clearing/Vietnamese generic errors, terminal401 and403,
+concurrent rotation, USER role from server, logout wait-currentpair/duplicates/
+unknown outcome, old generation login/refresh/200 exclusion and localmemory.
+Component rendered fixtures supply UI behavior evidence; no browser screenshot
+or visual screenshot PASS claimed. No optional tests repeated after sufficient
+verification. Backend security remains authority; frontend guard is UX only.
+
+Current source frozen26files, applicable local gates PASS; independent canonical
+SR/QAR +additional AR pending/NOT RUN, unresolved findings not manufactured.
+Next operation independent read-only reviews of tracked+untracked current task.
+Remote CI taskdiff NOT RUN / NOT CLAIMED; admission CI PASS only published base.
+STOP IN_PROGRESS, no finalize/DONE/commit/push/proxy/global environment changes.
+## ADM-AUTH-001 — INDEPENDENT REVIEW FAIL / REMEDIATION ADMISSION — 2026-10-12
+
+Actual independent reports được root cung cấp, task vẫn IN_PROGRESS:
+- SR owner oct12_adm_auth001_sr: initial FAIL; SEC-ADM-AUTH-001-001,
+  MEDIUM, Blocking YES, Original Status OPEN.
+- AR owner oct12_adm_auth001_ar: initial FAIL; ARCH-ADM-AUTH-001-001,
+  HIGH, Blocking YES, Original Status OPEN.
+- QAR owner oct12_adm_auth001_qa: initial FAIL; QA-ADM-AUTH-001-001,
+  MEDIUM, Blocking YES, Original Status OPEN.
+
+Cùng defect: logout await pending refresh và POSTlogout trong cùng try;
+refresh reject bỏ POST current pair dù pair còn tồn tại. QAR actual NodeTS
+runtime reproduction exit0 logoutCalls0/anonymous/logout-unconfirmed;
+SR variant rotation lưu new pair rồi GETme fail cũng bỏ revoke new pair.
+Initial implementation66/66 PASS không bao phủ boundary, không thay reviewerFAIL.
+
+Root authorized minimal remediation: settle refresh fulfilled/rejected riêng,
+đúng generation/current pair còn→one POSTlogout; no duplicates/blind retry/B
+session replay; always local clear/privatecache/backstack và notice đúng204.
+Regression bốn case: pre-rotation reject/oldpair, postrotation GETme reject/
+newpair, generation replacement while wait, concrete HTTP401 refreshfailure
+race với explicitlogout. Findings giữ OPEN chờ đúng reviewer focused re-review;
+implementer không resolve/claim reviewerPASS hoặc finalize/Git.
+## ADM-AUTH-001 — REMEDIATION TEST / STOP — 2026-10-12
+
+Remediation scoped ba findings SEC-ADM-AUTH-001-001 (SR MEDIUM),
+ARCH-ADM-AUTH-001-001 (AR HIGH), QA-ADM-AUTH-001-001 (QAR MEDIUM), tất cả
+Blocking YES, Original OPEN; initial FAIL chronology giữ nguyên phía trên.
+Không tự resolve hoặc claim reviewer PASS. Findings vẫn OPEN chờ đúng owner.
+
+Sửa logout settle pending refresh reject/fulfill riêng khỏi currentpair revoke.
+Cùng generation và pair còn lại→one POSTlogout, cả old pair khi refresh chưa
+rotation và new pair khi rotation đã lưu/GETme fail. No blindretry/duplicate/B
+session replay; alwaysclear local/private cache cuối cùng, notice dựa actual204.
+
+Concrete API race được bảo vệ bởi optional AuthSessionAdapter callback
+clearSessionAfterAuthFailure; APIclient fallback existing clearSession với
+adapter cũ. Concrete adapter chỉ defer automaticfailure cleanup khi logout
+đang own finally và private UI blocked. Explicit clearSession vẫn invalidate
+ngay, logout A không đụng B. Không thay API/backend/security contract; minimal
+foundation dependency update vì exact independent SR-required boundary.
+ARCHITECTURE note đồng bộ orchestration, no other feature/spec expansion.
+
+Bốn regression mới: pre-rotation refreshreject oldpair once; pairrotated sau đó
+GETmereject newpair once; generationreplace trong wait giữ B/noPOST; concrete
+401refreshfailure giữa pendinglogout/204 không mất pair hoặc noticeconfirmed.
+Initial70test run69PASS/1FAIL: concrete fixture logoutmockresolveimmediate đã
+thay generation trước HTTPcatch, đúng ApiSessionChangedError thay expected401.
+Scoped fixture dùng deferredrevocation để ép failurecleanup trong logging-out,
+assert pair retained/blocked phase rồi resolve204. Không weaken productionguard.
+
+Final-source actual commands npm run typecheck/lint/test:run/build PASS;
+Vitest9files/70tests PASS0fail/skip,7.17s (new33+existing37). ProductionVite102
+modules PASS899ms includes typecheck. Actualstdout file:
+C:/Users/Hi/AppData/Local/Temp/ADM-AUTH-001-remediation-final.log.
+Baseline/CI/secret audits PASS; Python46/46 PASS; py_compile PASS; diff/cached
+empty/new11UTF8whitespace/conflict/generated/scope/secretguards PASS; tags
+objects/peeled unchanged; package-lock/no newdependency unchanged. Existing
+source-map-js devonlyHIGH advisory remains disclosed, no autoauditfix orwaiver.
+
+Freeze scope27files=16tracked11new, tăng AuthSessionAdapter.ts so với initial26;
+minimal productchanges AdminAuthSession/AuthSessionAdapter/apiClient, regression
+AdminAuthSession.test, ARCHITECTURE/evidence synchronization. TaskIN_PROGRESS;
+SR/AR/QAR initialFAIL vẫn authoritative tới khi đúng owner focusedre-review.
+Remote uncommitted taskdiff NOT RUN / NOT CLAIMED. STOP chờ independent rereview;
+không DONE/finalize/commit/push/proxy/globalenvironment mutation.
+## ADM-AUTH-001 — FOCUSED REVIEW / NEW FINDINGS — 2026-10-12
+
+Authoritative SR re-review FAIL: SEC-ADM-AUTH-001-001 RESOLVED (MEDIUM/YES
+historical), new SEC-ADM-AUTH-001-002 MEDIUM BlockingYES OriginalOPEN.
+QAR re-review FAIL: QA-ADM-AUTH-001-001 RESOLVED (MEDIUM/YES historical),
+new QA-ADM-AUTH-001-002 MEDIUM BlockingYES OriginalOPEN.
+AR focused PASS: ARCH-ADM-AUTH-001-001 RESOLVED (HIGH/YES historical),
+no AR finding. Older001OPEN snapshots stale, không override owner resolution.
+
+Actual source runtime SR/QAR reproduce login→pendinglogout→late samegeneration
+403 denyPermission→secondlogout: phase forbidden/logoutCalls2. Permissionevent
+làm mất logging-out ownership, phá duplicate/authfailure cleanup guards.
+Root authorized minimalremediation preserve logout state throughfinally khi
+samegen403; tests pendingrefresh/pendingrevoke plus automaticauthfailure race.
+New002 findings OPEN trướcpatch; implementer không resolve/selfreview/finalize.
+## ADM-AUTH-001 — REMEDIATION002 TEST / STOP — 2026-10-12
+
+Sửa minimal denyPermission: samegeneration callback403 không clearcache hoặc
+publish forbidden trong logging-out. Logout tiếp tục own state đến finally;
+guard vẫn blocked private UI, duplicate logout không mở lại, automatic401
+cleanup vẫn defer đến cuối. Explicit clear/sessiongeneration replacement
+không đổi, old001 regressions giữ nguyên. No API/backend/contract/docscopechange.
+
+Ba meaningful race regressions bổ sung: late403 khi pendingrefresh giữphase
+và chỉ một POST rotatedpair; concrete HTTP403 trong pendingrevoke +secondclick
+chỉ một POST; late403 +automaticauthfailure giữ oldpair/currentgeneration,
+không noticeexpired trướcfinally, revocation reject→logout-unconfirmed và
+privatepair/user clear. Không test mirror thuần guard hoặc unrelatedscope.
+
+Actual final-source npm run typecheck/lint/test:run/build đều PASS. Vitest
+9files/73tests PASS0fail/skip,7.07s; new36+existing37. Viteproduction102modules
+PASS1.17s, includes typecheck. Actualstdout:
+C:/Users/Hi/AppData/Local/Temp/ADM-AUTH-001-remediation002-final.log.
+Baseline/CI/secret audits/Python46/py_compile/diff/cached/new11UTF8whitespace/
+conflict/scope/generated/secretguards PASS; tags objects/peeled unchanged;
+package-lock/no dependency changes. Existingdevonlysource-map-js HIGH advisory
+remains disclosed, not auto-fixed/waived; productionauditprior0 unchangedscope.
+
+Findings chronology authoritative: SEC001/QA001/ARCH001 RESOLVED bởi đúng
+owners, initialFAIL/historyseverityblocking retained; ARCHfocusedPASS trên
+70testsource không tự claimfinalcurrentARPASS. SEC002/QA002 MEDIUM BlockingYES
+OriginalOPEN vẫn OPEN chờ focused owners; implementer không resolve/selfreview.
+Source frozen27files16tracked11new; task IN_PROGRESS. SR/QAR+AR focused review
+current73testsource là nextoperation. UncommittedremoteCI NOT RUN / NOTCLAIMED.
+STOP, nofinalize/DONE/commit/push/proxy/globalenvironment mutation.
+## ADM-AUTH-001 — SYNCHRONIZE INDEPENDENT REVIEWER EVIDENCE — 2026-10-12
+
+Operation synchronization riêng, chỉ planning evidence; không review hoặc
+product/test/spec patch. Actual authoritative owner reports do root cung cấp.
+Canonical SR,QAR giữ nguyên; additional AR do composition/routing/sessionimpact.
+
+| Reviewer | Authoritative owner | Initial / chronology / final | Findings current |
+|---|---|---|---|
+| SR | oct12_adm_auth001_sr | initial FAIL → focused FAIL (001 RESOLVED,002 OPEN) → final PASS | SEC-ADM-AUTH-001-001 MEDIUM/BlockingYES RESOLVED; SEC-ADM-AUTH-001-002 MEDIUM/BlockingYES RESOLVED |
+| QAR | oct12_adm_auth001_qa | initial FAIL → focused FAIL (001 RESOLVED,002 OPEN) → final PASS | QA-ADM-AUTH-001-001 MEDIUM/BlockingYES RESOLVED; QA-ADM-AUTH-001-002 MEDIUM/BlockingYES RESOLVED |
+| AR | oct12_adm_auth001_ar | initial FAIL → focused PASS (001 RESOLVED) → final worktree PASS after002 | ARCH-ADM-AUTH-001-001 HIGH/BlockingYES RESOLVED |
+
+Tổng5 findings RESOLVED bởi đúng owning reviewer; unresolved NONE. OriginalOPEN,
+severity/blocking/historyinitialFAIL giữ đầy đủ phía trên. Older001/002OPEN
+snapshots stale, không override latest authoritative resolutions. Implementer
+không tự resolve/manufacture reviewer result. ARfinalPASS áp dụng final73test
+source sau002, không lấy older70sourcePASS thay currentworktree gate.
+
+QAR independently chạy typecheck/lint PASS; Vitest9files/73tests PASS0fail/skip,
+7.04s (37existing+36new); build102modules PASS1.54s. Runtime late403 pending
+logoutcalls1/phaseloggingout/pairretained; finalanonymousnoticeNONE khi204,
+logout-unconfirmed khi revokeerror. Actual baseline/CI/secret/py_compile/diff
+checks PASS. Supporting readonlywrongcwd Cannotfindpath→correct ROOTread;
+không source mutation hoặc npm gate impact, history giữ nguyên.
+SR independently runtime calls1/pairretained/finalclear và audits PASS.
+AR readonly final-worktree audit PASS, no new finding.
+
+Implementation final-source73/73 và Python46/46, typecheck/lint/build/audits/
+guards/tags/lock PASS theo actual evidence trước đó. Existing dev-only HIGH
+source-map-js1.2.1/GHSA-68fv-2mgg-jv7q disclosed: full audit exit1, prod audit0,
+HEADlock unchanged/no dependency mutation. SR đánh giá nonblocking trên scope
+và dev-only attack prerequisite; không suppress advisory hoặc waive failing
+RequiredCI gate. RequiredCI không có npm-audit gate, fileworkflowunchanged.
+
+Sourcefreeze27files16tracked11new giữ nguyên; chỉ EXECUTION_LOG synchronization.
+Task IN_PROGRESS, no product/test/spec patch, nofinalize/DONE/commit/push/proxy/
+globalenvironment. Uncommitted taskdiff remoteCI NOT RUN / NOTCLAIMED;
+admission publishedbase CI PASS không thay remoteCI task. Nextoperation riêng
+finalize ADM-AUTH-001 sau orchestrator xác minh synchronized reviewer gates.
+## ADM-AUTH-001 — FINALIZE — 2026-10-12
+
+Operationfinalize riêng sau synchronized independent evidence, không review/Git.
+SR,QAR canonical và additional AR final PASS trên source73tests. Five findings
+SEC001/002 MEDIUM/YES, QA001/002 MEDIUM/YES, ARCH001 HIGH/YES RESOLVED bởi đúng
+owners, unresolved NONE. InitialFAIL→OPEN→remediation→focusedresolution/new002
+FAIL→remediation002→finalPASS chronology giữ nguyên, không staleoverride/selfresolve.
+
+Acceptance PASS theo approvedsources+ba ownerdecisions: Login typed public
+contract/Vietnamese validation/errors; atomicmemorytabpair/no persistence;
+ADMIN ACTIVE protectedexistingShell /admin hoặc/admin/dashboard chưaDashboard,
+USER/HTTP403 không protectedcontent; backendauthorization remainsauthority.
+Serialized401rotation/servercurrentrole/sessiongeneration callbacks; stale200
+không publishunderB; privatecache/sessionexpire guards. Explicitlogout chờ
+refreshsettle dùreject rồi currentpaironePOST; no duplicates/blindretry;
+late403/automaticfailure không mất logoutownership; explicitreplacement giữ B;
+finallyclearprivatepair/cache/backstack, noticeactual204 hoặcunconfirmedserver.
+No laterDashboard/CRUD/statistics/AI/V2/offlinequeue/backend/API/schema/migration.
+
+Applicable TEST gates final implementation73/73 Vitest9files PASS7.07s, QAR
+independent73/73 PASS7.04s; typecheck/lint/build PASS (implementation102modules
+1.17s,QAR1.54s), Python46/46 PASS, py_compile PASS. Actual implementationlog
+C:/Users/Hi/AppData/Local/Temp/ADM-AUTH-001-remediation002-final.log. All
+initialtypecheck/lint/helper/fixture failures and scopedfix→PASS history retained.
+Existingdevonlysource-map-js1.2.1 HIGH GHSA-68fv-2mgg-jv7q fullauditexit1/prod0
+HEADlockunchanged disclosure preserved; SRnonblockingdevattackprerequisite;
+not npm fullauditPASS or failingRequiredCIwaiver. No dependency/lock mutation.
+
+Freshclosure main HEAD=origin/main=live d23c24db5dd3377b4b90cccadfb00d077758bc88;
+noGitoperation, onlyADM-AUTH001active beforeclose. DependenciesADM-FND002/
+BEAUTH004stillDONE. ExactGitHubREST run38143439830 RequiredCIjob114481798119
+completed/success sameSHA, ACTUAL_CI_REPOSITORY_HEALTH HEALTHY publishedbase;
+PRE_CIexpired/failed-checkwaiverNOTUSED. Taskuncommitteddiff remoteCI NOTRUN/
+NOTCLAIMED, baseCI không thay actualCI cho commitchưa publish.
+
+Fresh baseline/CI/secret audits/diffcached(empty)/new11UTF8whitespace/conflict/
+scopedsecret/generatedguards PASS. Scope27files16tracked11new giữreviewedfreeze;
+product/tests/specs không đổi tạiclosure. Nogenerateddist/node_modules/build
+tracked, lock unchanged. Local+remoteimmutablebaselineobjects/peeled unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Tất cả acceptance/tests/reviewer/closuregates PASS, unresolvedNONE.
+Finalize IN_PROGRESS→DONE, chỉ MASTER_BACKLOG/EXECUTION_LOG lifecycle/evidence.
+M2 19/21DONE (90.48%), remaining2: BE-AUTH-007 vàQA-IDCAT-001; milestoneexitpending.
+STOP trước Gitpublicationriêng publishADM-AUTH001 onefinaltaskcommit/ffpushmain;
+push→CI_PENDING, không PLANtaskmới khi actualRequiredCI chưaPASS.
+No commit/push/tag/proxy/globalenvironment/productmutation.
+## ADM-AUTH-001 — PRE-PUBLISH FORMATTING GATE FAILURE / CORRECTION — 2026-10-12
+
+Actual Git publication staged27files rồi git diff --cached --check FAIL:
+admin-web/src/features/auth/AuthProvider.tsx:8 new blank line at EOF.
+Không commit/push; index retained. Earlier untracked whitespace helper missed
+extraEOFblankline; closureguardPASS không bao phủ case này, stagedguardPASS
+chưa thỏa tại publication. Giữ actualfailurehistory, không giả mạo validPASS.
+
+Root authorized routine scopedformatting correction trước publication; taskDONE
+chưapublished, không PUBLISHED_MAIN_RECOVERY hoặc feature/task khác. Chỉ bỏ
+extra EOFblankline của AuthProvider.tsx, giữ onefinalnewline. Semantic/source
+text không đổi, role/session/UI behavior và approvedreviewed product giữ nguyên.
+Executionlog ghi correction; scope27files không tăng. No indexstage/unstage/reset,
+commit/push/productlogic/contract change. Index hiện vẫn giữ bảnstaged cũ;
+Gitworkflow phải restage corrected file+evidence và rerun cachedguard trướccommit.
+
+Focused fresh worktree EOF/UTF8/whitespace checks +typecheck là applicablegate;
+QAR independent focusedreview/closureconfirmation cònpending, không ownPASS.
+DONE remains finalizedlifecycle nhưng publicationblocked tới khi correction
+và focusedclosure được xác minh. NoCIwaiver/historicalrewrite hoặc proxyenv.
+Correction validation actual: initial overly broad EOF helper yêu cầu final
+newline cả modifiedexistingfiles, FAIL README.md vì noteexisting EOF khôngnewline;
+không normalizeunrelateddocs. Correct helper scoped11newsourcefiles kiểm tra
+UTF8/trailingwhitespace/onefinalnewline/noextrablankline PASS, includesAuthProvider.
+AuthProvider before/after chỉ khác extraEOFnewline, semantic text equality PASS.
+npm run typecheck PASS; git diff --check worktree PASS. git diff --cached --check
+vẫn actualFAIL AuthProvider.tsx:8 vì originalindexretained đúng authorization,
+không claim cachedPASS. QARfocusedvalidation+Gitrestage/cachedguard là nextgate.
+## ADM-AUTH-001 — FORMATTING FOCUSED QAR / CLOSURE SUPPLEMENT — 2026-10-12
+
+Actual authoritative QARfocused PASS được root cung cấp: AuthProvider staged
+versus worktree chỉ extraEOFblankline, semanticidentical/onefinalnewline;
+worktree diff PASS. Prior73test/SR/AR/QAR semantic gates vẫn áp dụng; QA001/002
+RESOLVED, không newfinding; taskDONEclosurevalid. Original stagedformatFAIL,
+oldhelpermissedcase, focusedpending snapshots phía trên là history được giữ,
+không override focusedPASScurrentstate.
+
+Chỉ EXECUTION_LOG append supplement, no source/lifecycle/index/Git mutation.
+TaskDONE/source27scope reviewedsemantics unchanged. Cachedoldindex vẫnFAIL
+expected trước Gitrestage; chưa claimcachedPASS. Nextoperation Gitworkflow
+explicitcontinue restage correctedAuthProvider+latestplanningevidence, rerun
+cachedguard/requiredpublicationgates rồi onefinalcommit/ffpush. NoCIwaiver,
+fulltestrerun/logicchange/proxy/environment hoặc self-review.

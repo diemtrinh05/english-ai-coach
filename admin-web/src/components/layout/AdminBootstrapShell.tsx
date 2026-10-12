@@ -12,12 +12,14 @@ const navigationItems = [
   viMessages.navigation.auditLogs,
 ]
 
-export function AdminBootstrapShell() {
+export function AdminBootstrapShell({ onLogout }: { onLogout?: () => void }) {
   return (
     <div className="admin-shell">
       <header className="admin-shell__topbar">
         <p className="admin-shell__brand">{viMessages.app.name}</p>
-        <p className="admin-shell__role">{viMessages.app.role}</p>
+        <div className="auth-session-controls"><p className="admin-shell__role">{viMessages.app.role}</p>
+          {onLogout && <button onClick={onLogout}>{viMessages.auth.signOut}</button>}
+        </div>
       </header>
 
       <aside className="admin-shell__sidebar" aria-label={viMessages.navigation.label}>

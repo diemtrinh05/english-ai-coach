@@ -20,6 +20,7 @@ export interface CreateApiClientOptions {
   baseUrl?: string
   fetchImplementation?: typeof fetch
   timeoutMs?: number
+  onForbidden?: (expectedSessionGeneration: AuthSessionGeneration) => void
 }
 
 export type ConfigureApiClientOptions = Omit<CreateApiClientOptions, 'auth'>
@@ -63,7 +64,8 @@ export function createApiClient(options: CreateApiClientOptions): ApiClient {
 
   async function clearSessionIfCurrent(sessionGeneration: AuthSessionGeneration): Promise<void> {
     if (auth.getSessionSnapshot().sessionGeneration === sessionGeneration) {
-      await auth.clearSession(sessionGeneration)
+      if (auth.clearSessionAfterAuthFailure) await auth.clearSessionAfterAuthFailure(sessionGeneration)
+      else await auth.clearSession(sessionGeneration)
     }
   }
 
@@ -118,6 +120,10 @@ export function createApiClient(options: CreateApiClientOptions): ApiClient {
       const requestSession = auth.getSessionSnapshot()
       let response = await execute(path, requestOptions, requestSession.accessToken)
 
+      if (auth.getSessionSnapshot().sessionGeneration !== requestSession.sessionGeneration) {
+        throw new ApiSessionChangedError()
+      }
+
       if (response.status === 401) {
         const currentSession = auth.getSessionSnapshot()
         let retryToken: string | null = null
@@ -162,10 +168,21 @@ export function createApiClient(options: CreateApiClientOptions): ApiClient {
       }
 
       if (!response.ok) {
+        if (response.status === 403 && auth.getSessionSnapshot().sessionGeneration === requestSession.sessionGeneration) {
+          options.onForbidden?.(requestSession.sessionGeneration)
+        }
         throw await toApiError(response)
       }
 
-      return parseSuccess<TResponse>(response)
+      if (auth.getSessionSnapshot().sessionGeneration !== requestSession.sessionGeneration) {
+        throw new ApiSessionChangedError()
+      }
+
+      const result = await parseSuccess<TResponse>(response)
+      if (auth.getSessionSnapshot().sessionGeneration !== requestSession.sessionGeneration) {
+        throw new ApiSessionChangedError()
+      }
+      return result
     },
   }
 }
