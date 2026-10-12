@@ -10479,3 +10479,168 @@ STOP after finalize before separate Git workflow publish BE-AUTH-007: one final
 task commit on main and fast-forward push; push sets CI_PENDING until exact
 Required CI passes. No commit/push/index/tag/proxy/global-environment mutation
 or self-review performed by Backend finalize.
+
+## QA-IDCAT-001 — PLAN / ADMISSION — 2026-10-12
+
+Command execute; QA implementation skill, GOV009_DIRECT_MAIN, Owner QAR/M2/P0.
+Root xác nhận actual Git pre-task READY: main sạch, HEAD=origin/main=live
+4829552a4a78861b6050b69f678d77286465cf09; no Git operation/other active task;
+Required CI run38241485521/job114784893528 completed/success cho exact SHA,
+ACTUAL_CI_REPOSITORY_HEALTH HEALTHY; PRE_CI expired, waiver NOT USED.
+Dependencies BE-AUTH-007/BE-USER-001/BE-GOAL-001/BE-VOC-003 đều DONE.
+Canonical reviewers SR,DBR,QAR; QAR reviewer phải khác QA implementer/session.
+Independent verdicts PENDING; không tự claim review PASS.
+
+Đã đọc PROJECT_RULES/AGENTS/plan/backlog/log/QAR instructions và current approved
+SRS→DB→Architecture→API/OpenAPI→Technical/Backend contracts, README/harness/tests.
+Google approvals đã tích hợp; không phát hiện gap cần quyết định contract mới.
+Acceptance: register/login/refresh/logout/google/profile/goals/catalog
+happy+error+authz trên PostgreSQL thật. Existing domain suites giữ boundary,
+rollback/concurrency/provider cases; thêm cross-module API-issued session flow,
+two-user ownership/isolation, Google signed-JWT fake-JWKS xuyên profile/goals,
+public catalog sau logout, partial profile/goals save và validation không mutation.
+Scope tests + QA runbook + planning evidence only. Không sửa product code,
+API/OpenAPI/schema/Flyway/client/CI/dependency, không implement M3/V2.
+
+PLAN chuyển TODO→IN_PROGRESS trước test patch. Required TEST: Maven clean verify,
+focused repeat run cho isolation, PostgreSQL16.15 fresh Flyway/Hibernate validate,
+Python46/baseline/CI/secret/py_compile/diff/UTF8-new-file/EOF/scope/generated/tag guards.
+Process-only JDK21; không đổi proxy/global environment. STOP sau TEST trước
+independent SR/DBR/QAR, không finalize/commit/push trong execute.
+
+## QA-IDCAT-001 — IMPLEMENT / FOCUSED TEST — 2026-10-12
+
+Scope4files: 2tracked planning + 2new, IdentityCatalogIntegrationTests.java
+and docs/testing/QA-IDCAT-001.md. Six cross-module scenarios use API-issued
+LOCAL/GOOGLE sessions, actual security/controller/service/committed PostgreSQL;
+Google verifier real với existing signedJWT fixture + fakeJWKS I/O only.
+No outer test transaction; per-test UUID emails/subjects and owned inactive
+goal, explicit scoped cleanup token/goals/profile/users/goal with no seed truncate.
+Public catalog asserts six CEFR each >=30 active words through API, nonblank
+meaningVi; detailed MANUAL/provenance/usable30 each in existing seed suite.
+Runbook maps acceptance/error/authz/TTS/rollback/concurrency to existing suites
+and six new scenarios, documents repeat run and live-provider limitations.
+
+Focused JDK21 process-local Maven test -Dtest=IdentityCatalogIntegrationTests
+PASS6/6, zero failures/errors/skips, exit0 BUILD SUCCESS50.655s.
+Log C:/Users/Hi/AppData/Local/Temp/QA-IDCAT-001-focused.log.
+Pythonunittest46/46, baseline/CIworkflow/secret audits/py_compile/diff/cached
+and two new UTF8/oneEOFnewline/whitespace/conflict guards PASS. Local+remote
+baseline tag objects/peeled unchanged. Full required clean verify running;
+not yet claimed PASS. Readonly discovery diagnostics: nonexistent backend/README
+resolved root README; rg wildcard V1__* unsupported Windows path resolved existing
+harness/migration sources. No code/test failure or reviewer finding in focused run.
+Task stays IN_PROGRESS; required SR/DBR/QAR independent gates PENDING.
+
+## QA-IDCAT-001 — FINAL TEST / INDEPENDENT REVIEW HANDOFF — 2026-10-12
+
+QA implementation skill execute kết thúc PLAN→IMPLEMENT→TEST; task IN_PROGRESS.
+Final exact-source command, process-only JDK21:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+PASS234/234 across57SurefireXML, zero failures/errors/skips, exit0
+BUILD SUCCESS2m43s. Log C:/Users/Hi/AppData/Local/Temp/QA-IDCAT-001-final.log.
+Includes PostgreSQL16.15 fresh isolated Testcontainers, FlywayV1–V7/Hibernate
+validate, API/OpenAPI/domain auth/profile/goals/catalog/TTS/foundation regression
+and executablejar packaging. M2 sixCEFR>=30active vocabulary each API assertions
+PASS; existing DemoVocabularySeedIntegrationTests confirms MANUAL/usable30 each.
+
+Required focused repeat final source:
+.\backend\mvnw.cmd --no-transfer-progress -f backend/pom.xml -Dtest=IdentityCatalogIntegrationTests test
+PASS6/6 zero failures/errors/skips, exit0 BUILD SUCCESS25.215s.
+Log C:/Users/Hi/AppData/Local/Temp/QA-IDCAT-001-repeat.log.
+Six scenarios reuse one isolated context with real per-request commits/scoped
+AfterEach cleanup; repeated invocation again PASS. Full234 evidence retained
+from full verify, not claimed another full234 run by focused6 command.
+
+Chronology preserved: initial focused6PASS50.655s; pre-strengthening full234PASS
+2m54s logQA-IDCAT-001-full.log; strengthened ownedprofile timestamp sentinel
+created_at=NOW-1000s/updated_at=NOW-500s detects profile rewrite under fixedClock
+when explicit goals retry succeeds; finalfull234PASS + focusedrepeat6PASS above.
+The first fullrun had already compiled old bytecode before sentinel sourcepatch;
+it is not final-source evidence. No test failure or product fix occurred.
+An overbroad guard initially asserted no trailing spaces across all historical
+MASTER_BACKLOG Markdown and failed on existing intentional hardbreak spaces;
+corrected to full checks on new files + gitdiffcheck on tracked changes PASS,
+without modifying approved unrelated content or waiving actual changed-file errors.
+
+Fresh Pythonunittest discover -s tools -p test_*.py PASS46/46; baseline/CIworkflow/
+secret audits/py_compile PASS; gitdiffcheck/cached(empty) PASS. Scope4files=
+2tracked planning + 2new test/runbook; new UTF8/oneEOFnewline/whitespace/conflict
+guards PASS, no generated outputs tracked, no secret/config/dependency changes.
+HEAD=origin/main4829552a4a78861b6050b69f678d77286465cf09; noindex/Gitoperation.
+Local+remote immutable baseline object→peeled IDs unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+BaseRequiredCI38241485521/job114784893528 completed/success HEALTHY at admission;
+uncommitted task remoteCI NOT RUN/NOT CLAIMED. PRE_CI expired, waiver NOT USED.
+
+Change: cross-module committed PostgreSQL/MockMvc suite + QA coverage/runbook.
+Why: prior per-feature suites lacked combined API-issued session continuity and
+private-state isolation across modules. API/database/clients/backwardcompatibility
+unchanged; migration NONE; product code/schema/Flyway/CI unchanged. Google uses
+real verifier + signedJWT/fakeJWKS; not live Google-account/TTS deployment proof.
+No M3/assessment/clientUI E2E or algorithm claim. M2 closure still pending review.
+
+Canonical SR/DBR/QAR verdicts PENDING; findings not yet assessed. SELF_REVIEW
+prohibited; independent QAR reviewer must use different authority/session from
+/root/idcat_impl. No QAR/AR/DBR/SR PASS claimed by implementer. STOP before REVIEW:
+root dispatches independent SR/DBR/QAR; no further Mavenwriter active, nofinalize/
+commit/push/index/tag/proxy/globalenvironment mutation.
+
+## QA-IDCAT-001 — INDEPENDENT REVIEW SYNCHRONIZATION / FINALIZE — 2026-10-12
+
+Command finalize bằng QA-task skill, GOV009_DIRECT_MAIN. Root cung cấp actual
+independent owner reports cho canonical SR/DBR/QAR, tất cả initial PASS/final
+applicable PASS, findings NONE. Đây là đồng bộ evidence external, không tự
+review; implementer /root/idcat_impl khác authority/session QAR dưới đây.
+
+| Gate | Independent owner | Result | Evidence / scope |
+|---|---|---|---|
+| SR canonical | /root/idcat_review_sr | PASS | Full4source/API-issued token pairs, real Google verifier/signed fake-JWKS, foreign logout isolation, JWT ownership/expiry/hash, scoped fixtures/private authz/public catalog, no token leak; audits PASS, full234/repeat6 logs reviewed. |
+| DBR canonical | /root/idcat_review_dbr | PASS | Full4source PostgreSQL16.15/FlywayV1–V7/Hibernatevalidate, per-request commits without outer test transaction, scoped FK cleanup/no seed truncate, created_at<updated_at<NOW sentinel, rejected mutations/partial profile-goals save; audits/log234+6 PASS. |
+| QAR canonical | /root/idcat_review_qa | PASS | Different authority/session from QA implementer; acceptance4source, own Maven focused6/6 zero failures/errors/skips, BUILD SUCCESS35.363s exit0, Python46/audits/new2UTF8EOFwhitespace/diff/localremote tags and exact baseRequiredCI PASS. |
+
+QAR actual independent command uses -Dtest=IdentityCatalogIntegrationTests;
+log C:/Users/Hi/AppData/Local/Temp/QA-IDCAT-001-qa-independent.log. Full implementation
+234/234 across57XML BUILD SUCCESS2m43s verified, not claimed own full rerun by QAR.
+Final implementation repeat6/6 BUILD SUCCESS25.215s remains valid. No reviewer
+FAIL/finding/remediation/re-review required; findings resolved N/A, unresolved NONE.
+Canonical SR,DBR,QAR mapping unchanged; AR not required for test-only scope.
+SELF_REVIEW_CONFLICT satisfied by separate independent QAR authority, no selfPASS.
+
+Preserve earlier focused6PASS/pre-strengtheningfull234PASS/sentinelstrengthening
+/finalfull234+repeat6PASS chronology and overbroad historicalMarkdown whitespace
+guard FAIL→correct scoped changed-file/new-file guard PASS. QAR readonly discovery
+had two path/wildcard command errors corrected through rg; these are discovery
+diagnostics, not product/test failures or reviewer findings. No history rewritten.
+
+Fresh closure baseline/CIworkflow/secret audits/py_compile/diff/cached(empty)
+PASS; scope4=2tracked planning+2new test/runbook, new UTF8/oneEOFnewline/noextra
+blank/trailingwhitespace/conflict/generated checks PASS. No implementation/test
+/runbook source change after review; this finalize changes planning evidence only.
+No Maven rerun needed: full234+repeat6+independent6/Python46 source-valid evidence
+retained. No product/API/schema/Flyway/client/CI/dependency or migration change.
+
+Fresh HEAD=origin/main=live4829552a4a78861b6050b69f678d77286465cf09, main/indexempty
+/noGitoperation/nootheractive task. Four dependencies DONE; Owner QAR/M2/P0.
+Actual REST run38241485521, Required CI job114784893528 completed/success for
+exact baseSHA; ACTUAL_CI_REPOSITORY_HEALTH HEALTHY. PRE_CI permanently expired,
+failed-check waiver NOT USED; future task commit remoteCI NOT RUN/NOT CLAIMED.
+Local+remote baseline object→peeled values remain unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Helper finalize advisory SELF_REVIEW_CONFLICT/unknown external gates superseded
+by actual independent owner reports and fresh closure checks; no gate waived.
+
+Acceptance/requiredtests/reviewers/guards PASS, unresolved findings NONE.
+Finalize IN_PROGRESS→DONE. M2 canonical rows now21/21DONE (100%), remaining0;
+local exit readiness PASS auth lifecycle/catalog/sixCEFR30MANUAL usable seed.
+Post-push Required CI for new final commit remains future repository-health gate;
+not claiming final remote-CI milestone validation, release readiness or RC. Existing
+historical milestone snapshots/checklist entries remain history; QA-IDCAT current
+checkbox updated. Google live deployment/account/TTS provider proof excluded as
+documented approved fixture boundary, not waived runtime validation.
+
+STOP after finalize: separate Git workflow may publish one final QA-IDCAT-001
+commit on main/fast-forward push, then exact Required CI boundary. No commit/push/
+stage/index/tag/proxy/globalenvironment mutation by QA implementer.

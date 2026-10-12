@@ -145,7 +145,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `QA-IDCAT-001` | Auth/profile/catalog integration suite | QAR | `BE-AUTH-007`<br>`BE-USER-001`<br>`BE-GOAL-001`<br>`BE-VOC-003` | P0 | SR,DBR,QAR | Register/login/refresh/logout/google/profile/goals/catalog happy+error+authz; PostgreSQL integration. | Theo global DoD + acceptance. | TODO |
+| `QA-IDCAT-001` | Auth/profile/catalog integration suite | QAR | `BE-AUTH-007`<br>`BE-USER-001`<br>`BE-GOAL-001`<br>`BE-VOC-003` | P0 | SR,DBR,QAR | Register/login/refresh/logout/google/profile/goals/catalog happy+error+authz; PostgreSQL integration. | Theo global DoD + acceptance. | DONE |
 
 ## Android Identity
 
@@ -741,7 +741,7 @@ P0 tasks:
 [ ] DB-CONTENT-002
 [x] BE-VOC-001
 [x] BE-VOC-002
-[ ] QA-IDCAT-001
+[x] QA-IDCAT-001
 [ ] AND-AUTH-001
 [ ] AND-AUTH-002
 [x] AND-ONB-001
