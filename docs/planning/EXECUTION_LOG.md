@@ -10889,3 +10889,90 @@ giữ nguyên.
 STOP trước Git workflow publish BE-SRS-002: một final scoped commit trên main
 và fast-forward push riêng, rồi exact Required CI repository-health boundary.
 Không commit/push/stage/index/tag/proxy/global environment mutation bởi Backend.
+
+## QA-SRS-001 — PLAN / ADMISSION — 2026-10-13
+
+Owner chọn QA-SRS-001 làm NEXT. QA-task execute, GOV009_DIRECT_MAIN,
+M3/P0/QAR; canonical reviewer QAR phải là agent độc lập với QA implementer.
+Dependency BE-SRS-002 DONE. Admission trước thay đổi: main sạch,
+HEAD=origin/main=573fdab733d05069b01a504b84d5af5930f11ee1,
+không Git operation/task direct-main khác; Required CI run38369037944
+exact SHA PASS, repository HEALTHY, mode ACTUAL_CI_REPOSITORY_HEALTH.
+Helper QA execute advisory ALLOWED; tự đối chiếu SRS v1.2, AI
+Personalization v1.3 §7/reconciled, Backend Technical Spec v1.3 §116,
+existing BE-SRS-001/002 tests và backlog. Không thấy mâu thuẫn hợp đồng.
+PLAN chuyển TODO→IN_PROGRESS trước test patch.
+
+Scope: test-only QA boundary matrix cho q0..5, first attempt/repetitions,
+failure regression, interval min/max, response-time factor và mastered
+entry/stay/regression; fixed Instant/không wall clock. Không sửa product,
+API/OpenAPI, DB/Flyway, client, formula hay các later-task integrations.
+TEST gồm focused Maven, full backend clean verify, Python/audit/diff,
+new-file/scope/secret/generated/tag checks. Execute STOP trước independent
+QAR review/finalize/commit/push.
+
+## QA-SRS-001 — IMPLEMENT / FINAL TEST / REVIEW HANDOFF — 2026-10-13
+
+Thêm `SrsBoundaryMatrixTests.java` test-only, 21 JUnit cases; không sửa
+production code. Ma trận dùng fixed Instant có microseconds, expect giá trị
+EF/repetitions/interval/nextReviewAt/status/isCorrect/algorithmVersion cụ thể,
+không tính oracle bằng cùng công thức product. Sáu chất lượng q0..5 trên
+first accepted attempt; q4 liên tiếp qua LEARNING→REVIEWING→MASTERED ở
+lần đúng thứ năm; q0..2 từ REVIEWING/MASTERED hồi quy, reset và hai lần
+success phục hồi; interval min1/max180; responseTimeMs 0,999,1000,3000,
+3500,10000,Integer.MAX_VALUE; mastered entry bằng quality/repetition/final
+interval cùng lúc, q3 giữ MASTERED, q2 hồi quy. Các existing BE-SRS-001/002
+tests vẫn chạy trong full suite. Đây là unit/state boundary, không claim
+learning attempt persistence/idempotency/concurrency của task kế tiếp.
+
+Focused `-Dtest=SrsBoundaryMatrixTests test`: 21/21 PASS, zero failure/error/
+skip, exit0 BUILD SUCCESS10.998s; log
+`C:/Users/Hi/AppData/Local/Temp/QA-SRS-001-focused.log`.
+Full `backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify`
+với JDK21 process-only: 317/317 PASS qua61 Surefire XML, zero failure/error/
+skip, exit0 BUILD SUCCESS03:44min, executable JAR packaging PASS; log
+`C:/Users/Hi/AppData/Local/Temp/QA-SRS-001-final.log`.
+PostgreSQL Testcontainers/Flyway/API/auth/catalog/idempotency regression
+included in full suite. Python tools tests46/46, baseline_audit,
+ci_workflow_audit, secret_audit, py_compile, git diff --check PASS.
+New Java UTF8/no BOM/one final newline/no extra blank/trailing whitespace/
+conflict markers PASS; scoped three files (test + planning two), no generated
+or secret file. HEAD=origin/main=573fdab733d05069b01a504b84d5af5930f11ee1,
+baseline tag objects/peeled unchanged. No branch/commit/push/index/tag/proxy
+or global environment mutation.
+
+Current status IN_PROGRESS. Canonical QAR reviewer independent gate PENDING;
+QA implementer cannot self-review (`SELF_REVIEW_CONFLICT`). Execute stops
+after TEST and hands off uncommitted tracked+untracked source for independent
+QAR review. Findings NONE observed by implementer; unresolved reviewer
+findings not asserted until reviewer report. Remote CI for future commit
+NOT RUN/NOT CLAIMED; base Required CI run38369037944 PASS/HEALTHY.
+
+## QA-SRS-001 — INDEPENDENT REVIEW SYNCHRONIZATION / FINALIZE — 2026-10-13
+
+QA-task finalize, GOV009_DIRECT_MAIN. Authoritative separate-agent QAR
+review `/root/qa_srs001_review` PASS, findings NONE, unresolved NONE.
+Reviewer tự chạy focused `SrsBoundaryMatrixTests` 21/21 PASS, kiểm tra
+tracked+untracked ba file, đối chiếu acceptance/baseline, owner full clean
+verify317/317 và Python46/audits. QA implementation agent khác với QAR
+reviewer; `SELF_REVIEW_CONFLICT` đã được giải bằng reviewer độc lập, không
+đổi canonical Owner=QAR/Review=QAR. Không có reviewer FAIL/remediation.
+Helper finalize chỉ là advisory và không tự chứng minh external reviewer
+evidence; dùng báo cáo QAR độc lập và TEST thực tế làm authoritative gates.
+
+Fresh closure: 61 Surefire XML=317 tests, zero failures/errors/skips;
+baseline_audit, ci_workflow_audit, secret_audit, Python tools46/46,
+py_compile, git diff --check, new Java UTF8/EOF/whitespace/conflict guard
+đều PASS. Scope giữ đúng ba file, không product/API/DB/client/dependency/
+generated/secret change. Local tag objects/peeled giữ nguyên:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Current main HEAD=origin/main=573fdab733d05069b01a504b84d5af5930f11ee1;
+base Required CI run38369037944 PASS, repository HEALTHY, mode
+ACTUAL_CI_REPOSITORY_HEALTH; failed-check waiver NOT USED. M3 current
+rows3/16 DONE (18.75%), remaining13; M3 exit chưa đạt. Acceptance,
+tests, reviewer và closure guards PASS; IN_PROGRESS→DONE.
+
+STOP trước Git workflow publication: một final scoped commit trên main,
+fast-forward push riêng, rồi exact Required CI repository-health boundary.
+QA implementer không commit/push/index/tag/proxy/global environment mutation.
