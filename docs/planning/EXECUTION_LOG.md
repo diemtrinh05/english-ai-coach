@@ -10777,3 +10777,115 @@ release completion claim. Backward compatibility retained, migration NONE.
 STOP before separate Git workflow publish BE-SRS-001: one final scoped commit on
 main + fast-forward push; post-push health CI_PENDING until exact Required CI PASS.
 No commit/push/stage/tag/proxy/globalenvironment mutation by Backend finalize.
+
+## BE-SRS-002 — PLAN / ADMISSION — 2026-10-13
+
+Backend-task execute, GOV009_DIRECT_MAIN, M3/P0/CBL. Owner chọn NEXT rõ ràng;
+Git workflow pre-task báo READY: main sạch, HEAD=origin/main=live
+21ed3b0ee6ba1ac32d0abfaa11e0b65aae0a7594; Required CI run38250285506
+exact SHA PASS, ACTUAL_CI_REPOSITORY_HEALTH HEALTHY. Dependency BE-SRS-001 DONE;
+PRE_CI expired, failed-check waiver NOT USED. Task TODO→IN_PROGRESS trước product patch.
+
+Đã đọc PROJECT_RULES, AGENTS, plan/backlog/log, CBL skill/role và canonical
+SRS→DB→Architecture→AI→API/OpenAPI→Technical/Backend. SRS v1.2/AI v1.3 quy
+định cùng state machine: first accepted NEW→LEARNING; LEARNING q<3 giữ LEARNING,
+q>=3 và repetitions_new>=2→REVIEWING; REVIEWING q<3→LEARNING, q>=3 giữ trừ
+khi q>=4/repetitions_new>=5/interval_new>=30d→MASTERED; MASTERED q>=3 giữ,
+q<3→LEARNING. Backend derives isCorrect từ q>=3. DB enum/JPA và API/OpenAPI
+khớp; không thấy contradiction/gap cần phê duyệt hợp đồng.
+
+Scope: SrsService dùng SrsCalculator đã có để trả calculation+new status,
+nhận old status/backend values và explicit Instant; tests q0..5, first attempt,
+success/failure/regression/mastered boundaries. SrsProperties typed thresholds
+hiện hữu; không thêm default/business rule. Không persistence/entity mutation,
+schema/Flyway/API/client/transaction/idempotency/learning endpoint/gamification
+hoặc QA-SRS-001 full matrix. Canonical AR,QAR pending; không tự review.
+
+Required TEST: focused state tests, Maven clean verify (existing PostgreSQL/
+Flyway regression), Python46, baseline/CI/secret/py_compile, diff/new-file
+UTF8/EOF/whitespace/conflict/scope/generated/tag guards. Một Maven writer;
+execute STOP sau TEST, giữ IN_PROGRESS, không commit/push/proxy/global env mutation.
+
+## BE-SRS-002 — IMPLEMENT / FINAL TEST / REVIEW HANDOFF — 2026-10-13
+
+`SrsService` là Spring service nội bộ nhận old `LearningStatus` và
+`SrsCalculationInput` do backend tạo; gọi `SrsCalculator` một lần, trả
+`SrsTransitionResult(calculation,status)`. NEW→LEARNING sau attempt đầu tiên
+kể cả q<3; LEARNING q<3 giữ, q>=3 chỉ lên REVIEWING khi repetitions_new>=2;
+REVIEWING q<3 xuống LEARNING, q>=3 giữ trừ khi đồng thời q>=4,
+repetitions_new>=5, interval_new>=30d; MASTERED q>=3 giữ, q<3 xuống LEARNING.
+Typed SrsProperties cung cấp ngưỡng mastered; isCorrect chỉ từ calculator/q>=3.
+Không có entity/repository/HTTP/client mutation hay clock ngầm. BackendTech§110
+bổ sung note BE-SRS-002, giữ nguyên note lịch sử BE-SRS-001.
+
+Focused command process-only JDK21 Maven
+`-Dtest=SrsServiceTests,SrsCalculatorTests,SrsPropertiesValidationTests,ConfigurationPropertiesTests`
+PASS66/66, zero failure/error/skip, exit0 BUILD SUCCESS59.316s; log
+`C:/Users/Hi/AppData/Local/Temp/BE-SRS-002-focused.log`. New state tests26:
+NEW q0..5, LEARNING q0..5 + first success, REVIEWING failure q0..2,
+mastered threshold quality/repetitions/interval/response-time boundaries,
+MASTERED q0..5, null/deterministic/immutable input. Existing40 formula/config
+tests PASS.
+
+Required `./backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify`
+với JDK21 process-only PASS296/296 qua60 Surefire XML, zero failures/errors/
+skips, exit0 BUILD SUCCESS3m51s; log
+`C:/Users/Hi/AppData/Local/Temp/BE-SRS-002-final.log`. PostgreSQL16
+Testcontainers/FlywayV1–V7/Hibernate/API/auth/catalog/idempotency regression
+và executable JAR packaging PASS. Không có test fail/remediation trong lượt này.
+
+Python unittest discover tools PASS46/46; baseline_audit, ci_workflow_audit,
+secret_audit và py_compile PASS. `git diff --check`, cached diff(empty),
+new3Java UTF8 không BOM/một EOF newline/không extra blank/trailing whitespace/
+conflict markers PASS. Scope6files=3tracked planning/BackendTech +3new Java;
+generated/secret/dependency/API/OpenAPI/schema/Flyway/client/V2 changes NONE.
+Local/remote baseline object→peeled không đổi:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+HEAD=origin/main=21ed3b0ee6ba1ac32d0abfaa11e0b65aae0a7594; base Required
+CI run38250285506 exact SHA PASS HEALTHY; uncommitted task remote CI NOT RUN/
+NOT CLAIMED. Task giữ IN_PROGRESS. Canonical AR,QAR vẫn PENDING, unresolved
+review findings chưa được đánh giá độc lập; bàn giao full tracked+untracked
+scope và logs cho reviewer. STOP sau execute TEST; không self-review/finalize/
+DONE/commit/push/index/tag/proxy/global environment mutation.
+
+## BE-SRS-002 — INDEPENDENT REVIEW SYNCHRONIZATION / FINALIZE — 2026-10-13
+
+Backend-task finalize, GOV009_DIRECT_MAIN. Root giao authoritative independent
+reports; backend owner chỉ đồng bộ evidence, không tự review:
+
+| Gate | Independent owner | Result | Evidence |
+|---|---|---|---|
+| AR canonical | /root/srs002_ar | PASS | Review full tracked+untracked BE-SRS-002 source/diff, SRS state boundaries, backend layering và scope. Findings NONE. |
+| QAR canonical | /root/srs002_qa | PASS | Own focused Maven 66/66 PASS; đối chiếu owner full clean verify296/296, Python46/audits và acceptance q0..5/state regression. Findings NONE. |
+
+AR/QAR initial/final applicable PASS, unresolved findings NONE; không tạo
+reviewer FAIL/finding/remediation giả. Canonical reviewer mapping giữ AR,QAR;
+không DB/schema/security impact để thêm DBR/SR. Helper finalize advisory không
+tự chứng minh external reviewer gates; authoritative owner reports trên cùng
+frozen6-file source đáp ứng gate, không waiver. QAR own focused66, không claim
+QAR tự chạy full296. Initial owner focused66/full296, Python46 và logs giữ nguyên.
+
+Fresh closure baseline_audit/ci_workflow_audit/secret_audit/py_compile,
+`git diff --check`, cached diff(empty) PASS. New3Java UTF8/one EOF newline/no
+extra blank/trailing whitespace/conflict/BOM PASS; scope6files unchanged sau
+review, chỉ hai planning files cập nhật closure. No generated/secret/dependency/
+API/OpenAPI/schema/Flyway/client files, migration NONE. Local+remote baseline
+object→peeled giữ nguyên:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Fresh main HEAD=origin/main=21ed3b0ee6ba1ac32d0abfaa11e0b65aae0a7594;
+index empty/no Git operation/other active task; BE-SRS-001 DONE. Base Required
+CI run38250285506 exact SHA PASS, ACTUAL_CI_REPOSITORY_HEALTH HEALTHY;
+PRE_CI expired, failed-check waiver NOT USED. Future task commit remote CI
+NOT RUN/NOT CLAIMED. Acceptance/tests/reviewers/closure guards PASS;
+IN_PROGRESS→DONE. M3 current rows2/16 DONE (12.5%), remaining14; checklist
+chỉ BE-SRS-002 cập nhật, historical snapshots giữ nguyên. M3 exit QA-E2E-001
+chưa đạt; không claim vertical slice/release readiness. Backward compatibility
+giữ nguyên.
+
+STOP trước Git workflow publish BE-SRS-002: một final scoped commit trên main
+và fast-forward push riêng, rồi exact Required CI repository-health boundary.
+Không commit/push/stage/index/tag/proxy/global environment mutation bởi Backend.

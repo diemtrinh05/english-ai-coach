@@ -3028,6 +3028,18 @@ Persistence, state transitions, transaction/idempotency, learning endpoint và
 full state-boundary matrix vẫn thuộc các task kế tiếp; nền tảng này không claim
 hoàn thành `BE-SRS-002` hoặc `QA-SRS-001`.
 
+### Chuyển trạng thái — BE-SRS-002
+
+`learning.srs.SrsService` nhận `LearningStatus` cũ và `SrsCalculationInput`
+do backend tạo với `Instant` có thẩm quyền. Service gọi `SrsCalculator` đúng một
+lần và trả `SrsTransitionResult` gồm phép tính cùng trạng thái mới. `NEW` chuyển
+`LEARNING` sau attempt được chấp nhận bất kể quality; các nhánh còn lại tuân theo
+SRS v1.2/AI v1.3 reconciled state machine và dùng typed mastered thresholds.
+`isCorrect` chỉ do `SrsCalculator` suy ra từ `answerQuality >= 3`; service không
+nhận trạng thái hoặc correctness do client tự khai. Service chưa lưu entity,
+không tạo transaction hoặc HTTP endpoint; các phần đó thuộc `BE-LEARN-002`.
+`QA-SRS-001` vẫn sở hữu full boundary matrix độc lập.
+
 ---
 
 # 111. Daily Plan Service Skeleton
