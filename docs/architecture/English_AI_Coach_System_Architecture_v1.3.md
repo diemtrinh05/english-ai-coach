@@ -845,6 +845,48 @@ Gamification Service
 
 ---
 
+
+### XP ledger core — BE-GAME-001 (owner duyệt 2026-10-16)
+
+Reason canonical và lượng XP: `LEARNING_CORRECT` = 5, `QUIZ_CORRECT` = 5,
+`SESSION_COMPLETED` = 10, `DAILY_PLAN_COMPLETED` = 50, `STREAK_MAINTAINED` = 10.
+Caller backend quyết định eligibility/ownership; core chỉ nhận nguồn đã chấp nhận,
+không nhận amount từ caller hoặc HTTP client. Incorrect answer không tạo award.
+
+`source_event_id` là UUID nguồn ổn định, khác body `eventId` của HTTP retry:
+
+| reason | source_event_id | reference_type | reference_id |
+|---|---|---|---|
+| LEARNING_CORRECT | session_attempts.id | session_attempts | session_attempts.id |
+| QUIZ_CORRECT | quiz_attempt_answers.id | quiz_attempt_answers | quiz_attempt_answers.id |
+| SESSION_COMPLETED | learning_sessions.id | learning_sessions | learning_sessions.id |
+| DAILY_PLAN_COMPLETED | daily_plans.id | daily_plans | daily_plans.id |
+| STREAK_MAINTAINED | UUID xác định theo user/ngày dưới đây | streaks | streaks.id |
+
+Tên bảng canonical là `daily_plans`; proposal ban đầu ghi nhầm
+`daily_learning_plans`, đã sửa tên tham chiếu, không thêm bảng.
+Streak source UUID dùng `UUID.nameUUIDFromBytes` trên UTF-8 của chuỗi chính xác
+`gamification-v1:STREAK_MAINTAINED:<lowercase user UUID>:<ISO local date>`.
+Caller tạo identity sau transition ngày đủ điều kiện; core không xác định ngày hoặc
+thay đổi streak. Hai ngày khác nhau là hai source; retry cùng ngày giữ source.
+
+Ledger unique `(user_id, reason, source_event_id)`. Award dùng
+`INSERT ... ON CONFLICT DO NOTHING`, load row theo tuple và so sánh amount,
+`reference_type`, `reference_id`: cùng giá trị trả row đã lưu (giữ id/created_at);
+khác giá trị là internal invariant exception, rollback transaction, không thêm
+HTTP/error code. Award bắt buộc tham gia transaction của mutation nguồn, không
+commit độc lập; caller không được nuốt invariant failure để commit một phần.
+`GamificationProperties` cung cấp amount canonical theo reason.
+Tổng XP dùng `SUM(xp_amount)` theo user, không có row trả 0; dùng kiểu `long`
+cho tổng PostgreSQL BIGINT, không lưu counter cạnh tranh.
+
+Migration mới thêm `source_event_id UUID NOT NULL` và unique tuple. Existing rows
+backfill `source_event_id=id`, bảo toàn từng row, amount, metadata và created_at;
+không suy nguồn, gộp hoặc dedupe lịch sử. Exactly-once dựa source identity mới,
+không cam kết tái dựng dedupe cho legacy rows. Metadata reference của legacy rows
+vẫn nullable. Không thay API/OpenAPI DTO hoặc expose source_event_id cho client.
+
+
 # 20. Notification Architecture
 
 ```text

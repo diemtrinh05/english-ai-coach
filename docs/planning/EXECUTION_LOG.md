@@ -11165,3 +11165,121 @@ CI chưa chạy vì chưa publish. M3 4/16 DONE, remaining12; milestone exit ch�
 STOP tại Git workflow: chỉ một final BE-LEARN-001-scoped commit trên `main`,
 fast-forward push và xác minh Required CI exact published SHA. Git operator
 phải kiểm tra lại staged/new-file guards và tags trước commit.
+
+
+## BE-GAME-001 — PLAN — 2026-10-16
+
+Owner chọn BE-GAME-001 M3/P0/CBL; dependency BE-FND-004 DONE.
+GOV009_DIRECT_MAIN, ACTUAL_CI_REPOSITORY_HEALTH; main sạch và bằng origin/main
+6a989ec92396a26f714450708339d9d06a2ff9af; Git pre-task xác nhận Required CI
+38871187314 PASS, repository HEALTHY, không operation/task active khác, tags nguyên vẹn.
+Owner đã duyệt tích hợp năm reason/amount 5/5/10/50/10, stable source identity,
+source_event_id NOT NULL/unique(user_id,reason,source_event_id), legacy backfill=id,
+strict duplicate metadata invariant, transaction nguyên tử và SUM/empty0.
+DAILY_PLAN_COMPLETED tham chiếu bảng canonical daily_plans; proposal trước ghi
+nhầm daily_learning_plans, không tạo bảng mới. Các source còn lại session_attempts,
+quiz_attempt_answers, learning_sessions và streaks; streak source UUID xác định theo
+namespace UTF-8 đã duyệt/user/local date, không triển khai streak mutation.
+Scope XP ledger core/entity/repository/service/source identity/migration/tests và
+baseline synchronization; không HTTP API, eligibility, streak/badges mutation, client.
+Canonical reviewers DBR,QAR; thêm AR vì schema và cross-module transaction contract.
+PLAN chuyển TODO→IN_PROGRESS trước product patch; chưa review/finalize/commit/push.
+
+
+## BE-GAME-001 — IMPLEMENT / TEST / REVIEW HANDOFF — 2026-10-16
+
+Triển khai GamificationService.award với propagation MANDATORY, native PostgreSQL
+ON CONFLICT(user_id,reason,source_event_id) DO NOTHING/load/compare trong cùng
+caller transaction; duplicate cùng metadata trả row cũ, khác amount/reference
+throw internal invariant unchecked để rollback. Caller sở hữu eligibility và
+source mutation; core không triển khai HTTP, learning attempt, streak mutation,
+badge hay level/history endpoints. XpReason dùng GamificationProperties, không
+nhận amount từ caller; XpSource khóa mapping entity/streak namespace; XpLog là
+immutable JDBC projection (không thêm JPA mutable state), SUM theo user dùng long.
+
+V8 thêm source_event_id, backfill=id, NOT NULL và unique tuple; không sửa applied
+V1–V7. Legacy rows giữ amount/metadata/time, không claim lịch sử đã dedupe.
+Đồng bộ approved SRS/Database/Architecture/Technical/Backend contract theo owner
+approval; sửa typo daily_learning_plans thành bảng hiện hữu daily_plans.
+API/OpenAPI/client/dependencies/CI không đổi. Schema thay đổi có migration mới;
+client tương thích, writer XP mới phải cung cấp source_event_id. Không có XP
+production writer/seed trong base hiện hành; không suy đoán database runtime rỗng.
+
+Initial focused Maven testCompile FAIL: AssertJ assertThat với generic
+TransactionTemplate.execute gây overload ambiguity; sửa test dùng biến XpLog
+explicit, không đổi product behavior. Initial log
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-001-focused.log.
+Focused final command backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-Dtest=XpLedgerIntegrationTests test: 14/14 PASS, zero failure/error/skip,
+exit0 BUILD SUCCESS 38.049s; BE-GAME-001-focused-final.log trong TEMP.
+Full backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify:
+340/340 PASS, zero failure/error/skip, BUILD SUCCESS03:04min, executable JAR PASS;
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-001-full.log. JDK21 process-only,
+PostgreSQL16 Testcontainers/Flyway V8 thực tế; không proxy/global env mutation.
+
+14 focused cases: năm reason/amount/reference/retry immutable; empty0/user scope/
+SUM vượt INTEGER; source separation; concurrent same-source one award; caller
+mutation+award rollback/retry; metadata mismatch rollback; corrupted amount/type
+reject; MANDATORY txn; exact UTF-8 streak UUID/day identity; isolated legacy
+migration preservation và database NOT NULL/unique enforcement.
+Python tools46/46, baseline_audit, ci_workflow_audit, secret_audit, py_compile,
+git diff --check/cached --check PASS; 7 new files UTF-8/no BOM/EOF/trailing/
+conflict/generated guard PASS. Changed scope14 =7 tracked docs +7 new
+(5 production Java,1 migration,1 integration test). Baseline tags local/remote
+object/peeled không đổi:5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Required independent DBR,QAR và impact AR chưa chạy/chưa claim PASS; finding state
+chưa có reviewer report. Task giữ IN_PROGRESS; STOP sau TEST, không self-review,
+finalize/DONE, index/commit/push/merge hoặc tag mutation.
+
+
+## BE-GAME-001 — INDEPENDENT REVIEW / FINALIZE — 2026-10-16
+
+Orchestrator cung cấp authoritative independent reports: DBR
+/root/game001_dbr initial PASS/NONE; impact AR /root/game001_ar initial
+PASS/NONE; QAR /root/game001_qa initial PASS/NONE. Không reviewer FAIL,
+không finding ID/severity/blocking, remediation/re-review NOT REQUIRED;
+resolved findings 0, unresolved findings NONE. Initial testCompile FAIL
+AssertJ đã ghi ở section TEST được giữ nguyên, không phải reviewer finding.
+
+QAR tự chạy focused XpLedgerIntegrationTests 14/14, zero failure/error/skip,
+BUILD SUCCESS29.887s, C:/Users/Hi/AppData/Local/Temp/BE-GAME-001-qa-independent.log.
+Finalizer đã đọc log này, owner focused14/14 BUILD SUCCESS38.049s và full
+clean verify340/340 zero failure/error/skip BUILD SUCCESS03:04min,
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-001-full.log. Không ghi owner full run
+thành QAR full rerun. Product/test files không đổi sau các PASS này.
+
+Finalizer chạy lại baseline_audit, ci_workflow_audit, secret_audit,
+Python tools46/46 (0.572s), py_compile, git diff --check/cached --check PASS.
+7 new files UTF-8/no BOM/EOF/no trailing whitespace/no conflict guards PASS;
+scope14 vẫn 7 tracked baseline/planning docs +5 new production Java +V8
+migration +integration test; generated/secret/scope checks PASS. Hai baseline
+tags local và remote object/peeled giữ nguyên như section TEST; không mutate.
+
+| BE-GAME-001 closure gate | Final result |
+|---|---|
+| Dependency BE-FND-004 | DONE |
+| Acceptance canonical reasons/exactly-once/derived total | PASS |
+| Owner focused tests | PASS 14/14 |
+| Owner full clean verify | PASS 340/340 |
+| Independent DBR | PASS |
+| Independent impact AR | PASS |
+| Independent QAR | PASS; own focused14/14 |
+| Unresolved findings | NONE |
+| Baseline/CI workflow/secret audits | PASS |
+| Python audit regression suite | PASS 46/46 |
+| py_compile/diff/new-file/scope/generated/tag guards | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS run38871187314 SHA6a989ec92396a26f714450708339d9d06a2ff9af |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Đồng bộ independent evidence và finalize IN_PROGRESS→DONE trước publication.
+M3 5/16 DONE, remaining11; chưa đạt milestone exit. Current main=origin/main
+6a989ec92396a26f714450708339d9d06a2ff9af; current-task Required CI chưa chạy
+vì chưa commit/push. Migration V8 cần áp dụng cho writer XP mới; existing rows
+backfill source_event_id=id, không claim dedupe lịch sử. API/OpenAPI/client/
+dependency/CI contracts giữ nguyên, source identity chỉ backend nội bộ.
+Không tự review, không commit/push/index/tag/proxy/global environment mutation.
+STOP tại Git workflow publish BE-GAME-001: revalidate final gates rồi một final
+task commit trên main, fast-forward push và kiểm tra Required CI đúng published SHA.

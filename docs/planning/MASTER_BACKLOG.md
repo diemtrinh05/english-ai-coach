@@ -192,7 +192,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `BE-GAME-001` | XP ledger core service | CBL | `BE-FND-004` | P0 | DBR,QAR | xp_logs reason canonical; award exactly once per source event; total XP derived correctly. | Theo global DoD + acceptance. | TODO |
+| `BE-GAME-001` | XP ledger core service | CBL | `BE-FND-004` | P0 | DBR,QAR | xp_logs reason canonical; award exactly once per source event; total XP derived correctly. | Theo global DoD + acceptance. | DONE |
 | `BE-GAME-002` | Streak mutation core | CBL | `BE-GAME-001`<br>`BE-FND-010`<br>`BE-FND-009` | P0 | DBR,QAR | Timezone day boundary exact; one qualifying increment/day; 10 XP maintained once; assessment excluded. | Theo global DoD + acceptance. | TODO |
 
 ## Progress
@@ -758,7 +758,7 @@ P0 tasks:
 [x] BE-SRS-001
 [x] BE-SRS-002
 [x] QA-SRS-001
-[ ] BE-GAME-001
+[x] BE-GAME-001
 [ ] BE-GAME-002
 [x] BE-LEARN-001
 [ ] BE-LEARN-002
