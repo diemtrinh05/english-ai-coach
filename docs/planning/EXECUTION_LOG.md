@@ -11283,3 +11283,151 @@ dependency/CI contracts giữ nguyên, source identity chỉ backend nội bộ.
 Không tự review, không commit/push/index/tag/proxy/global environment mutation.
 STOP tại Git workflow publish BE-GAME-001: revalidate final gates rồi một final
 task commit trên main, fast-forward push và kiểm tra Required CI đúng published SHA.
+
+
+## BE-GAME-002 — PLAN — 2026-10-16
+
+Owner chọn BE-GAME-002 M3/P0/CBL; dependencies BE-GAME-001, BE-FND-010,
+BE-FND-009 DONE. GOV009_DIRECT_MAIN, ACTUAL_CI_REPOSITORY_HEALTH. Git pre-task
+xác nhận main sạch, HEAD=origin/main=d0d6325fbb3713623206d8ee56903bf2a9f32237,
+Required CI run38874690541 PASS, repository HEALTHY; không Git operation hoặc
+task active khác, baseline tags nguyên vẹn. Backend helper read-only xác nhận
+metadata/dependencies/mode, live CI do Git authority xác minh.
+Cross-check trước PLAN phát hiện chi tiết qualifying/transition chỉ còn trong
+archived reconciliation; chưa mutate. Owner duyệt rõ hai nhóm semantics:
+accepted session_attempt/quiz_attempt_answer kể cả incorrect qualify; assessment
+excluded; first1/samedaynoop/next+1/gapreset1/longestmax; state+XP cùng caller txn.
+Clock server hiện tại/current profile timezone; missing/invalid invariant rollback,
+không fallback; date<last noop/noXP đến khi vượt last, không recalc lịch sử khi đổi
+timezone; insert ON CONFLICT DO NOTHING, updates @Version/stale CONCURRENT_UPDATE,
+không auto retry. Đồng bộ baseline hiện hành trong cùng task.
+Scope: gamification streak mutation core/entity/repository/tests và approved
+SRS/Database/Architecture/Technical/Backend notes. Không HTTP API, learning/quiz
+production flow, streak GET, badges, scheduler hoặc client implementation.
+Canonical reviewers DBR,QAR; impact AR vì cross-module transaction/timezone
+contract. PLAN chuyển TODO→IN_PROGRESS trước product patch; chưa reviewer claim,
+finalize, commit/push.
+
+
+## BE-GAME-002 — IMPLEMENT / TEST — 2026-10-16
+
+StreakService.recordAcceptedActivity dùng propagation MANDATORY; trusted backend
+caller truyền enum SESSION_ATTEMPT/QUIZ_ATTEMPT_ANSWER/ASSESSMENT sau acceptance
+và ownership. Không nhận client date/correctness; assessment không tạo state/XP.
+Repository đọc timezone từ profile hiện tại, Clock instant xác định ngày local;
+thiếu/invalid TZDB timezone throw internal invariant exception rollback.
+Ngày lùi/cùng ngày không mutation/version/XP; first1/consecutive+1/gapreset1,
+longestmax. Native INSERT ON CONFLICT(user_id) DO NOTHING khởi tạo zero state,
+JPA @Version update/flush trước GamificationService.award(XpSource.streak).
+updated_at dùng injected Clock thay VM timestamp generator để deterministic.
+Conflict không retry; GlobalExceptionHandler hiện hữu giữ CONCURRENT_UPDATE.
+Đồng bộ năm baseline theo owner approval trước PLAN; không sửa API/OpenAPI,
+schema/migration, client hoặc triển khai learning/quiz actual mutation flow.
+
+Initial focused Maven testCompile FAIL: AssertJ overload không suy được Boolean
+từ TransactionTemplate.execute; sửa explicit Boolean cast trong test. Log
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-002-focused.log. Một Python helper sửa
+file ban đầu thiếu encoding UTF-8 nên UnicodeDecodeError trước khi ghi file;
+command Maven nối tiếp vẫn chạy lại source cũ và giữ cùng testCompile FAIL trong
+BE-GAME-002-focused-final.log. Sau khi đọc UTF-8 đúng và sửa cast, focused command
+backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-Dtest=StreakIntegrationTests test: 15/15 PASS, zero failure/error/skip, BUILD
+SUCCESS42.363s; C:/Users/Hi/AppData/Local/Temp/BE-GAME-002-focused-fixed.log.
+
+15 focused cases chứng minh accepted learning/quiz loại không có correctness
+input; first/empty/same/consecutive/gap/longest; hai timezone cùng instant,
+local midnight một nanosecond, DST skipped/repeated hour; clock/timezone lùi
+không recalc; assessment không tạo hoặc đổi state; missing/invalid timezone
+rollback caller mutation; MANDATORY/caller failure rollback và retry; ledger
+invariant failure rollback state/caller; concurrent first initialization một
+row/award; existing same-version một winner, một optimistic conflict, không
+duplicate state/XP. Test fixture UUID riêng, cleanup chỉ dữ liệu do test tạo.
+
+Canonical DBR,QAR và impact AR chưa chạy, chưa claim reviewer PASS/findings;
+task giữ IN_PROGRESS. Không self-review/finalize/commit/push/index/tag/proxy
+hoặc global environment mutation. JDK21 chỉ process-local cho Maven.
+
+## BE-GAME-002 — TEST RESUME / DEPENDENT FIXTURES — 2026-10-16
+
+Initial full clean verify trong BE-GAME-002-full.log FAIL: 355 tests,
+1 failure và 1 error. JpaEntityConventionTests vẫn yêu cầu @UpdateTimestamp
+trên Streak.updatedAt dù approved contract dùng injected Clock; contextLoads
+loại datasource nên StreakRepository mới không có EntityManager. Sửa đúng hai
+dependent test fixtures: convention xác nhận Instant/column NOT NULL, không VM
+timestamp generator và giữ @Version; non-DB context mock StreakRepository theo
+cách mock persistence dependencies hiện có. Production logic không đổi; timestamp
+bằng Clock vẫn được assert qua PostgreSQL integration test thực tế.
+
+Affected rerun backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-Dtest=StreakIntegrationTests,JpaEntityConventionTests,EnglishAiCoachBackendApplicationTests
+test: 21/21 PASS, zero failure/error/skip, BUILD SUCCESS39.402s; log
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-002-affected.log. Giữ nguyên tất cả initial
+testCompile/Unicode/full-run FAIL history; chưa gọi reviewer hoặc finalize.
+
+Final full command backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+clean verify: 355/355 PASS, zero failure/error/skip, BUILD SUCCESS03:09min,
+executable JAR repackage PASS. Log
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-002-full-final.log. PostgreSQL Testcontainers
+và Flyway V8 chạy thực tế. Python tools46/46 (0.792s), baseline_audit,
+ci_workflow_audit, secret_audit, py_compile và diff/cached diff PASS.
+4 untracked Java files UTF-8/no BOM/single EOF/no trailing whitespace/conflict
+guards PASS; scope14 files gồm10 tracked (entity,2 dependent tests,5 baseline
+và2 planning) +4 new (3 production Java,1 integration test). Không generated
+file, dependency, migration hoặc API/client changes. Baseline tags local/remote
+object/peeled giữ nguyên: 5ccf0650d81ffbbd3d96eb523d097e0b9b022308 →
+ff6e13f4fe1444879b28d846801d0caa555bf4a7; e3884521c3d497094961d015b7b32d12a8e55650 →
+34362780eb7ffeb9391ade95220cf895a4592f70. STOP sau TEST với task IN_PROGRESS;
+DBR,QAR và impact AR độc lập là bước tiếp theo, chưa có reviewer PASS/finding.
+
+## BE-GAME-002 — INDEPENDENT REVIEW / FINALIZE — 2026-10-16
+
+Orchestrator cung cấp authoritative independent reports: DBR /root/game002_dbr
+initial PASS/NONE; impact AR /root/game002_ar initial PASS/NONE; QAR
+/root/game002_qa initial PASS/NONE. Không reviewer FAIL, không finding ID/severity/
+blocking, remediation/re-review NOT REQUIRED; resolved findings0 và unresolved
+findings NONE. Initial testCompile/Unicode helper/full355 (1failure1error) và
+dependent fixture fixes ở trên giữ nguyên, không biến thành reviewer findings.
+
+QAR chạy độc lập affected command với StreakIntegrationTests,
+JpaEntityConventionTests,EnglishAiCoachBackendApplicationTests: 21/21 PASS,
+zero failure/error/skip, BUILD SUCCESS28.416s;
+C:/Users/Hi/AppData/Local/Temp/BE-GAME-002-qa-independent.log đã được finalizer đọc.
+Owner affected21/21 BUILD39.402s và fullcleanverify355/355 BUILD03:09min đã được
+xác minh từ logs; không ghi owner full run thành independent QAR full rerun.
+Product/tests không thay đổi sau các review PASS này.
+
+Finalizer chạy lại baseline_audit, ci_workflow_audit, secret_audit, Python tools
+46/46 (0.440s), py_compile, git diff --check/cached --check PASS. Bốn new Java
+files UTF-8/no BOM/single EOF/no trailing whitespace/conflict PASS; scope14
+không đổi (10 tracked+4 new), generated/secret guards PASS. Baseline tags local
+và remote object/peeled giữ nguyên như section TEST; không mutate.
+
+| BE-GAME-002 closure gate | Final result |
+|---|---|
+| Dependencies BE-GAME-001, BE-FND-010, BE-FND-009 | DONE |
+| Acceptance timezone/day/concurrency/XP/assessment | PASS |
+| Owner focused StreakIntegrationTests | PASS15/15 |
+| Owner affected tests | PASS21/21 |
+| Owner full clean verify | PASS355/355 |
+| Independent DBR | PASS |
+| Independent impact AR | PASS |
+| Independent QAR | PASS; own affected21/21 |
+| Unresolved findings | NONE |
+| Baseline/CI workflow/secret audits | PASS |
+| Python audit regression suite | PASS46/46 |
+| py_compile/diff/new-file/scope/generated/tag guards | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS run38874690541 SHAd0d6325fbb3713623206d8ee56903bf2a9f32237 |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Đồng bộ independent evidence và finalize IN_PROGRESS→DONE trước publication.
+M3 hiện6/16 DONE, remaining10; milestone exit chưa đạt. Main=origin/main vẫn
+d0d6325fbb3713623206d8ee56903bf2a9f32237, current-task Required CI chưa có vì
+chưa commit/push. Không đổi API/OpenAPI/schema/migration/client/dependency/CI;
+baseline business contract đã đồng bộ owner approval, không có migration cần áp
+dụng. Core chỉ được caller backend dùng sau acceptance/ownership trong cùng
+transaction; integration với learning/quiz production thuộc task tương ứng.
+Không tự review, commit/push/index/tag/proxy/global environment mutation. STOP
+tại Git workflow publish BE-GAME-002 để revalidate, tạo một final task commit
+trên main, fast-forward push rồi kiểm tra Required CI đúng published SHA.

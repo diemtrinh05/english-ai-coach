@@ -2166,6 +2166,38 @@ GamificationService
 ---
 
 
+### Streak mutation core — BE-GAME-002 (owner duyệt 2026-10-16)
+
+Activity đủ điều kiện là `session_attempt` hoặc `quiz_attempt_answer` đã được
+backend chấp nhận và kiểm tra ownership, kể cả câu trả lời incorrect. Assessment
+không tính streak. Caller truyền loại activity nội bộ; core không triển khai
+HTTP, xác minh câu trả lời hoặc tự tạo activity nguồn.
+
+Ngày được tính từ `Clock` server tại lúc xử lý theo `user_profiles.timezone`
+hiện tại; không nhận ngày từ client, không dùng timezone máy chủ. Profile thiếu
+hoặc timezone không thuộc IANA TZDB được chấp nhận là internal invariant failure,
+rollback caller transaction, không fallback UTC. Đổi timezone không tính lại lịch
+sử; local date nhỏ hơn `last_active_date` không đổi state hoặc XP cho đến khi ngày
+vượt mốc đã lưu.
+
+Transition cho activity đủ điều kiện:
+
+- Không có row: khởi tạo `(current_streak=0,longest_streak=0,last_active_date=NULL)`.
+- `last_active_date=NULL`: current = 1.
+- Ngày bằng hoặc nhỏ hơn last: không ghi, không tăng version, không XP.
+- Ngày = last + 1: current tăng 1.
+- Ngày > last + 1: current = 1.
+- Khi chuyển ngày: longest = max(longest,current), last = ngày mới,
+  updated_at = Clock instant; cấp 10 XP `STREAK_MAINTAINED` theo source UUID
+  user/ngày và reference `streaks.id` đã duyệt trong BE-GAME-001.
+
+Khởi tạo race dùng `INSERT ... ON CONFLICT(user_id) DO NOTHING`, sau đó load row;
+update dùng JPA `@Version`, stale update giữ `CONCURRENT_UPDATE`, không tự retry.
+State, XP và mutation nguồn bắt buộc cùng caller transaction (`MANDATORY`);
+flush kiểm tra version trước award, bất kỳ lỗi nào rollback tất cả. Không mở
+transaction độc lập. Retry cùng ngày không thưởng lại; unique source ledger là
+lớp bảo vệ XP bổ sung. Không thay schema/API/OpenAPI/client, không thêm migration.
+
 ### XP ledger core — BE-GAME-001 (owner duyệt 2026-10-16)
 
 Reason canonical và lượng XP: `LEARNING_CORRECT` = 5, `QUIZ_CORRECT` = 5,

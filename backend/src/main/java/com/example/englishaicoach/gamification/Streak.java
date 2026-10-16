@@ -9,8 +9,6 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import org.hibernate.annotations.SourceType;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(
@@ -36,7 +34,6 @@ public class Streak extends UuidEntity {
     @Column(name = "version", nullable = false)
     private Long version;
 
-    @UpdateTimestamp(source = SourceType.VM)
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -49,5 +46,21 @@ public class Streak extends UuidEntity {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public UUID getUserId() { return userId; }
+    public Integer getCurrentStreak() { return currentStreak; }
+    public Integer getLongestStreak() { return longestStreak; }
+    public LocalDate getLastActiveDate() { return lastActiveDate; }
+
+    /** Ngày lùi hoặc đã xử lý không làm thay đổi state và version. */
+    boolean activate(LocalDate date, Instant now) {
+        if (lastActiveDate != null && !date.isAfter(lastActiveDate)) return false;
+        currentStreak = lastActiveDate != null && date.equals(lastActiveDate.plusDays(1))
+                ? Math.addExact(currentStreak, 1) : 1;
+        longestStreak = Math.max(longestStreak, currentStreak);
+        lastActiveDate = date;
+        updatedAt = now;
+        return true;
     }
 }

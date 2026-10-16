@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.example.englishaicoach.auth.RefreshTokenRepository;
 import com.example.englishaicoach.auth.UserRepository;
+import com.example.englishaicoach.gamification.StreakRepository;
 
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
@@ -25,6 +26,9 @@ class EnglishAiCoachBackendApplicationTests {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private StreakRepository streakRepository;
 
     @Test
     void contextLoads() {

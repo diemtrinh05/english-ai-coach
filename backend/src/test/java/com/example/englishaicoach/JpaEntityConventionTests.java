@@ -2,6 +2,7 @@ package com.example.englishaicoach;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.example.englishaicoach.common.persistence.AuditableEntity;
 import com.example.englishaicoach.common.persistence.UuidEntity;
@@ -79,7 +80,10 @@ class JpaEntityConventionTests {
         assertEquals("streaks", table.name());
         assertEquals(LocalDate.class, lastActiveDate.getType());
         assertEquals(Instant.class, updatedAt.getType());
-        assertNotNull(updatedAt.getAnnotation(UpdateTimestamp.class));
+        // Streak dùng Clock được inject để timestamp cùng nguồn với ngày activity.
+        assertNull(updatedAt.getAnnotation(UpdateTimestamp.class));
+        assertEquals("updated_at", updatedAt.getAnnotation(Column.class).name());
+        assertEquals(false, updatedAt.getAnnotation(Column.class).nullable());
         assertNotNull(version.getAnnotation(Version.class));
         assertEquals(Long.class, version.getType());
     }
