@@ -10976,3 +10976,192 @@ tests, reviewer và closure guards PASS; IN_PROGRESS→DONE.
 STOP trước Git workflow publication: một final scoped commit trên main,
 fast-forward push riêng, rồi exact Required CI repository-health boundary.
 QA implementer không commit/push/index/tag/proxy/global environment mutation.
+
+## BE-LEARN-001 — PLAN / ADMISSION — 2026-10-13
+
+Owner chọn BE-LEARN-001 làm NEXT. Backend-task execute, GOV009_DIRECT_MAIN,
+M3/P0/CBL; dependencies BE-FND-008, BE-VOC-002 và BE-USER-001 DONE;
+canonical reviewers DBR,SR,QAR. Git-workflow pre-task xác nhận main sạch,
+HEAD=origin/main=d4d779c87c6bf9ad3d37e6787d8d35f242ffdca6, không Git
+operation/task direct-main khác, Required CI run38371402270 exact SHA PASS,
+repository HEALTHY, mode ACTUAL_CI_REPOSITORY_HEALTH. Backend helper execute
+advisory xác nhận mode/task/dependencies/worktree; live CI do Git workflow xác minh.
+
+Đã đối chiếu PROJECT_RULES, implementation plan/backlog, SRS v1.2, Database
+Schema v1.6, System Architecture v1.3, AI Personalization v1.3, API
+Specification/OpenAPI v1.4, Technical Specification v1.2 và Backend Technical
+Specification v1.3. Scope: POST start với body eventId và sessionType canonical,
+idempotency claim/replay/409; GET own session, 404 foreign/missing; DTO,
+persistence, USER authorization, integration tests. Dùng learning_sessions
+schema hiện hữu với initial words_studied_count=0, ended_at/accuracy_percent
+NULL; aggregate khi attempt/complete thuộc later tasks. API Spec §34 yêu cầu
+/learning/* USER only; bảo vệ hai route task này và kiểm thử ADMIN 403.
+Không tạo session items, daily plan, learning attempt, SRS/XP/streak/complete,
+schema/Flyway/API contract/client change. Không thấy mâu thuẫn approved contract
+chặn task. PLAN chuyển TODO→IN_PROGRESS trước product patch; execute dừng sau
+TEST để DBR/SR/QAR độc lập review. Không commit/push/proxy/global env mutation.
+
+## BE-LEARN-001 — IMPLEMENT / TEST / REVIEW HANDOFF — 2026-10-13
+
+Thêm `LearningSessionController`, `LearningSessionService`,
+`LearningSessionRepository`, session type/request/response DTO và 7
+PostgreSQL/MockMvc integration tests. POST yêu cầu USER JWT, sessionType enum
+và body eventId UUID; giao dịch kiểm tra user trước idempotency claim,
+`INSERT ... ON CONFLICT DO NOTHING`/hash/snapshot qua foundation service,
+persist row initial aggregates 0/NULL, replay 201 status/body. GET dùng
+`id AND user_id`, foreign/missing cùng 404. Security route chặn ADMIN 403.
+Backend Technical Spec §32 ghi rõ initial persistence và trách nhiệm task sau.
+
+Initial focused 5 tests: 4 PASS/1 FAIL; valid JWT của user đã bị xóa
+trả 500 vì FK idempotency claim chạy trước user validation. Sửa transaction
+start và `SELECT ... FOR KEY SHARE` trước claim, không đổi API/schema; focused
+rerun 5/5 PASS. Mở rộng thêm query identity, GET aggregates và rollback retry;
+final focused 7/7 PASS, zero failure/error/skip, exit0 BUILD SUCCESS,
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-focused-final.log`.
+
+Full `backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify`
+với JDK21 process-only: 324/324 PASS qua 62 Surefire XML, zero failure/
+error/skip, exit0 BUILD SUCCESS02:39min, executable JAR packaging PASS;
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-full.log`. Testcontainers
+PostgreSQL/Flyway, API/auth/catalog/idempotency regressions included.
+Python tools46/46, baseline_audit, ci_workflow_audit, secret_audit,
+py_compile và `git diff --check` PASS. New7Java UTF8/no BOM/one EOF newline/
+no extra blank/trailing whitespace/conflict markers PASS. Local/remote
+baseline tag object→peeled unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Scope11files=4tracked config/planning/BackendTech +7new Java; không đổi
+OpenAPI/API schema/Flyway/client/dependency/generated/secret. Migration NONE;
+backward compatibility route đã public authenticated trước task hiện tuân
+API Spec §34 USER only. HEAD=origin/main=d4d779c87c6bf9ad3d37e6787d8d35f242ffdca6;
+base Required CI run38371402270 PASS/HEALTHY, uncommitted task remote CI
+NOT RUN/NOT CLAIMED. BE-LEARN-001 giữ IN_PROGRESS; DBR/SR/QAR independent
+PENDING, unresolved reviewer findings chưa được xác nhận. Execute STOP sau
+TEST, bàn giao tracked+untracked scope/logs để review; không self-review,
+finalize/DONE/commit/push/index/tag/proxy/global env mutation.
+
+## BE-LEARN-001 — INDEPENDENT FINDINGS / FOCUSED REMEDIATION — 2026-10-13
+
+Initial independent review trên cùng uncommitted worktree: DBR PASS/NONE;
+SR FAIL, finding `SEC-BE-LEARN-001-001` MEDIUM/blocking/OPEN; QAR FAIL,
+finding `QA-BE-LEARN-001-001` MEDIUM/blocking/OPEN. Hai reviewer cùng phát
+hiện request DTO Jackson 3 bỏ qua JSON property lạ, trái OpenAPI
+`StartLearningSessionRequest.additionalProperties: false`: khác body cùng
+eventId có thể replay 201 thay vì bị từ chối. Initial FAIL và cả hai finding
+giữ nguyên lịch sử; implementation owner không tự đổi status finding.
+
+Backend-task focused remediation hai finding cùng nguyên nhân: riêng POST
+`/api/v1/learning/sessions` đọc `ObjectNode`, chỉ chấp nhận `sessionType`
+và `eventId` trước DTO conversion/Bean Validation/idempotency claim. JSON
+property lạ trả 400 VALIDATION_ERROR dù eventId mới hoặc đã có snapshot;
+không tạo session/claim mới. DTO typed và foundation hash/replay giữ nguyên;
+legitimate body khác cùng eventId vẫn 409 IDEMPOTENCY_KEY_REUSE. Bổ sung
+integration test cho unknown field trước/sau successful claim và kiểm tra
+DB non-mutation; Backend Technical Spec §32 ghi strict boundary.
+
+Remediation focused đầu 7PASS/1FAIL: Jackson 3 `InvalidFormatException`
+cho enum sai không thuộc `IllegalArgumentException`, trả 500. Sửa catch
+`JacksonException | IllegalArgumentException` tại conversion boundary,
+focused rerun 8/8 PASS, zero failure/error/skip, exit0 BUILD SUCCESS,
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-remediation-focused-final.log`.
+Full `clean verify`: 325/325 PASS qua 62 Surefire XML, zero failure/error/
+skip, exit0 BUILD SUCCESS03:18min, executable JAR packaging PASS;
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-remediation-full.log`.
+Python tools46/46, baseline_audit, ci_workflow_audit, secret_audit,
+py_compile, `git diff --check`, new7Java UTF8/EOF/trailing/conflict
+guards PASS. No schema/Flyway/OpenAPI/API/client/dependency/secret/generated
+change; same11-file scope. Task giữ IN_PROGRESS; `SEC-BE-LEARN-001-001`
+và `QA-BE-LEARN-001-001` vẫn OPEN, SR/QAR focused re-review REQUIRED;
+DBR initial PASS preserved. Không self-resolve/self-review/finalize/commit/
+push/index/tag/proxy/global env mutation.
+
+## BE-LEARN-001 — SECOND FOCUSED REMEDIATION — 2026-10-16
+
+Focused re-review của SR và QAR xác nhận `SEC-BE-LEARN-001-001` và
+`QA-BE-LEARN-001-001` RESOLVED. Cùng lượt, SR FAIL với
+`SEC-BE-LEARN-001-002` MEDIUM/blocking/OPEN và QAR FAIL với
+`QA-BE-LEARN-001-002` MEDIUM/blocking/OPEN: Jackson 3 có thể ép JSON number
+thành enum `sessionType`, làm request sai kiểu đi tới claim hoặc replay. Giữ
+nguyên chronology, kết quả FAIL và metadata của cả bốn finding; DBR initial
+PASS/NONE được bảo toàn.
+
+Backend-task remediation giới hạn POST start: kiểm tra `sessionType` và
+`eventId` là JSON string ngay tại controller trước DTO conversion và
+idempotency. Thêm test HTTP cho `sessionType` numeric với event mới và event
+đã có snapshot, `eventId` numeric, xác nhận 400 `VALIDATION_ERROR`, không
+tạo claim/session mới và không replay sai. Cùng test xác nhận string hợp lệ
+vẫn replay 201 và đổi `sessionType` string cùng event vẫn 409
+`IDEMPOTENCY_KEY_REUSE`. Backend Technical Spec §32 đồng bộ ràng buộc kiểu
+đã có trong OpenAPI; không đổi API/OpenAPI/schema/Flyway/client.
+
+Focused `LearningSessionIntegrationTests` 9/9 PASS, zero failure/error/skip,
+exit0 BUILD SUCCESS, log
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-remediation2-focused.log`.
+Full `backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify`
+326/326 PASS, zero failure/error/skip, exit0 BUILD SUCCESS, log
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-remediation2-full.log`.
+Python tools 46/46 PASS, baseline/CI workflow/secret audits và py_compile
+PASS; `git diff --check`, 7 new Java files UTF-8/EOF/whitespace/conflict,
+scope/generated và hai baseline tag object/peeled checks PASS. Task tiếp tục
+IN_PROGRESS; `SEC-BE-LEARN-001-002` và
+`QA-BE-LEARN-001-002` giữ OPEN, SR/QAR focused re-review REQUIRED. Không
+self-review/finalize/commit/push/proxy/global environment mutation.
+
+## BE-LEARN-001 — FOCUSED RE-REVIEW / FINALIZE — 2026-10-16
+
+Independent DBR initial review: PASS, findings NONE. DBR đã đọc toàn bộ 11
+file tracked+untracked, đối chiếu `learning_sessions`/`idempotency_keys` với
+Database Schema v1.6 và migrations hiện có, kiểm tra transaction/claim,
+ownership, rollback và concurrency. DBR không chạy lại Maven sau các sửa đổi
+controller-only; kết quả DBR initial PASS được giữ vì database contract và
+persistence không đổi.
+
+Independent SR chronology: initial FAIL, `SEC-BE-LEARN-001-001`
+MEDIUM/blocking/OPEN; focused re-review xác nhận `SEC-BE-LEARN-001-001`
+RESOLVED nhưng FAIL với `SEC-BE-LEARN-001-002` MEDIUM/blocking/OPEN; final
+focused re-review PASS/APPROVE, `SEC-BE-LEARN-001-002` RESOLVED, finding mới
+NONE. SR kiểm tra JSON string validation trước DTO/idempotency, numeric
+fresh/existing request 400, legitimate replay 201 và different request 409;
+USER authorization/owned GET, secret/log boundaries giữ nguyên. SR đọc owner
+focused 9/9/full 326/326 và tự chạy baseline_audit, py_compile,
+`git diff --check` PASS; không tự nhận đã chạy Maven.
+
+Independent QAR chronology: initial FAIL, `QA-BE-LEARN-001-001`
+MEDIUM/blocking/OPEN; focused re-review xác nhận `QA-BE-LEARN-001-001`
+RESOLVED nhưng FAIL với `QA-BE-LEARN-001-002` MEDIUM/blocking/OPEN. Final
+focused re-review **PASS/APPROVE qua reviewer-authored MESSAGE** của
+`/root/learn001_qa2` trước khi final delivery gặp model-capacity error;
+`QA-BE-LEARN-001-002` RESOLVED, finding mới NONE. QAR đối chiếu controller
+`sessionType`/`eventId` JSON textual với OpenAPI string schema và test numeric
+fresh/existing 400/no claim/no replay, valid replay 201/reuse 409. QAR độc lập
+chạy focused `LearningSessionIntegrationTests` 9/9, zero failure/error/skip,
+exit0 BUILD SUCCESS 1:19 với JDK21 process-only; tự chạy baseline_audit,
+py_compile và `git diff --check` PASS. Owner full 326/326 được QAR đọc log,
+không ghi thành QAR full rerun.
+
+Finalizer đối chiếu owner full `clean verify` log
+`C:/Users/Hi/AppData/Local/Temp/BE-LEARN-001-remediation2-full.log`:
+326/326 PASS, zero failure/error/skip, BUILD SUCCESS; owner focused 9/9 PASS.
+Fresh Python tools46/46, baseline_audit, ci_workflow_audit, secret_audit,
+py_compile, `git diff --check` PASS; 7 untracked Java UTF-8/no BOM/EOF/
+trailing-whitespace/conflict guard PASS. Scope vẫn 11 file hiện hành
+(4 tracked + 7 new); generated/secret/scope checks PASS. Local/remote
+baseline tag object→peeled giữ nguyên:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Canonical reviewers DBR,SR,QAR đều PASS; bốn historical findings giữ
+severity/blocking, trạng thái cuối RESOLVED, unresolved findings NONE.
+Dependencies BE-FND-008/BE-VOC-002/BE-USER-001 DONE; acceptance POST body
+eventId/replay và GET own-session PASS. API/OpenAPI/database/client contract
+không đổi, migration NONE, backward compatibility giữ nguyên. Current
+main=origin/main=d4d779c87c6bf9ad3d37e6787d8d35f242ffdca6, base Required
+CI run38371402270 PASS, repository admission HEALTHY, CI mode
+ACTUAL_CI_REPOSITORY_HEALTH, failed-check waiver NOT USED; current-task remote
+CI chưa chạy vì chưa publish. M3 4/16 DONE, remaining12; milestone exit chưa
+đạt. Finalize `IN_PROGRESS → DONE` trước publication, không commit/push.
+
+STOP tại Git workflow: chỉ một final BE-LEARN-001-scoped commit trên `main`,
+fast-forward push và xác minh Required CI exact published SHA. Git operator
+phải kiểm tra lại staged/new-file guards và tags trước commit.

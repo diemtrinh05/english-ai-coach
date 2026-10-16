@@ -959,6 +959,19 @@ accuracyPercent
 
 Aggregate fields are derived by backend.
 
+Với `BE-LEARN-001`, thao tác start tạo một hàng `learning_sessions` cho user
+được xác thực: `started_at` lấy từ injected `Clock`,
+`words_studied_count = 0`, `ended_at` và `accuracy_percent = NULL`.
+`eventId` chỉ nằm trong `idempotency_keys`; response 201 được lưu cùng
+mutation để retry cùng logical request replay nguyên status/body. GET truy vấn
+theo cả `id` và `user_id`, trả `NOT_FOUND` cho session không tồn tại hoặc
+không thuộc caller. Các aggregate được cập nhật bởi các task attempt/complete
+theo đúng backend authority; start/get không tự tính lại chúng.
+POST từ chối JSON property ngoài `sessionType` và `eventId` trước khi tạo
+idempotency claim; cả hai field được khai báo phải là JSON string theo OpenAPI,
+không nhận giá trị số qua Jackson coercion. Request không hợp lệ không thể
+replay response đã lưu.
+
 ---
 
 # 33. Session Attempt History

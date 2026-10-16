@@ -181,7 +181,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | `BE-SRS-001` | SRS typed properties + pure calculation model | CBL | `BE-FND-003`<br>`BE-FND-010` | P0 | AR,QAR | Defaults match `sm2-ext-v1`; pure calculation input/output testable; interval clamp/ease-factor canonical. | Theo global DoD + acceptance. | DONE |
 | `BE-SRS-002` | SrsService state transitions | CBL | `BE-SRS-001` | P0 | AR,QAR | NEW/LEARNING/REVIEWING/MASTERED transitions exact; q=0..5; backend derives `isCorrect`. | Theo global DoD + acceptance. | DONE |
 | `QA-SRS-001` | SRS unit/boundary matrix | QAR | `BE-SRS-002` | P0 | QAR | Cover q0..5, first attempt, repetition, failure regression, min/max interval, response-time extension, mastered boundaries. | Theo global DoD + acceptance. | DONE |
-| `BE-LEARN-001` | Learning session start/get | CBL | `BE-FND-008`<br>`BE-VOC-002`<br>`BE-USER-001` | P0 | DBR,SR,QAR | `POST /learning/sessions` body eventId + replay; `GET /learning/sessions/{id}` ownership enforced. | Theo global DoD + acceptance. | TODO |
+| `BE-LEARN-001` | Learning session start/get | CBL | `BE-FND-008`<br>`BE-VOC-002`<br>`BE-USER-001` | P0 | DBR,SR,QAR | `POST /learning/sessions` body eventId + replay; `GET /learning/sessions/{id}` ownership enforced. | Theo global DoD + acceptance. | DONE |
 | `BE-LEARN-002` | Learning attempt transaction | CBL | `BE-LEARN-001`<br>`BE-SRS-002`<br>`BE-GAME-002`<br>`BE-FND-008`<br>`BE-FND-009` | P0 | AR,DBR,SR,QAR | Atomic claim→load version→derive correctness→SRS→attempt→progress→XP/streak→snapshot→commit; DB check blocks inconsistent correctness. | Theo global DoD + acceptance. | TODO |
 | `BE-LEARN-003` | Learning session completion | CBL | `BE-LEARN-002` | P0 | DBR,QAR | `POST /learning/sessions/{id}/complete` eventId; requires >=1 accepted attempt; +10 XP once. | Theo global DoD + acceptance. | TODO |
 | `BE-LEARN-004` | Due review query/API | CBL | `BE-LEARN-002`<br>`DB-FND-003` | P0 | DBR,QAR | `GET /learning/reviews`; due date authoritative; stable priority/order; performant query. | Theo global DoD + acceptance. | TODO |
@@ -760,7 +760,7 @@ P0 tasks:
 [x] QA-SRS-001
 [ ] BE-GAME-001
 [ ] BE-GAME-002
-[ ] BE-LEARN-001
+[x] BE-LEARN-001
 [ ] BE-LEARN-002
 [ ] BE-LEARN-003
 [ ] BE-LEARN-004
