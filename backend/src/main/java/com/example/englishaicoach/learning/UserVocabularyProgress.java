@@ -67,4 +67,28 @@ public class UserVocabularyProgress extends AuditableEntity {
     public Long getVersion() {
         return version;
     }
+
+    public LearningStatus getStatus() { return status; }
+    public BigDecimal getEaseFactor() { return easeFactor; }
+    public int getIntervalDays() { return intervalDays; }
+    public int getRepetitions() { return repetitions; }
+    public Instant getNextReviewAt() { return nextReviewAt; }
+    public int getCorrectCount() { return correctCount; }
+    public int getIncorrectCount() { return incorrectCount; }
+
+    public void apply(com.example.englishaicoach.learning.srs.SrsTransitionResult transition,
+            int quality, Instant now) {
+        var result = transition.calculation();
+        status = transition.status();
+        easeFactor = result.newEaseFactor();
+        intervalDays = result.newIntervalDays();
+        repetitions = result.newRepetitions();
+        nextReviewAt = result.nextReviewAt();
+        lastReviewedAt = now;
+        lastQuality = (short) quality;
+        if (result.isCorrect()) correctCount = Math.incrementExact(correctCount);
+        else incorrectCount = Math.incrementExact(incorrectCount);
+    }
+
+    public void updateAverageResponseTime(int average) { averageResponseTimeMs = average; }
 }

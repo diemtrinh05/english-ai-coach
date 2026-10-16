@@ -1115,7 +1115,12 @@ eventId: idempotency key
     "algorithmVersion": "sm2-ext-v1"
   },
   "progress": {
+    "vocabularyId": "uuid",
     "status": "REVIEWING",
+    "easeFactor": 2.5,
+    "intervalDays": 17,
+    "repetitions": 3,
+    "nextReviewAt": "2026-09-14T10:30:00Z",
     "correctCount": 5,
     "incorrectCount": 1
   }
@@ -1137,6 +1142,32 @@ COMMIT
 ```
 
 Optimistic locking must be respected.
+
+### Hợp đồng đã duyệt cho BE-LEARN-002
+
+USER mới được submit; JWT hợp lệ nhưng user không tồn tại trả `401 UNAUTHORIZED`.
+Body chỉ nhận sáu field đã khai báo: UUID/enum là JSON string, quality/time là
+JSON integer, không coercion hoặc property bổ sung. Không có request `version`.
+Sau authentication/user validation, idempotency replay chạy trước mutable guards:
+retry cùng logical request replay nguyên response kể cả session đã đóng hoặc từ
+đã inactive. Session missing/foreign trả `404 NOT_FOUND`; `ended_at != NULL` trả
+`400 VALIDATION_ERROR`; vocabulary missing/inactive trả `404 NOT_FOUND`.
+Mọi sessionType V1 (`NEW_WORDS`, `REVIEW`, `QUIZ`, `MIXED`) đều nhận attempt;
+không thêm điều kiện due/status hay membership. Response `progress` đầy đủ theo
+`VocabularyProgressResponse` của OpenAPI, bao gồm `nextReviewAt`.
+
+Progress khởi tạo NEW/EF2.50/repetitions0/interval0/counters0 khi chưa có;
+`INSERT ON CONFLICT DO NOTHING` rồi reload, cập nhật dùng server-loaded `@Version`.
+Conflict trả `409 CONCURRENT_UPDATE`, rollback toàn bộ, không tự retry mutation.
+Correct/incorrect counter tăng một theo backend correctness; `last_quality=q`,
+`last_reviewed_at` là server Clock. `avg_response_time_ms` là AVG mọi non-null
+response_time_ms trong accepted session_attempts thuộc caller+word, HALF_UP về
+integer; không dùng trung bình của trung bình hoặc quiz_attempt_answers/assessment.
+session_attempts của sessionType QUIZ vẫn thuộc phép tính này.
+Session `words_studied_count=COUNT(DISTINCT vocabulary_id)`, accuracy là
+`100*correct/total` HALF_UP scale2; cập nhật cùng transaction, giữ `ended_at`.
+XP LEARNING_CORRECT chỉ khi đúng; mọi accepted attempt gọi streak core, kể cả sai.
+Attempt/progress/aggregates/XP/streak/response snapshot cùng commit hoặc rollback.
 
 ---
 

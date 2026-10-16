@@ -30,6 +30,9 @@ class EnglishAiCoachBackendApplicationTests {
     @MockitoBean
     private StreakRepository streakRepository;
 
+    @MockitoBean
+    private com.example.englishaicoach.learning.LearningAttemptRepository learningAttemptRepository;
+
     @Test
     void contextLoads() {
     }

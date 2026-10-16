@@ -2808,3 +2808,33 @@ Performance window 7 days, minimum 3 active days. HIGH = completion>=.90 AND acc
 Allocation: high review backlog (due >= max(10, ceil(previous_review_target*1.5))) = 80/15/5 review/new/quiz; high retention = 50/35/15; normal = 60/25/15. Estimated seconds: new=60, review=30, quiz question=45. If over time budget decrement quiz → new → review. Availability transfer order follows the reconciliation baseline and total never exceeds final workload.
 
 Daily Plan is a persisted snapshot; there is no mid-day dynamic reranking.
+
+
+## BE-LEARN-002 — Hợp đồng attempt đã duyệt
+
+POST /learning/attempts yêu cầu USER, body eventId và answerQuality 0..5;
+backend suy isCorrect, dùng SrsService hiện hữu và server-loaded @Version,
+không thêm request version hoặc auto retry khi CONCURRENT_UPDATE. Progress
+chưa có được khởi tạo NEW/EF2.50/I0/R0/counters0 bằng ON CONFLICT DO NOTHING
+rồi reload. Correct/incorrect counter tăng một theo correctness; last_quality=q,
+last_reviewed_at lấy server Clock. avg_response_time_ms là AVG mọi non-null
+response_time_ms accepted session_attempts của caller+word, HALF_UP integer;
+không trung bình của trung bình, không quiz_attempt_answers hoặc assessment.
+session_attempts của sessionType QUIZ vẫn tính. Session words_studied_count
+là COUNT(DISTINCT vocabulary_id); accuracy_percent=100*correct/total HALF_UP
+scale2. Cập nhật aggregate cùng transaction và giữ ended_at.
+
+Sau auth/user validation, replay idempotency trước mutable guards: session
+missing/foreign404 NOT_FOUND, closed400 VALIDATION_ERROR; vocabulary missing/
+inactive404 NOT_FOUND; JWT hợp lệ nhưng user không tồn tại401 UNAUTHORIZED.
+Mọi sessionType V1 NEW_WORDS/REVIEW/QUIZ/MIXED đều nhận attempt, không thêm due/
+status/membership restriction. Retry thành công replay nguyên snapshot kể cả
+sau session đóng hoặc vocabulary inactive. Response progress theo đầy đủ
+VocabularyProgressResponse OpenAPI gồm vocabularyId/status/easeFactor/
+intervalDays/repetitions/nextReviewAt/correctCount/incorrectCount.
+
+Attempt, progress, aggregate, XP LEARNING_CORRECT (chỉ đúng), streak activity
+SESSION_ATTEMPT (kể cả sai), và response snapshot commit/rollback cùng caller
+transaction. Khóa session chống mất aggregate; progress/streak @Version conflict
+trả409 CONCURRENT_UPDATE, không tự retry. Không thêm completion/review/progress
+API hoặc client business algorithm trong task này. Không thay schema/migration.

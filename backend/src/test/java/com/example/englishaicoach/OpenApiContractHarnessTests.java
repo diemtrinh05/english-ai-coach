@@ -133,11 +133,11 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
         assertEquals(
                 "#/components/schemas/SubmitLearningAttemptRequest",
                 operation.getRequestBody().getContent().get("application/json").getSchema().get$ref());
-        assertEquals(Set.of("200", "400", "409", "429"), responseStatuses(operation));
+        assertEquals(Set.of("200", "400", "401", "403", "404", "409", "429"), responseStatuses(operation));
         assertOperationResponsesResolveToSchema(
                 openApi,
                 operation,
-                Set.of("400", "409", "429"),
+                Set.of("400", "401", "403", "404", "409", "429"),
                 "ErrorResponse");
     }
 

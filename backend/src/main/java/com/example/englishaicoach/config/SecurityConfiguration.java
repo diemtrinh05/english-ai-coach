@@ -52,7 +52,8 @@ public class SecurityConfiguration {
                                 "/api/v1/vocabulary", "/api/v1/vocabulary/{vocabularyId}",
                                 "/api/v1/vocabulary/{vocabularyId}/examples").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/learning/sessions", "/api/v1/learning/sessions/{sessionId}")
+                        .requestMatchers("/api/v1/learning/sessions", "/api/v1/learning/sessions/{sessionId}",
+                                "/api/v1/learning/attempts")
                         .hasRole("USER")
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().permitAll())

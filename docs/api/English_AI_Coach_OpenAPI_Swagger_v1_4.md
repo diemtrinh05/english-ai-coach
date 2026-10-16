@@ -723,7 +723,13 @@ paths:
 
         Backend derives `isCorrect = answerQuality >= 3`.
 
-        Client must not send `isCorrect`.
+        Client must not send `isCorrect`. USER only; unknown user returns 401.
+
+        Replay precedes mutable guards. Missing/foreign session or missing/inactive vocabulary returns 404; closed session returns 400 VALIDATION_ERROR.
+
+        All V1 session types accept attempts; no extra due/status restriction. No client version. Server optimistic conflict returns 409 CONCURRENT_UPDATE without automatic retry.
+
+        Progress response contains full VocabularyProgressResponse; aggregate formulas and atomic transaction follow API Specification section 17.
 
         '
       operationId: submitLearningAttempt
@@ -742,6 +748,12 @@ paths:
                 $ref: '#/components/schemas/LearningAttemptResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '409':
           description: Duplicate event or concurrent update
           content:

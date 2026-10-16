@@ -5459,3 +5459,15 @@ theo email: collision LOCAL/subject khác trả409 CONFLICT; invalid token/claim
 cho subject hiện có, không tạo profile/avatar/goals. Google UI/SDK flow riêng
 chưa triển khai bởi task backend này; các flow Login/Register/Splash hiện tại
 giữ scope đã phê duyệt. Xem API §7.5 và supplement BE-AUTH-007 cho đủ semantics.
+
+
+## BE-LEARN-002 — Response và retry của learning attempt
+
+Response progress dùng VocabularyProgressResponse đầy đủ theo OpenAPI: vocabularyId,
+status, easeFactor, intervalDays, repetitions, nextReviewAt, correctCount,
+incorrectCount. Backend tính correctness/SRS/counters/aggregate/XP/streak; client
+không gửi isCorrect/version/date/aggregate. UUID/enum là JSON string, quality/time
+là JSON integer, không property bổ sung. Giữ eventId khi retry logical action;
+replay response đã lưu vẫn hợp lệ sau session đóng hoặc từ inactive. 409 gồm
+IDEMPOTENCY_KEY_REUSE hoặc CONCURRENT_UPDATE; không blind retry bằng eventId mới.
+Task này không triển khai client UI; client learning implementation theo backlog.
