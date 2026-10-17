@@ -2853,3 +2853,21 @@ malformed/out-of-range trả400 VALIDATION_ERROR. nextReviewAt luôn có giá tr
 trong queue. forgettingRisk là field optional và được bỏ khỏi response đến khi
 BE-PERS-002 triển khai forgetting-risk-v1; không trả risk giả hoặc tính thuật toán
 personalization trong task này. Không ghi progress/XP/streak/idempotency khi GET.
+
+## BE-PROG-001 — Hợp đồng đọc vocabulary progress được duyệt — 2026-10-17
+
+`GET /api/v1/vocabulary/{vocabularyId}/progress` yêu cầu USER; ADMIN trả403
+FORBIDDEN, thiếu/xác thực không hợp lệ hoặc user không còn tồn tại trả401
+UNAUTHORIZED. Chỉ đọc progress của caller; vocabulary thiếu/inactive trả404
+NOT_FOUND. Active vocabulary chưa có caller progress trả200 snapshot NEW:
+easeFactor từ SrsProperties.initialEaseFactor, intervalDays/repetitions/
+correctCount/incorrectCount=0, nextReviewAt=null. GET không tạo progress/profile
+hay ghi XP/streak/idempotency. Existing progress trả đúng trạng thái và giá trị
+đã lưu, không chạy lại SRS hoặc personalization.
+
+Response đúng8field VocabularyProgressResponse: vocabularyId/status/easeFactor/
+intervalDays/repetitions/nextReviewAt/correctCount/incorrectCount. nextReviewAt
+bắt buộc hiện diện, nullable (explicit null). Path UUID sai hoặc query parameter
+bất kỳ ngoài hợp đồng trả400 VALIDATION_ERROR; không nhận userId từ client.
+Đồng bộ API/OpenAPI; client chỉ hiển thị snapshot, không tự tính SRS hoặc tạo
+mutation khi GET. Không đổi schema/migration/thuật toán hay triển khai client.

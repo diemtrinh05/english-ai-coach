@@ -77,6 +77,18 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
     }
 
     @Test
+    void vocabularyProgressContractIncludesNullableFieldAndErrors() {
+        var operation = openApi.getPaths().get("/vocabulary/{vocabularyId}/progress").getGet();
+        assertEquals(Set.of("200", "400", "401", "403", "404"), operation.getResponses().keySet());
+        var schema = openApi.getComponents().getSchemas().get("VocabularyProgressResponse");
+        assertEquals(Set.of("vocabularyId", "status", "easeFactor", "intervalDays", "repetitions",
+                "nextReviewAt", "correctCount", "incorrectCount"), Set.copyOf(schema.getRequired()));
+        assertEquals(Set.of("string", "null"), ((Schema<?>) schema.getProperties().get("nextReviewAt")).getTypes());
+        assertRecordMatchesSchema(openApi, "VocabularyProgressResponse",
+                com.example.englishaicoach.learning.dto.VocabularyProgressResponse.class);
+    }
+
+    @Test
     void dueQueueContractKeepsDomainEnvelopeAndOptionalFutureRisk() {
         var operation = openApi.getPaths().get("/learning/reviews").getGet();
         assertEquals(Set.of("200", "400", "401", "403"), operation.getResponses().keySet());

@@ -787,6 +787,7 @@ paths:
       tags:
       - Progress
       summary: Get vocabulary progress
+      description: USER only; caller progress only. Active vocabulary without progress returns a read-only NEW snapshot using configured initial ease factor, zero interval/repetitions/counters and explicit nextReviewAt null. Missing/inactive vocabulary is 404; missing user is 401. No query parameters; malformed UUID or undeclared query is 400. GET never creates state.
       operationId: getVocabularyProgress
       parameters:
       - $ref: '#/components/parameters/VocabularyId'
@@ -797,6 +798,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VocabularyProgressResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /progress:
     get:
       tags:
@@ -2648,6 +2657,7 @@ components:
       - easeFactor
       - intervalDays
       - repetitions
+      - nextReviewAt
       - correctCount
       - incorrectCount
       properties:
@@ -2669,9 +2679,8 @@ components:
         repetitions:
           type: integer
         nextReviewAt:
-          type: string
+          type: [string, 'null']
           format: date-time
-          nullable: true
         correctCount:
           type: integer
         incorrectCount:

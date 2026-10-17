@@ -199,7 +199,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `BE-PROG-001` | Vocabulary progress API | CBL | `BE-LEARN-002` | P0 | QAR | `GET /vocabulary/{id}/progress`; exact status/repetitions/interval/nextReview fields; ownership. | Theo global DoD + acceptance. | TODO |
+| `BE-PROG-001` | Vocabulary progress API | CBL | `BE-LEARN-002` | P0 | QAR | `GET /vocabulary/{id}/progress`; exact status/repetitions/interval/nextReview fields; ownership. | Theo global DoD + acceptance. | DONE |
 
 ## Android Learning
 
@@ -764,7 +764,7 @@ P0 tasks:
 [x] BE-LEARN-002
 [x] BE-LEARN-003
 [x] BE-LEARN-004
-[ ] BE-PROG-001
+[x] BE-PROG-001
 [ ] QA-LEARN-001
 [ ] QA-LEARN-002
 [ ] AND-LEARN-001

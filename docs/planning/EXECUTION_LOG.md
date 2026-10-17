@@ -11882,3 +11882,124 @@ e0ba4354a611a7d26e1e5537c8ed9e22e985fe18; chưa commit/push/index/tag mutation.
 Current-task Required CI chỉ có sau publication. STOP: Git workflow publish
 BE-LEARN-004 revalidate, một final task commit main, fast-forward push và kiểm tra
 Required CI của exact published SHA. Không proxy/global environment mutation.
+
+## BE-PROG-001 — PLAN — 2026-10-17
+
+Owner chọn BE-PROG-001 M3/P0/CBL, dependency BE-LEARN-002 DONE; canonical
+QAR, thêm SR cho private ownership và DBR cho JDBC query/current-state mapping.
+GOV009_DIRECT_MAIN; Git pre-task READY main clean=origin/live
+6a23eab182d8331e3f5086f94451f7719868ef3f; Required CI38996214920 PASS,
+HEALTHY; ACTUAL_CI_REPOSITORY_HEALTH. Không task khác active, tags unchanged.
+
+Đã cross-check PROJECT_RULES, AGENTS, plan/backlog/log, backend role, SRS/DB/
+Architecture/AI/API/OpenAPI/Technical/Backend và client baseline. Owner duyệt
+missing progress trả200 read-only NEW, EF từ SrsProperties.initialEaseFactor,
+interval/repetition/counters0 và nextReviewAt explicitnull; không INSERT.
+Vocabulary missing/inactive404 NOT_FOUND; USER only/ADMIN403/userdeleted401.
+Caller only, exact8fields VocabularyProgressResponse, invalidUUID/undeclared
+query400 VALIDATION_ERROR; đồng bộ baseline. Không algorithm/schema/migration/
+progress overview/client implementation. Required TEST: focused PostgreSQL/API/
+OpenAPI ownership/null/nonmutation tests, full clean verify và audits/guards.
+
+Exact backlog row TODO→IN_PROGRESS và đọc lại/assert thành công TRƯỚC product
+patch. Không reuse lifecycle deviation task khác; không commit/push/self-review.
+
+## BE-PROG-001 — IMPLEMENT / TEST chronology — 2026-10-17
+
+GET controller→application service→JDBC repository trong progress module; reuse
+learning.dto.VocabularyProgressResponse đúng8field. DTO ALWAYS include giữ
+nextReviewAt explicitnull; OpenAPI shared schema bắt buộc field và dùng
+3.1 type [string,null]. USER route ownership từ AccessTokenIdentity, không nhận
+userId query. Read-only service kiểm tra user và active vocabulary; caller query
+parametrized theo unique(user_id,vocabulary_id). Missing progress chỉ snapshot
+NEW từ typed EF; không JPA init/INSERT/Clock/SRS/XP/streak mutation. Đồng bộ11
+baseline documents theo approvals; scope20files=16tracked+4new.
+
+Thêm6 integration cases PostgreSQL/MockMvc: default snapshot với EF cấu hình2.75,
+explicitnull/no-created-state, existing4statuses/exactvalues/unchangedtimestamps
+và version, two-user isolation, missing/inactive, auth/role/userdeleted, invalid
+UUID/unknownquery. Thêm OpenAPI operation/errors/requirednull/actualDTO assertion.
+Initial focused command BUILDFAIL tại testCompile52.365s: Swagger raw Schema map
+trảObject nên gọi getTypes không compile; sửa assertion cast Schema<?>. Không
+sửa product để khớp test. Log TEMP/BE-PROG-001-focused.log; focused-final rerun
+đang thực chạy, chưa claimPASS.
+
+Audits baseline/CIworkflow/secret PASS, Python46/46 PASS1.197s; py_compile,
+diff/cached-diff/new4 UTF8/noBOM/singleEOF/whitespace/conflict guards PASS. Hai
+baseline tags local/remote object và peeled giữ nguyên canonical values. Không
+schema/migration/dependency/CI/client implementation. Task IN_PROGRESS, chưa
+review/finalize/commit/push; không proxy/global environment mutation.
+
+## BE-PROG-001 — Final TEST evidence — 2026-10-17
+
+Focused-final VocabularyProgressIntegrationTests + OpenApiContractHarnessTests
+21/21 PASS (6progress+15harness), zero failure/error/skip; BUILD SUCCESS49.758s,
+exit0; log C:/Users/Hi/AppData/Local/Temp/BE-PROG-001-focused-final.log.
+Initial testCompileFAIL giữ nguyên ở chronology; không reviewer finding.
+
+Required full command (process-only JAVA_HOME JDK21, MAVEN_OPTS=-Xmx384m):
+backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-DargLine="-Xmx512m -XX:ReservedCodeCacheSize=128m"
+-Dspring.test.context.cache.maxSize=4 clean verify — BUILD SUCCESS04:33min,
+exit0; 395/395 PASS, zero failure/error/skip. Đã parse/assert68freshSurefireXML
+totals; JAR/repackage PASS. Log C:/Users/Hi/AppData/Local/Temp/BE-PROG-001-full.log.
+POM/.mvn không argLine/JaCoCo cấu hình bị override; không exclusion/skippedtests.
+Scope20files sourcefrozen; Maven writer kết thúc. Required independent canonical
+QAR và impact SR/DBR cần review tracked+untracked; chưa claimreviewer/finalize/
+DONE/commit/push. Không schema/migration/clientimplementation/SRSalgorithmchange.
+
+## BE-PROG-001 — Independent review / FINALIZE — 2026-10-17
+
+Orchestrator chuyển authoritative independent reports: canonical QAR
+/root/prog001_qa initial PASS / NONE; impact SR /root/prog001_sr initial
+PASS / NONE; impact DBR /root/prog001_dbr initial PASS / NONE. Không reviewer
+FAIL/finding/remediation; resolved count 0, unresolved NONE. Finalizer chỉ đồng
+bộ report, không tự review hoặc resolve. Canonical reviewer mapping QAR giữ
+nguyên; SR áp dụng private ownership/auth, DBR áp dụng JDBC current-state query.
+
+QAR độc lập chạy VocabularyProgressIntegrationTests + OpenApiContractHarnessTests:
+21/21 PASS (6 PostgreSQL/API + 15 harness), zero failure/error/skip, exit0
+BUILD SUCCESS 27.992s. Đã đọc log
+C:/Users/Hi/AppData/Local/Temp/BE-PROG-001-qa-independent.log. Phân biệt owner
+focused-final 21/21 PASS 49.758s và owner full clean verify 395/395 PASS
+04:33min, 68 fresh XML đã assert ở TEST. Không ghi independent focused thành
+full rerun. Giữ nguyên initial Swagger assertion testCompile FAIL 52.365s,
+cast correction và rerun chronology; đây không phải reviewer finding.
+
+Fresh finalization gates: baseline/CI workflow/secret audits PASS, Python
+46/46 PASS 0.476s, py_compile PASS; diff/cached diff PASS; new4 UTF-8/noBOM/
+singleEOF/whitespace/conflict và scope20/generated guards PASS. Local/remote
+baseline tags object/peeled unchanged:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308 → ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650 → 34362780eb7ffeb9391ade95220cf895a4592f70.
+Executable source không đổi sau tests/review. API/OpenAPI và downstream baseline
+đã đồng bộ theo owner approval; không schema/migration/dependency/client
+implementation hoặc SRS algorithm change.
+
+Finalization helper ban đầu đã sửa row/checkbox rồi assert milestone count FAIL
+(0,0) vì chọn heading checklist ## M3 thay vì bảng # M3. Đã sửa readonly selector
+sang exact table heading, đọc lại/assert 16 rows / 10 DONE thành công trước khi
+hoàn tất closure evidence. Không product/test change, không reviewer finding.
+
+| BE-PROG-001 closure gate | Final result |
+|---|---|
+| Dependency BE-LEARN-002 | DONE |
+| GET exact state/default/null/ownership/auth/query/nonmutation acceptance | PASS |
+| Owner full clean verify | PASS 395/395; 68 fresh XML |
+| Independent QAR | PASS; own 21/21 |
+| Independent SR impact | PASS |
+| Independent DBR impact | PASS |
+| Unresolved findings | NONE |
+| Baseline/CI workflow/secret/Python/py_compile/diff guards | PASS |
+| New-file/scope/generated/tag guards | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS 38996214920 SHA 6a23eab182d8331e3f5086f94451f7719868ef3f |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Evidence đồng bộ, exact backlog row IN_PROGRESS → DONE và current checkbox
+được đọc lại/assert. M3 hiện 10/16 DONE, remaining 6; milestone exit chưa đạt.
+HEAD = origin/main vẫn 6a23eab182d8331e3f5086f94451f7719868ef3f; chưa commit,
+push, index hoặc tag mutation. Current-task Required CI chỉ có sau publication.
+STOP: Git workflow publish BE-PROG-001 revalidate, tạo một final task commit
+main, fast-forward push và kiểm tra Required CI exact SHA.
