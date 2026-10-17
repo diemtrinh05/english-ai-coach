@@ -2780,3 +2780,18 @@ trả400 theo BE-LEARN-002. Summary giữ nguyên OpenAPI `LearningSessionRespon
 (alias `LearningSessionSummaryResponse`), không thêm XP field. Client chỉ hiển thị
 summary server, retry cùng logical operation giữ eventId; không tự tính aggregate/XP.
 Không đổi schema/migration hoặc triển khai client trong task này.
+
+## BE-LEARN-004 — Hợp đồng due-only review queue được duyệt — 2026-10-17
+
+GET /api/v1/learning/reviews yêu cầu USER; principal không còn user trả401
+UNAUTHORIZED, ADMIN403. Chỉ đọc caller progress có next_review_at không null
+và <= server Clock, vocabulary active; không loại thêm NEW/LEARNING/REVIEWING/
+MASTERED. Thứ tự nextReviewAt ASC rồi vocabularyId ASC; đây là due-only API,
+tách biệt thứ tự risk/weakness của deterministic recommendation.
+limit mặc định50, từ1 đến100; count bằng số items sau limit. topicId lọc đúng
+active topic qua vocabulary_topics, không gồm descendants; missing/inactive topic
+trả items=[]/count=0. Query chỉ nhận limit/topicId đơn trị; unknown/repeated/
+malformed/out-of-range trả400 VALIDATION_ERROR. nextReviewAt luôn có giá trị
+trong queue. forgettingRisk là field optional và được bỏ khỏi response đến khi
+BE-PERS-002 triển khai forgetting-risk-v1; không trả risk giả hoặc tính thuật toán
+personalization trong task này. Không ghi progress/XP/streak/idempotency khi GET.

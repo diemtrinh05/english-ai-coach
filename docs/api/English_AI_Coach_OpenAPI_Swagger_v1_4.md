@@ -706,7 +706,7 @@ paths:
       tags:
       - Learning
       summary: Get due reviews
-      description: Domain-specific response in V1; not generic pagination.
+      description: Due-only queue; server Clock cutoff, active vocabulary, all progress statuses; nextReviewAt ASC then vocabularyId ASC. Exact active topic filter without descendants. Missing/inactive topic yields empty queue. count is returned items after limit. Only limit/topicId single values allowed; unknown/repeated/malformed/out-of-range query is 400. USER role required; missing user is 401. forgettingRisk is omitted until BE-PERS-002.
       operationId: getDueReviews
       parameters:
       - name: limit
@@ -728,6 +728,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewQueueResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /learning/attempts:
     post:
       tags:
@@ -2530,7 +2536,6 @@ components:
       - word
       - status
       - nextReviewAt
-      - forgettingRisk
       properties:
         vocabularyId:
           type: string
@@ -2548,6 +2553,7 @@ components:
           type: string
           format: date-time
         forgettingRisk:
+          description: Optional; omitted until BE-PERS-002 implements forgetting-risk-v1.
           type: string
           enum:
           - LOW

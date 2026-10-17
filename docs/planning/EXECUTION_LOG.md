@@ -11751,3 +11751,134 @@ M3 hiện8/16 DONE, remaining8; milestone exit chưa đạt. HEAD=origin/main v�
 current-task Required CI chưa có trước push. Không commit/push/index/tag/proxy/
 global environment mutation. STOP: Git workflow publish BE-LEARN-003 revalidate,
 tạo một final task commit main, fast-forward push và kiểm tra Required CI đúngSHA.
+
+## BE-LEARN-004 — PLAN — 2026-10-17
+
+GOV009_DIRECT_MAIN; CBL/M3/P0; dependencies BE-LEARN-002 và DB-FND-003 DONE.
+Git pre-task READY: clean main=origin/live e0ba4354a611a7d26e1e5537c8ed9e22e985fe18,
+Required CI38993840169 PASS; ACTUAL_CI_REPOSITORY_HEALTH/HEALTHY. Owner chọn
+BE-LEARN-004 và duyệt ba hợp đồng trước PLAN: forgettingRisk optional/omit đến
+BE-PERS-002; due-only caller progress next_review_at không null <= server Clock,
+active vocabulary, mọi status, order nextReviewAt ASC/vocabularyId ASC. Limit
+default50/min1/max100; count=returned; exact active topic/no descendants/missing
+inactive empty; USER/user missing401; malformed/out-of-bounds/repeated/unknown
+query400. Đồng bộ API/OpenAPI/downstream; không fake risk/thuật toán futuretask.
+Đã transition TODO→IN_PROGRESS và assert exact row đọc lại TRƯỚC product patch.
+Scope GET /learning/reviews/read-only query/test/EXPLAIN/docs; không progress API,
+client implementation, schema/migration, personalization algorithm. Canonical
+DBR/QAR, impact SR (auth/ownership) và AR (cross-layer optional response contract).
+Không self-review/finalize/commit/push/proxy/global environment mutation.
+
+## BE-LEARN-004 — IMPLEMENT / TEST chronology — 2026-10-17
+
+Thêm controller/service/repository/ReviewQueueResponse và USER matcher, không
+ghi DB khi GET; JDBC bind cutoff từ injected Clock một lần và optional exact-topic
+EXISTS, order date/UUID, LIMIT phía DB. Bỏ risk field khỏi DTO; giữ property
+optional trong OpenAPI cho BE-PERS-002. Đồng bộ11 baseline documents theo owner
+approvals; hai API examples đã bỏ risk giả. Không schema/migration/dependency/
+client implementation/personalization algorithm change. Scope20files=15tracked
++5new; canonical DBR/QAR và impact SR/AR cần review độc lập sau TEST.
+
+Initial focused ReviewQueueIntegrationTests+OpenApiContractHarnessTests có20cases:
+18PASS/2ERROR do test fixture INSERT vocabulary_topics(id,...) trong khi bảng
+dùng compositePK(vocabulary_id,topic_id), không có id. Đã sửa fixture theo DB,
+không sửa product/schema để khớp test. Đồng thời thu hẹp cleanup performance
+fixtures bằng exact UUID prefix và thêm OpenAPI optionalrisk/errors/limit/envelope
+assertion. Lần rerun focused-final có21cases; kết quả ghi sau khi thực chạy xong.
+Một helper đọc Python thiếu encoding UTF-8 bị UnicodeDecodeError trước mutation;
+rerun explicit UTF-8 thành công, giữ đây là diagnostic không reviewer finding.
+
+Audits baseline/CI workflow/secret PASS; Python46/46 PASS1.172s; py_compile PASS;
+diff/cached diff PASS. New5 UTF-8/noBOM/singleEOF/trailing-whitespace/conflict PASS;
+scope20/generated guard PASS; tags local/remote object/peeled giữ nguyên:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Task giữ IN_PROGRESS; chưa reviewer/finalize/DONE/commit/push.
+
+Focused-final21cases:20PASS/1FAIL do test so sánh thứ tự required-property list;
+OpenAPI parser chuẩn hóa [count,items] thay vì [items,count]. Đổi assertion sang
+set equality vì required JSON fields không có thứ tự. ReviewQueueIntegrationTests
+7/7PASS; EXPLAIN không épplanner có indexed caller scan/topic index, execution
+0.109ms unfiltered/0.177ms filtered trên fixtures2010progress. Không tuyên bố
+planner chọn due index: unfiltered chọn user_status, filtered chọn unique
+user_vocabulary + topic index. Đổi tên test phản ánh caller indexes chính xác.
+Chạy required full clean verify sau các test-only correction; log riêng.
+
+Full clean verify run BE-LEARN-004-full-final.log bị environment FAIL: Maven
+JVM pid19632 native malloc228464bytes không đủ memory; không có BUILD SUCCESS.
+Các test đã chạy không thay thế full gate. Reader PowerShell cũng từng OOM.
+Task Java đã kết thúc, không dừng process của người dùng. Hai task-generated
+crash/replay logs đã chuyển sang TEMP/BE-LEARN-004-{hs_err,replay}_pid19632.log
+để giữ diagnostic, không để generated output trong scope. Rerun required clean
+verify cùng source với process-only MAVEN_OPTS=-Xmx384m, fork argLine=-Xmx512m
+-XX:ReservedCodeCacheSize=128m, spring.test.context.cache.maxSize=4. Không sửa
+CI/project config, global environment hay proxy; giữ chronology cả run thất bại.
+
+## BE-LEARN-004 — Final TEST evidence — 2026-10-17
+
+Finalsource bounded clean verify command (process-only JAVA_HOME JDK21,
+MAVEN_OPTS=-Xmx384m): backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-DargLine="-Xmx512m -XX:ReservedCodeCacheSize=128m"
+-Dspring.test.context.cache.maxSize=4 clean verify — BUILD SUCCESS04:35min,
+exit0; 388/388 PASS, zero failure/error/skip, fresh67SurefireXML totals đã assert,
+JAR repackage PASS. C:/Users/Hi/AppData/Local/Temp/BE-LEARN-004-full-bounded.log.
+Không test exclusion/skip; POM/.mvn không có argLine/JaCoCo config bị override.
+Đây là authoritative full gate; unbounded native-OOM run giữ nguyên FAIL.
+Due suite7/7 và OpenAPI harness14/14 PASS trong cùng fullrun; không claim
+focused-final21PASS vì run focused-final trước đó có1 test assertion FAIL.
+
+Final EXPLAIN ANALYZE BUFFERS trên2010progress/2001users, không disable seqscan:
+unfiltered caller index scan0.147ms; filtered topic/unique caller index0.215ms.
+Đây là sanity fixtures, không benchmark production. Existing due index giữ nguyên;
+planner tự chọn indexes theo selectivity, không ép phải dùng một index cụ thể.
+Maven writer đã kết thúc. Sourcefrozen20files; task IN_PROGRESS, cần canonical
+DBR/QAR và impact SR/AR độc lập; không self-review/claim reviewer/finalize/publish.
+
+## BE-LEARN-004 — INDEPENDENT REVIEW / FINALIZE — 2026-10-17
+
+Orchestrator chuyển authoritative independent reports: DBR /root/learn004_dbr
+initial PASS/NONE; QAR /root/learn004_qa initial PASS/NONE; impact AR
+/root/learn004_ar và SR /root/learn004_sr initial PASS/NONE. Không reviewer FAIL
+hoặc finding/remediation; resolved0, unresolved0/NONE. Finalizer không tự review
+hay tự resolve. PLAN exact-row transition/readback trước product patch hợp lệ.
+
+QAR tự chạy ReviewQueueIntegrationTests+OpenApiContractHarnessTests:21/21 PASS
+(7due+14harness), zero failure/error/skip, exit0BUILD SUCCESS54.474s; log
+C:/Users/Hi/AppData/Local/Temp/BE-LEARN-004-qa-independent.log đã đọc. Đây là
+independent focused verification, không ghi thành full388 rerun. Authoritative
+owner full clean verify388/388 PASS04:35min (67freshXML) trong bounded log ở
+trên; process-only memory parameters được ghi chính xác. Không executable change
+sau tests/review, không chạy full thêm. Giữ nguyên initial focused fixture2ERROR,
+required-list-order assertionFAIL và unbounded nativeOOM; không viết lại thành
+all-initial-PASS. Các lỗi này thuộc implementation/test/environment chronology,
+không invent reviewer findings.
+
+Fresh finalization: baseline_audit/ci_workflow_audit/secret_audit PASS; Python
+46/46 PASS0.700s; py_compile/diff/cached diff PASS; new5 UTF-8/noBOM/singleEOF/
+whitespace/conflict PASS; scope20/generated guards PASS. Hai baseline tags local/
+remote object/peeled unchanged như TEST evidence. Không schema/migration/dependency/
+CI/client implementation change; optional risk contract đã đồng bộ baseline.
+
+| BE-LEARN-004 closure gate | Final result |
+|---|---|
+| Dependencies BE-LEARN-002 / DB-FND-003 | DONE |
+| Due-only cutoff/active/ownership/order/filter/limit acceptance | PASS |
+| Owner final clean verify | PASS388/388; bounded process-only memory |
+| Independent DBR | PASS |
+| Independent QAR | PASS; own21/21 |
+| Independent AR impact | PASS |
+| Independent SR impact | PASS |
+| Unresolved findings | NONE |
+| Baseline/CI workflow/secret/Python/py_compile/diff guards | PASS |
+| New-file/scope/generated/tag guards | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS38993840169 SHAe0ba4354a611a7d26e1e5537c8ed9e22e985fe18 |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Đồng bộ independent evidence và transition IN_PROGRESS→DONE/current checkbox;
+M3 hiện9/16 DONE, remaining7; milestone exit chưa đạt. HEAD=origin/main vẫn
+e0ba4354a611a7d26e1e5537c8ed9e22e985fe18; chưa commit/push/index/tag mutation.
+Current-task Required CI chỉ có sau publication. STOP: Git workflow publish
+BE-LEARN-004 revalidate, một final task commit main, fast-forward push và kiểm tra
+Required CI của exact published SHA. Không proxy/global environment mutation.

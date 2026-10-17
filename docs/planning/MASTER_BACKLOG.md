@@ -184,7 +184,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | `BE-LEARN-001` | Learning session start/get | CBL | `BE-FND-008`<br>`BE-VOC-002`<br>`BE-USER-001` | P0 | DBR,SR,QAR | `POST /learning/sessions` body eventId + replay; `GET /learning/sessions/{id}` ownership enforced. | Theo global DoD + acceptance. | DONE |
 | `BE-LEARN-002` | Learning attempt transaction | CBL | `BE-LEARN-001`<br>`BE-SRS-002`<br>`BE-GAME-002`<br>`BE-FND-008`<br>`BE-FND-009` | P0 | AR,DBR,SR,QAR | Atomic claim→load version→derive correctness→SRS→attempt→progress→XP/streak→snapshot→commit; DB check blocks inconsistent correctness. | Theo global DoD + acceptance. | DONE |
 | `BE-LEARN-003` | Learning session completion | CBL | `BE-LEARN-002` | P0 | DBR,QAR | `POST /learning/sessions/{id}/complete` eventId; requires >=1 accepted attempt; +10 XP once. | Theo global DoD + acceptance. | DONE |
-| `BE-LEARN-004` | Due review query/API | CBL | `BE-LEARN-002`<br>`DB-FND-003` | P0 | DBR,QAR | `GET /learning/reviews`; due date authoritative; stable priority/order; performant query. | Theo global DoD + acceptance. | TODO |
+| `BE-LEARN-004` | Due review query/API | CBL | `BE-LEARN-002`<br>`DB-FND-003` | P0 | DBR,QAR | `GET /learning/reviews`; due date authoritative; stable priority/order; performant query. | Theo global DoD + acceptance. | DONE |
 | `QA-LEARN-001` | Learning transaction integration tests | QAR | `BE-LEARN-004`<br>`BE-PROG-001` | P0 | AR,DBR,SR,QAR | Happy/error/rollback, answerQuality DB check, XP/streak effects, due review, session complete. | Theo global DoD + acceptance. | TODO |
 | `QA-LEARN-002` | Idempotency + optimistic concurrency tests | QAR | `BE-LEARN-002` | P0 | DBR,SR,QAR | Same event replay one mutation; reuse → `IDEMPOTENCY_KEY_REUSE`; concurrent duplicate no 500; stale progress → `CONCURRENT_UPDATE`. | Theo global DoD + acceptance. | TODO |
 
@@ -763,7 +763,7 @@ P0 tasks:
 [x] BE-LEARN-001
 [x] BE-LEARN-002
 [x] BE-LEARN-003
-[ ] BE-LEARN-004
+[x] BE-LEARN-004
 [ ] BE-PROG-001
 [ ] QA-LEARN-001
 [ ] QA-LEARN-002

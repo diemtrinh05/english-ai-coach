@@ -77,6 +77,22 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
     }
 
     @Test
+    void dueQueueContractKeepsDomainEnvelopeAndOptionalFutureRisk() {
+        var operation = openApi.getPaths().get("/learning/reviews").getGet();
+        assertEquals(Set.of("200", "400", "401", "403"), operation.getResponses().keySet());
+        assertEquals(List.of("limit", "topicId"), operation.getParameters().stream().map(p -> p.getName()).toList());
+        var limit = operation.getParameters().getFirst().getSchema();
+        assertEquals(50, ((Number) limit.getDefault()).intValue());
+        assertEquals(1, limit.getMinimum().intValue());
+        assertEquals(100, limit.getMaximum().intValue());
+        var item = openApi.getComponents().getSchemas().get("ReviewQueueItem");
+        assertFalse(item.getRequired().contains("forgettingRisk"));
+        assertTrue(item.getProperties().containsKey("forgettingRisk"));
+        assertTrue(item.getRequired().contains("nextReviewAt"));
+        assertEquals(Set.of("items", "count"), Set.copyOf(openApi.getComponents().getSchemas().get("ReviewQueueResponse").getRequired()));
+    }
+
+    @Test
     void parsesAndValidatesCanonicalOpenApi31WithoutMessages() {
         assertEquals(List.of(), parseResult.getMessages());
         assertEquals("3.1.0", openApi.getOpenapi());
