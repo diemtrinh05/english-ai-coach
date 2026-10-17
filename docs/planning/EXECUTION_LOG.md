@@ -11620,3 +11620,134 @@ Không self-review hoặc tự resolve finding; resolution do chính QAR report.
 Không commit/push/index/tag/proxy/global environment mutation. STOP: Git workflow
 publish BE-LEARN-002 revalidate rồi một final task commit trên main, fast-forward
 push và kiểm tra actual Required CI đúng published SHA.
+
+## BE-LEARN-003 — PLAN — 2026-10-17
+
+Mode GOV009_DIRECT_MAIN, ACTUAL_CI_REPOSITORY_HEALTH. Git specialist pre-task
+READY: main=origin/main=2244470a1abb8b5839b51d6848ef31fbfc0ab1aa, clean worktree,
+no Git operation/other active task; dependency BE-LEARN-002 DONE. Required CI
+38907359837 PASS đúng admission SHA. Task CBL/M3/P0; canonical DBR,QAR, thêm SR
+vì authenticated mutation/ownership/idempotency. Không thay architecture boundary.
+Owner đã duyệt hai nhóm completion contract trước PLAN: closed/new event trả200
+summary đã lưu, giữ ended_at/aggregates/no award; same event replay snapshot;
+empty400 VALIDATION_ERROR, missing/foreign404 NOT_FOUND, usermissing401,
+ADMIN403/USER; body chỉ UUID string eventId, reject extra/type trước claim.
+First completion khóa owned row FOR UPDATE cùng attempt, cần >=1 accepted attempt
+mọi quality/sessionType, ended_at từ Clock, tính lại distinct words/accuracy
+HALF_UP scale2 theo BE-LEARN-002; SESSION_COMPLETED source=sessionID cùng caller
+transaction/snapshot; không streak. Concurrent completion cùng summary/one award;
+attempt trước lock được tính, sau ended_at bị400 theo contract hiện hành.
+Summary giữ LearningSessionResponse, không XP field; đồng bộ baseline/OpenAPI.
+Backlog TODO→IN_PROGRESS đã thực hiện và đọc lại exact row/assert thành công
+TRƯỚC mọi product patch; không sử dụng deviation của task khác.
+Scope completion controller/service/repository/DTO/security matcher và tests/docs;
+không due review/progress API/client/schema/migration/badge/daily-plan scope.
+Không self-review/finalize/commit/push/proxy hoặc global environment mutation.
+
+## BE-LEARN-003 — IMPLEMENT / focused TEST — 2026-10-17
+
+Completion controller giữ typed DTO và kiểm tra body chỉ UUID string eventId,
+reject malformed/unknown/type trước claim. Security matcher yêu cầu USER. Service
+@Transactional dùng shared IdempotencyService, user validation trước replay,
+owned-session FOR UPDATE đồng bộ với attempt; empty400 rollback, closed new event
+trả stored summary không ghi, first completion recompute aggregates/Clock ended_at,
+reuse GamificationService MANDATORY/source=session ID; snapshot atomic. Không
+thêm streak mutation, schema/migration/dependency/client hoặc later-task endpoint.
+Đồng bộ10 baseline documents: SRS/DB/Architecture/API/OpenAPI/Technical/Backend và
+ba client technical notes theo hai owner approvals. Không rút gọn nội dung khác.
+
+Focused command backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-Dtest=LearningSessionCompletionIntegrationTests test:11/11 PASS, zero failure/
+error/skip, BUILD SUCCESS01:41min; TEMP/BE-LEARN-003-focused.log. Tests dùng
+MockMvc/PostgreSQL16/Flyway V8, fixed Clock, owned UUID fixture cleanup, không outer
+transaction. Bao phủ mọi sessionType, incorrect/no-profile eligibility, distinct
+word/66.67 accuracy, closed-new-event, snapshot replay/reuse user/query/path/endpoint,
+strict body/auth/IDOR, rollback XP/snapshot failure, concurrent same/different events,
+và attempt-completion ordered session locks. Thêm OpenAPI harness assertion cho
+request DTO/summary alias/status; full clean verify đang chạy để xác minh finalsource.
+Focused source được tinh chỉnh assertion ADMIN bằng explicit expected status và
+strict UUID-format guard; full run mới là authoritative cho finalworktree.
+
+Audits baseline/CI workflow/secret PASS; Python46/46 PASS2.017s; py_compile PASS;
+diff/cached diff PASS; new2 UTF-8/no BOM/single EOF/trailing whitespace/conflict PASS;
+scope19 files=17tracked+2new PASS, generated/secret guard PASS. Tags local/remote
+object→peeled unchanged:5ccf0650d81ffbbd3d96eb523d097e0b9b022308→
+ff6e13f4fe1444879b28d846801d0caa555bf4a7 và
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Chưa independent reviewer result/finding, finalize/commit/push. Task IN_PROGRESS.
+
+### BE-LEARN-003 — Scope correction trong TEST
+
+Đọc diff phát hiện phép replace UUID guard đã áp cả existing start endpoint.
+Đã khôi phục guard start đúng HEAD, chỉ completion nhận strict UUID-format guard.
+Đây là correction giữ scope, không thêm contract start hoặc thay policy được duyệt.
+Full run BE-LEARN-003-full.log đã compile trước correction nên không gọi đó là
+finalworktree evidence. Chờ run kết thúc rồi rerun required clean verify sau
+correction; giữ riêng hai logs, không claim tests finalsource trước kết quả thật.
+
+### BE-LEARN-003 — Final TEST evidence — 2026-10-17
+
+Initial full clean verify380/380 PASS, zero failure/error/skip, BUILD SUCCESS
+03:48min (TEMP/BE-LEARN-003-full.log). Sau scope correction start guard, final
+command backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml clean verify
+chạy lại serial:380/380 PASS, zero failure/error/skip, BUILD SUCCESS03:21min,
+JAR repackage PASS; C:/Users/Hi/AppData/Local/Temp/BE-LEARN-003-full-final.log.
+Đây là finalsource evidence: completion11, existing session9 và OpenAPI harness13
+đều PASS; các suite khác regression PASS. Không có test FAIL/reviewer finding
+trong IMPLEMENT/TEST; giữ riêng initial scope-correction chronology, không suy
+finalPASS từ run trước. Maven writer đã kết thúc trước independent reviews.
+
+Task giữ IN_PROGRESS; canonical DBR/QAR và impact SR cần review độc lập toàn bộ
+tracked+untracked current-task worktree19files. Chưa reviewer claim/finalize/DONE,
+commit/push/index/tag/proxy/global environment mutation. STOP sau TEST.
+
+## BE-LEARN-003 — INDEPENDENT REVIEW / FINALIZE — 2026-10-17
+
+Orchestrator chuyển authoritative independent reports: DBR /root/learn003_dbr
+initial PASS/NONE; QAR /root/learn003_qa initial PASS/NONE; impact SR
+/root/learn003_sr initial PASS/NONE. Không reviewer FAIL/finding hoặc remediation
+loop; resolved findings0, unresolved findings0/NONE. Không tự review hoặc tự resolve.
+PLAN transition/readback trước patch hợp lệ; không sử dụng lifecycle exception.
+Scope correction UUID guard/start endpoint và hai full-run snapshots giữ nguyên
+chronology ở trên, không rút gọn thành giả định initial/finalsource giống nhau.
+
+Finalizer đọc log full final backend/mvnw.cmd --no-transfer-progress -f
+backend/pom.xml clean verify:380/380 PASS, zero failure/error/skip, BUILD SUCCESS
+03:21min, JAR repackage PASS; BE-LEARN-003-full-final.log. QAR tự chạy command
+backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-Dtest=LearningSessionCompletionIntegrationTests,OpenApiContractHarnessTests test:
+24/24 PASS (11 completion+13 harness), zero failure/error/skip, BUILD SUCCESS
+34.328s; C:/Users/Hi/AppData/Local/Temp/BE-LEARN-003-qa-independent.log đã đọc.
+Không ghi QAR focused run thành full380 rerun; không Maven rerun thêm vì không
+có executable change sau independent reviews.
+
+Fresh finalization gates: baseline_audit/ci_workflow_audit/secret_audit PASS;
+Python tools46/46 PASS0.540s, py_compile/diff/cached diff PASS. New2 UTF-8/no BOM/
+single EOF/trailing whitespace/conflict checks PASS; scope19/generated/secret
+checks PASS. Hai baseline tags local/remote object/peeled giữ nguyên như evidence
+TEST. Không schema/migration/dependency/CI/client implementation change. Source
+approved completion contracts đã đồng bộ API/OpenAPI và downstream baseline.
+
+| BE-LEARN-003 closure gate | Final result |
+|---|---|
+| Dependency BE-LEARN-002 | DONE |
+| Completion/aggregate/XP once/atomic snapshot acceptance | PASS |
+| Owner focused tests | PASS11/11 |
+| Owner final clean verify | PASS380/380 |
+| Independent DBR | PASS |
+| Independent QAR | PASS; own24/24 |
+| Independent SR impact | PASS |
+| Unresolved findings | NONE |
+| Baseline/CI workflow/secret/Python/py_compile/diff guards | PASS |
+| New-file/scope/generated/tag guards | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS run38907359837 SHA2244470a1abb8b5839b51d6848ef31fbfc0ab1aa |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Đã đồng bộ independent evidence và chuyển IN_PROGRESS→DONE/current checkbox;
+M3 hiện8/16 DONE, remaining8; milestone exit chưa đạt. HEAD=origin/main vẫn
+2244470a1abb8b5839b51d6848ef31fbfc0ab1aa; current-task changes chưa commit,
+current-task Required CI chưa có trước push. Không commit/push/index/tag/proxy/
+global environment mutation. STOP: Git workflow publish BE-LEARN-003 revalidate,
+tạo một final task commit main, fast-forward push và kiểm tra Required CI đúngSHA.

@@ -5,6 +5,7 @@ import com.example.englishaicoach.common.exception.ApiErrorCodes;
 import com.example.englishaicoach.common.exception.ApiException;
 import com.example.englishaicoach.learning.dto.LearningSessionResponse;
 import com.example.englishaicoach.learning.dto.StartLearningSessionRequest;
+import com.example.englishaicoach.learning.dto.CompleteLearningSessionRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -68,6 +69,31 @@ public class LearningSessionController {
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> Arrays.asList(entry.getValue())));
         var result = sessions.start(identity.userId(), request, query);
+        return ResponseEntity.status(result.status()).body(result.body());
+    }
+
+    @PostMapping("/{sessionId}/complete")
+    public ResponseEntity<LearningSessionResponse> complete(
+            @AuthenticationPrincipal AccessTokenIdentity identity, @PathVariable UUID sessionId,
+            @RequestBody ObjectNode body, HttpServletRequest servletRequest) {
+        if (body == null || body.size() != 1 || body.get("eventId") == null
+                || !body.get("eventId").isTextual()
+                || !body.get("eventId").asText().matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCodes.VALIDATION_ERROR,
+                    "Yêu cầu chỉ nhận eventId dạng UUID string.");
+        }
+        CompleteLearningSessionRequest request;
+        try {
+            request = mapper.convertValue(body, CompleteLearningSessionRequest.class);
+        } catch (JacksonException | IllegalArgumentException exception) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCodes.VALIDATION_ERROR,
+                    "eventId không hợp lệ.");
+        }
+        var violations = validator.validate(request);
+        if (!violations.isEmpty()) throw new ConstraintViolationException(violations);
+        Map<String, List<String>> query = servletRequest.getParameterMap().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> Arrays.asList(entry.getValue())));
+        var result = sessions.complete(identity.userId(), sessionId, request, query);
         return ResponseEntity.status(result.status()).body(result.body());
     }
 

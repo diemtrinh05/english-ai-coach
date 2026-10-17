@@ -53,7 +53,7 @@ public class SecurityConfiguration {
                                 "/api/v1/vocabulary/{vocabularyId}/examples").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/learning/sessions", "/api/v1/learning/sessions/{sessionId}",
-                                "/api/v1/learning/attempts")
+                                "/api/v1/learning/sessions/{sessionId}/complete", "/api/v1/learning/attempts")
                         .hasRole("USER")
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().permitAll())

@@ -142,6 +142,25 @@ class OpenApiContractHarnessTests extends OpenApiContractTestSupport {
     }
 
     @Test
+    void alignsLearningCompletionDtoSummaryAndStatusesWithOpenApi() {
+        assertRecordMatchesSchema(openApi, "EventIdRequest",
+                com.example.englishaicoach.learning.dto.CompleteLearningSessionRequest.class);
+        assertRecordMatchesSchema(openApi, "LearningSessionResponse",
+                com.example.englishaicoach.learning.dto.LearningSessionResponse.class);
+        Operation operation = requireOperation(openApi, "/learning/sessions/{sessionId}/complete", PathItem.HttpMethod.POST);
+        assertEquals("completeLearningSession", operation.getOperationId());
+        assertEquals("#/components/schemas/EventIdRequest", operation.getRequestBody()
+                .getContent().get("application/json").getSchema().get$ref());
+        assertEquals("#/components/schemas/LearningSessionSummaryResponse", operation.getResponses().get("200")
+                .getContent().get("application/json").getSchema().get$ref());
+        assertEquals("#/components/schemas/LearningSessionResponse",
+                requireSchema(openApi, "LearningSessionSummaryResponse").get$ref());
+        assertEquals(Set.of("200", "400", "401", "403", "404", "409"), responseStatuses(operation));
+        assertOperationResponsesResolveToSchema(openApi, operation,
+                Set.of("400", "401", "403", "404", "409"), "ErrorResponse");
+    }
+
+    @Test
     void alignsRegisteredSpringMvcHandlerWithCanonicalOpenApiOperation() throws Exception {
         RequestMappingHandlerMapping handlerMapping =
                 runtimeContext.getBean(RequestMappingHandlerMapping.class);

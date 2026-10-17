@@ -1979,3 +1979,33 @@ là JSON integer, không property bổ sung. Giữ eventId khi retry logical act
 replay response đã lưu vẫn hợp lệ sau session đóng hoặc từ inactive. 409 gồm
 IDEMPOTENCY_KEY_REUSE hoặc CONCURRENT_UPDATE; không blind retry bằng eventId mới.
 Task này không triển khai client UI; client learning implementation theo backlog.
+
+
+## Learning session completion — BE-LEARN-003 (owner duyệt 2026-10-17)
+
+`POST /api/v1/learning/sessions/{sessionId}/complete` yêu cầu role `USER`, body
+chỉ có `eventId` UUID string. Reject unknown property, thiếu/null/sai kiểu/format
+trước claim; body không hợp lệ trả400 `VALIDATION_ERROR`, ADMIN403 `FORBIDDEN`,
+JWT không hợp lệ hoặc user không còn tồn tại401 `UNAUTHORIZED`. Sau user validation,
+shared idempotency claim/replay đứng trước mutable guards; cùng user/endpoint/path/
+query/body replay snapshot200, reuse khác identity409 `IDEMPOTENCY_KEY_REUSE`.
+Session missing/foreign trả404 `NOT_FOUND`; không lộ ownership qua response.
+
+Completion đầu khóa owned `learning_sessions` row `FOR UPDATE`, cùng khóa attempt.
+Cần >=1 accepted `session_attempts` row, mọi quality/sessionType V1; empty session
+trả400 `VALIDATION_ERROR`, rollback claim. Backend đặt `ended_at` bằng injected
+server Clock; tính lại `words_studied_count=COUNT(DISTINCT vocabulary_id)` và
+`accuracy_percent=ROUND(correct attempts/total attempts*100,2)` HALF_UP theo
+BE-LEARN-002. Award10 XP `SESSION_COMPLETED`, source_event_id/reference_id là
+session.id, reference_type `learning_sessions`, dùng XP ledger core hiện hành.
+Closure, aggregate, XP và successful response snapshot commit/rollback atomic;
+không transaction độc lập hoặc auto retry. Không thêm streak/badge/Daily Plan effects.
+
+Session đã ended với eventId mới trả200 summary hiện có, giữ ended_at/aggregates,
+không award lại. Cùng event trả snapshot đã lưu kể cả state sau đó thay đổi.
+Concurrent same/different events serialize theo session lock: cùng summary và
+một award. Attempt giữ khóa trước completion được tính; attempt vào sau closure
+trả400 theo BE-LEARN-002. Summary giữ nguyên OpenAPI `LearningSessionResponse`
+(alias `LearningSessionSummaryResponse`), không thêm XP field. Client chỉ hiển thị
+summary server, retry cùng logical operation giữ eventId; không tự tính aggregate/XP.
+Không đổi schema/migration hoặc triển khai client trong task này.

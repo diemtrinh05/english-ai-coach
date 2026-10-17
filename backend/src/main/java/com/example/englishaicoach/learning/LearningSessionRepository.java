@@ -35,10 +35,32 @@ public class LearningSessionRepository {
     }
 
     public Optional<LearningSessionResponse> findOwned(UUID sessionId, UUID userId) {
+        return findOwned(sessionId, userId, false);
+    }
+
+    public Optional<LearningSessionResponse> lockOwned(UUID sessionId, UUID userId) {
+        return findOwned(sessionId, userId, true);
+    }
+
+    public boolean hasAcceptedAttempt(UUID sessionId) {
+        return Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS(SELECT 1 FROM session_attempts WHERE session_id=?)", Boolean.class, sessionId));
+    }
+
+    public void complete(UUID sessionId, Instant endedAt) {
+        jdbc.update("""
+                UPDATE learning_sessions SET ended_at=?,words_studied_count=(
+                    SELECT COUNT(DISTINCT vocabulary_id) FROM session_attempts WHERE session_id=?),
+                    accuracy_percent=(SELECT ROUND(100.0*COUNT(*) FILTER (WHERE is_correct)/COUNT(*),2)
+                        FROM session_attempts WHERE session_id=?) WHERE id=?
+                """, Timestamp.from(endedAt), sessionId, sessionId, sessionId);
+    }
+
+    private Optional<LearningSessionResponse> findOwned(UUID sessionId, UUID userId, boolean lock) {
         return jdbc.query("""
                 SELECT id,session_type,started_at,ended_at,words_studied_count,accuracy_percent
                 FROM learning_sessions WHERE id=? AND user_id=?
-                """, (rs, row) -> new LearningSessionResponse(
+                """ + (lock ? " FOR UPDATE" : ""), (rs, row) -> new LearningSessionResponse(
                         rs.getObject("id", UUID.class),
                         LearningSessionType.valueOf(rs.getString("session_type")),
                         rs.getTimestamp("started_at").toInstant(),

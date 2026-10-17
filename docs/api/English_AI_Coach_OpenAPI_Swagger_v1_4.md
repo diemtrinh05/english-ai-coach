@@ -619,6 +619,12 @@ paths:
       - Learning
       summary: Complete learning session
       operationId: completeLearningSession
+      description: |
+        Role USER; first completion requires at least one accepted attempt, closes
+        and recomputes session aggregates, awards SESSION_COMPLETED XP once atomically.
+        Same event replays snapshot; closed session with new event returns stored
+        summary without updating closure, aggregates or XP. Empty session is 400;
+        missing or foreign session is 404; body only accepts eventId UUID string.
       parameters:
       - $ref: '#/components/parameters/SessionId'
       responses:
@@ -628,6 +634,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LearningSessionSummaryResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
