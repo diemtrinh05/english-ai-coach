@@ -213,7 +213,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
-| `QA-E2E-001` | E2E Vocabulary → Session → Attempt → SRS → Progress | QAR | `AND-LEARN-003`<br>`QA-LEARN-002` | P0 | AR,DBR,SR,QAR | Critical first vertical slice passes on real backend/PostgreSQL + Android client; retry/concurrency included. | Theo global DoD + acceptance. | TODO |
+| `QA-E2E-001` | E2E Vocabulary → Session → Attempt → SRS → Progress | QAR | `AND-LEARN-003`<br>`QA-LEARN-002` | P0 | AR,DBR,SR,QAR | Critical first vertical slice passes on real backend/PostgreSQL + Android client; retry/concurrency included. | Theo global DoD + acceptance. | DONE |
 
 # M4 — Assessment & Quiz
 
@@ -770,7 +770,7 @@ P0 tasks:
 [x] AND-LEARN-001
 [x] AND-LEARN-002
 [x] AND-LEARN-003
-[ ] QA-E2E-001
+[x] QA-E2E-001
 ```
 
 ## M4 — Assessment & Quiz

@@ -12841,3 +12841,204 @@ Exact row IN_PROGRESS→DONE và checklist[x] đã persist/readback/assert. Cano
 origin/main vẫn52bd7ac79f88c1778119a41b9cf2124cdaf9468c. Không product patch,
 index/commit/push/tag mutation. STOP tại FINALIZE; publication command riêng:
 $english-ai-coach-git-workflow publish AND-LEARN-003.
+
+## QA-E2E-001 — PLAN — 2026-10-18
+
+Command execute QA-E2E-001, Owner QAR, M3/P0; workflow GOV009_DIRECT_MAIN,
+CI mode ACTUAL_CI_REPOSITORY_HEALTH. Admission thực tế: main sạch, HEAD =
+origin/main = 126f19cea1ad51155d555cc48d24ade612f1fe2d; Required CI
+39128195537/job117677671523 completed SUCCESS; health HEALTHY. Không Git
+operation hoặc direct-main task khác active. Dependencies AND-LEARN-003 và
+QA-LEARN-002 DONE; immutable local/remote baseline tags nguyên vẹn theo Git
+specialist pre-task. Helper dry-run ALLOWED; SELF_REVIEW_CONFLICT của helper
+nghĩa là cấm self-review, independent QAR session sẽ do orchestrator cung cấp.
+Canonical required reviewers AR/DBR/SR/QAR, không đổi Owner hoặc mapping.
+
+Nguồn: PROJECT_RULES, AGENTS, IMPLEMENTATION_PLAN, exact backlog row216 và
+execution evidence; QA task skill/source-selection/report-template; QA_REVIEWER;
+SRS/Architecture/DB/AI/API/OpenAPI/Backend/Android và năm mobile baselines hiện
+hành, đặc biệt các supplement BE-LEARN-002/003/004, BE-PROG-001 và owner-approved
+AND-LEARN-001/002/003. Không phát hiện nhu cầu contract mới trong scope test.
+
+Scope chỉ test infrastructure/fixtures/evidence: real HTTPS Spring Boot runtime,
+Testcontainers PostgreSQL16/Flyway, Android production ApiClient/repositories/UI;
+MIXED và REVIEW journey, accepted progress và completion, replay/reuse/concurrent
+duplicate, forced stale progress CONCURRENT_UPDATE bằng timing-only real-method
+barrier. SQL kiểm tra cùng user/session/event/vocabulary UUID và atomic effects.
+TLS dùng ephemeral CA, PKIX trust anchor trong instrumentation process, giữ nguyên
+hostname verification; không trust-all, không OS trust/proxy/global env mutation.
+Không product/API/schema/migration/provider hoặc M4 scope. Local real-device E2E
+là gate riêng chạy thật hai lần; default CI gates không được diễn giải thành
+real-device proof. Secrets sinh ngẫu nhiên trong process, không args/log/repo.
+
+PLAN đã persist TODO→IN_PROGRESS và sẽ readback/assert trước test-source patch.
+IMPLEMENT/TEST giữ IN_PROGRESS; STOP trước independent REVIEW, chưa DONE/commit/push.
+
+## QA-E2E-001 — IMPLEMENT / TEST → STOP — 2026-10-18
+
+QA task skill execute đã thực hiện PLAN→IMPLEMENT→TEST, giữ IN_PROGRESS; không
+independent review/self-PASS/finalize/commit/push. Scope đúng5files: backlog/log,
+docs/testing/QA-E2E-001.md, backend test AndroidLearningE2eScenario.java và Android
+instrumentation RealBackendLearningInstrumentedTest.java. Không product, API,
+OpenAPI, schema/migration, build dependency/CI workflow hoặc UX contract change.
+
+Harness real Spring Boot embedded HTTPS + Testcontainers PostgreSQL16.15/fresh
+Flyway8/Hibernate validate, fixedClock2026-10-18T08:00Z. Android production
+AppSessionDependencies/ApiClient/repositories/UseCases/ViewModel/Fragments thật;
+đăng ký/profile bằng HTTPS thật. Ephemeral keystore/password/JWT secret sinh trong
+process/TEMP; publicCA PKIX anchor chỉ instrumentation process, hostname verify
+không đổi, restore provider/property trong After. Không OS trust/proxy/global-env
+mutation. Test-only file checkpoints và real-method timing spies, không endpoint
+điều khiển, MockMvc/MockWebServer/H2/fake mutation/result thay actual runtime.
+
+Matrix8checkpoints: MIXED catalog/detail/q3→accepted progress/explicit completion;
+REVIEW due fixture/q2→progress/completion/queue reload; same event replay trước và
+sau closure; changed payload reuse409;4sameevent HTTP contenders4x200/claim1true+
+3false;2different sessions cùng loaded progress version→200+409CONCURRENT_UPDATE,
+loser claim/attempt/session aggregate rollback; explicit sameevent retry và replay.
+Final committed SQL5attempts/5sessions/12claims/7XP rows/50XP/1streak day; literal
+SRS q3 EF2.36I1R1, q2EF2.18I1R0, finalREVIEWINGEF2.66I40R4; nextReviewAt theo
+fixedClock; XP source identities join actual attempt/session/streak source.
+Protocol races qua production Android ApiClient không thay policy UI recovery409.
+
+Command/evidence chronology (không che FAIL):
+- PLAN printer cp1252 Unicode diagnostic, sau đó process UTF8 + exact row/log
+  readback/assert PASS trước mọi test-source patch; không lifecycle deviation.
+- Maven test-compile75sources PASS50.149s.
+- Explicit E2E first FAIL: Android test Files.writeString/readString và Provider
+  ctor3compileerrors, host1failure/0error/0skip suite72.91s BUILD1:29; sửa test-only.
+- Second FAIL: harness click old catalog row trước search response, chưa attempt;
+  device12.565s/host75.33s BUILD1:20; await row text đúng fixture rồi click.
+- Third PASS host1test77.86s BUILD1:22/device1test18.937s;8checkpoints.
+- Matrix-source literal assertions final pass run452a4c9e-4c96-4766-88f2-17e27bc939ce:
+  host1test69.98s BUILD1:21/device1test20.806s,0failure/error/skip.
+- Repeat run158c85d4-795c-4486-b8b7-e450c4f4f794: host1test99.54s BUILD1:44,
+  device1test31.145s; fresh UUID/container/TLS fixture,0failure/error/skip.
+- Full Maven clean verify PASS411tests/70XML/0failure/error/skip BUILD6:23min,
+  PostgreSQL/Flyway/API/OpenAPI/package. Command wrapper -f backend/pom.xml,
+  process MAVEN_OPTS=-Xmx384m, argLine=-Xmx512m -XX:ReservedCodeCacheSize=128m,
+  spring.test.context.cache.maxSize=4; không skip/exclude/coverage override.
+- Android wrapper clean lint testDebugUnitTest assembleDebug assembleRelease
+  assembleDebugAndroidTest --no-daemon --max-workers=2 với processJDK21 và
+  org.gradle.jvmargs=-Xmx768m -Dfile.encoding=UTF-8 PASS1m33s;162unit/21XML,
+  0failure/error/skip, lint0errors/30existingwarnings.
+- Default device class khôngfixture được probe thật: NOT RUN/assumption0.049s,
+  SDKstatus-4/AssumptionViolatedException dù runner in OK(1test). Không E2EPASS.
+  Siết host log guard theo actualSDK markers; không product hoặc matrix change.
+- Affected final source explicit E2E runf3be1a83-9bb3-4e5c-b1c3-2c7c416d289b
+  PASS1host58.42s BUILD1:06/1device18.899s,8checkpoints,0failure/error/skip;
+  fresh compiled class/XML timestamps sau source. Full411/Android162 trước guard
+  change vẫn applicable; không optional full rerun. Current Surefire có70full+
+  1explicitXML, không claim default CI412.
+
+Logs TEMP QA-E2E-001-{compile,e2e-first,e2e-second,e2e-third,e2e-final-first,
+e2e-final-repeat,full-maven,android-full,default-optin,e2e-logguard}.log; each real
+run TEMP/qa-e2e-001-<UUID>-*/{build.log,device.log,evidence.json}. Không log/token/
+password/privatekey trong repo. SQL cleanup chỉ own UUID đã assert zero; reverse
+mapping hiện rỗng và private keystore TEMP không còn. Pixel_8/emulator-5554 là
+instance task tạo, giữ online cho independent QAR; root sẽ đóng sau reviewers,
+không xóa AVD/data hoặc chạm device khác.
+
+Baseline/CIworkflow/secret audits PASS; Python46PASS1.760s/compileall PASS;
+diff/cached-diff và3newUTF8/noBOM/singleEOF/whitespace/conflict/scope/generated
+checks PASS. Local/remote immutable tags object→peeled giữ nguyên
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Fresh final guards sẽ recheck sau append evidence. HEAD=origin/main vẫn126f19c;
+CI admission PASS39128195537/job117677671523, ACTUAL_CI_REPOSITORY_HEALTH,
+failed-check waiver NOT USED; current-task remote CI NOT RUN/NOT CLAIMED.
+
+Acceptance TEST PASS; required independent AR/DBR/SR/QAR chưa chạy. Implementer
+không phát gate PASS hoặc tự resolve finding. QAR independence do orchestrator
+cung cấp session khác. STOP trước independent REVIEW, task IN_PROGRESS; chưa
+DONE và không tự bắt đầu M4. Limits: không actual processkill/liveexternalprovider/
+performance/fullV1E2E; full37legacydevicecases không rerun hoặc mượn historicalPASS.
+
+QA-E2E-001 final TEST freeze: sau append evidence, fresh baseline/CIworkflow/
+secret audits PASS, Python46/46PASS0.968s/compileall PASS, diff/cached-diff PASS,
+3newfile/5QA-only scope/status guards PASS; remote tags unchanged. Runtime còn
+Pixel_8/emulator-5554 đúng task-owned instance, reverse mappings rỗng. Java test
+sources không đổi sau final guard run/class/XML epoch PASS. STOP IN_PROGRESS
+và bàn giao4independent reviewers; no Maven/Gradle writer active, no commit/push.
+
+## QA-E2E-001 — Independent review synchronization / FINALIZE — 2026-10-18
+
+Command finalize QA-E2E-001 theo QA-task skill: consume/synchronize external
+reports rồi IN_PROGRESS→DONE, không dùng Android synchronization subcommand.
+Authoritative reports do orchestrator chuyển giao sau khi từng reviewer độc lập
+đã hoàn tất; implementer /root/qa_e2e001_impl không tự phát gate hoặc resolve.
+
+| Gate / owning authority | Initial result | Finding / remediation / final result |
+|---|---|---|
+| Architecture Reviewer /root/qa_e2e001_ar | PASS / APPROVE | NONE;0resolved/0open; finalPASS |
+| Database Reviewer /root/qa_e2e001_dbr | PASS / APPROVE | NONE;0resolved/0open; finalPASS |
+| Security Reviewer /root/qa_e2e001_sr | PASS / APPROVE | NONE;0resolved/0open; finalPASS |
+| QA Reviewer /root/qa_e2e001_qa | PASS / APPROVE | NONE;0resolved/0open; finalPASS |
+
+Independent QAR authority khác implementer: /root/qa_e2e001_qa vs
+/root/qa_e2e001_impl. QAR chạy lại documented explicit real E2E final source:
+runb35127d1-f1e0-4b53-9795-85f29a4fe8a6,1host/8SQLcheckpoints PASS77.43s,
+BUILD1:22,1device25.957s,0failure/error/skip. Log
+TEMP/QA-E2E-001-independent-qar.log; artifacts
+TEMP/qa-e2e-001-b35127d1-f1e0-4b53-9795-85f29a4fe8a6-2995323277200294342.
+Fresh readback XML time77.43/source→compiledclass→XML epoch PASS; actual log8
+checkpoints và device OK, không assumption. Không cộng explicit XML với70full
+regression XML để claim một default412 run. QAR own baseline/CIworkflow/secret/
+pycompile/diff/cached-diff PASS; Python46PASS0.728s; M3 critical slice exitPASS.
+
+DBR reviewed real PostgreSQL16.15/Flyway8/JPA, ONCONFLICT claim1true/3false,
+stale sameversion/loserrollback, sourceidentities/progressversion4, SQL5attempts/
+5sessions/12claims/7XP50XP/1streak; không outerTX/schema/migration change. AR
+reviewed5files fullproduction UI→VM→UseCase→Repository→ApiClient→controller/
+transaction/PostgreSQL; reflectionread-only/spiescallRealMethod không thay
+businessauthority; test-onlyTLS/handshake/explicitassumptionguard, không M4.
+AR và DBR context baseline/diff/cached PASS, không Maven claim; AR cp1252 printer
+diagnostic sửa process UTF8, không product/test failure. SR reviewed actualPKIX
+anchor+unchangedhostname/process-onlyfinallyrestore, secretsrandomkhôngargs/logs,
+artifactscan0JWT/0plainaccess-refresh/0privatePEM; runtime tokenstorecleanup
+không được diễn giải thành logout API test; secret/baseline/diff/cached PASS.
+
+Không reviewer initialFAIL/finding/remediation trong vòng review này; resolved0,
+unresolvedNONE. Giữ nguyên owner history2test-harnessFAIL→test-onlyfix→PASS,
+defaultnofixtureprobe NOTRUN dù SDK inOK, finalguardaffectedrerunPASS. Không
+selfreview hoặc rewriteFAILhistory. Helper finalize chỉ advisory không tự chứng
+minh externalgates nên báo SELF_REVIEW_CONFLICT/unproven; actual external QAR
+session/run/report đã thỏaindependence. Không claim helperPASS hoặc waivegate.
+
+Closure source/test evidence: owner full411/70XML cleanverify PASS6:23;
+Android162/21XML cleanlintunitdebugreleasetestAPK PASS1m33s, lint0errors/
+30existingwarnings; owner2matrix repeat và finalSDKguard1host/1devicePASS,
+independentQAR1host/1devicePASS. Java sources unchanged từ finalguard vàreview;
+không optional Maven/Gradle rerun. Fresh closure baseline/CIworkflow/secret
+PASS; Python46PASS0.522s/compileall PASS; diff/cached-diff/3newUTF8singleEOF/
+whitespace/conflict/5QA-onlyscope/generated guards PASS. Local/remote immutable
+tag object→peeled nguyên vẹn:
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+
+Runtime cleanup: reverse mappings rỗng và ephemeral private keystoreTEMPgone;
+adb verify emulator-5554, emu avd name Pixel_8 đúng instance task tạo trước khi
+emu kill OK. adb devices sau đó rỗng. Không xóaAVD/userdata/otherdevice hoặc
+thay OS trust/proxy/global environment.
+
+| QA-E2E-001 closure gate | Final result |
+|---|---|
+| Dependencies AND-LEARN-003 / QA-LEARN-002 | DONE / DONE |
+| Real backend/PostgreSQL/Android slice + replay/reuse/concurrency | PASS |
+| Owner full Maven / Android build-lint-unit / real device | PASS411 / PASS162 / PASS explicit scenario |
+| Independent Architecture Reviewer / Database Reviewer / Security Reviewer / QA Reviewer | PASS / PASS / PASS / PASS |
+| Independent QAR actual real runtime | PASS1host77.43s +1device25.957s /8checkpoints |
+| Resolved / unresolved findings |0 /NONE |
+| Baseline/CIworkflow/secret/Python/compileall/diff/newfile/scope/generated | PASS |
+| Local/remote immutable baseline tags | PASS |
+| CI mode / failed-check waiver | ACTUAL_CI_REPOSITORY_HEALTH / NOT USED |
+| Admission base Required CI | PASS39128195537/job117677671523 SHA126f19cea1ad51155d555cc48d24ade612f1fe2d |
+| Current-task remote Required CI | NOT RUN / NOT CLAIMED before publication |
+| Final task status | DONE |
+
+Exact backlogrow216 IN_PROGRESS→DONE và checklist[x] persist/readback/assertPASS;
+canonical #M3 table (không ##checklist)16/16DONE, exitQA-E2E-001PASS. Không kết
+luận fullV1E2E/processkill/externalprovider/performance. HEAD=origin/main vẫn
+126f19cea1ad51155d555cc48d24ade612f1fe2d; không index/commit/push/tag mutation.
+STOPFINALIZE. Git publish QA-E2E-001 là command riêng; saupush CI_PENDING và phải
+đợi exactpublishedSHA RequiredCIPASS/HEALTHY trước normalM4admission; không autoNEXT.
