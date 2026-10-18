@@ -12231,3 +12231,186 @@ vẫn b517397240c62d5aae8094f5b6e259e151b3f8bb; không commit/push/index/tag
 mutation. Current-task Required CI chỉ có sau publication; không proxy/global
 environment mutation. STOP: Git workflow publish QA-LEARN-002 revalidate,
 tạo một final task commit main, fast-forward push và exactSHA RequiredCI boundary.
+
+
+## AND-LEARN-001 — PLAN — 2026-10-18
+
+GOV009_DIRECT_MAIN, AFL/M3/P0; dependencies AND-VOC-001 và BE-LEARN-001 DONE; canonical reviewer QAR, impact AR/SR cho client architecture/auth-private state. Admission main sạch, HEAD=origin/main=bb517fb3c8dd3b75657851353f8be1f494a9c2d1; Required CI39089606641 PASS, ACTUAL_CI_REPOSITORY_HEALTH. Owner đã duyệt ba hợp đồng trong call_27e65dc00c63489ba11d4884898167d9: single selected vocabulary MIXED qua Học từ này; Front/Reveal/Back + HTTPS audio; monotonic foreground timer và Back/exit; OS SavedState pending event/body/server ID gắn stable auth session, explicit same-event retry, GETme/open revalidation, không tự POST hoặc offline queue. Đồng bộ Android+4 mobile UX documents. Chưa submit/next/completion; không SRS/client XP. Exact backlog TODO→IN_PROGRESS đã readback/assert trước product patch. PLAN không commit/push; baseline/API giữ nguyên ngoài additive client policy đã duyệt.
+
+
+## AND-LEARN-001 — IMPLEMENT / TEST — 2026-10-18
+
+Task IN_PROGRESS, scope24files (12 tracked,12new): Android session domain/API/
+repository/usecase, ViewModel, Fragment/dependencies, ids/resources, Detail entry,
+MainActivity navigation guard, three tests, README, five mobile baselines and
+planning. API/OpenAPI/backend/schema/migration/dependency/CI unchanged. Chỉ một
+vocabulary MIXED, Front/Reveal/Back và existing HTTPS audio. Không attempt/quality
+submission/feedback/next/completion hoặc client SRS/XP. Owner approvals ở PLAN
+được tích hợp additive vào Android Technical và bốn mobile UX/design documents.
+
+Remote pipeline GETme→start201 hoặc get200→detail/examples; shared session-bound
+client, explicit mutation transport policy, exact body eventId, stale-owner/cancel
+checks mỗi stage. ViewModel giữ logical event/server ID, pause/revalidate theo
+foreground/online, monotonic elapsed. OS SavedState không token/content; process
+recreation mới dùng stable auth identity và explicit pending retry; session có
+ID chỉ GET open. MainActivity giữ restored learning qua auth UNKNOWN/LOADING/
+ERROR nhưng card bị ẩn đến authenticated. Double entry trước async Fragment
+commit bị chặn. Offline entry bị disable; initial offline→online chỉ explicit
+retry, không delayed autoPOST. Teardown cuối release mọi view/audio references.
+
+Validation chronology (không validation/test FAIL):
+- compileDebugJavaWithJavac PASS1m42s, log TEMP/AND-LEARN-001-compile.log.
+- Focused testDebugUnitTest --tests '*LearningSession*Test' PASS19s,24/24
+  (VM16+repository8), log TEMP/AND-LEARN-001-focused.log.
+- clean testDebugUnitTest lintDebug assembleDebug assembleRelease
+  assembleDebugAndroidTest PASS2m14s,106/106 unit, TEMP/AND-LEARN-001-full.log.
+- Sau initial-offline race regression (+1) và center headline: cùng clean gates
+  PASS1m49s,107/107 unit/16XML, TEMP/AND-LEARN-001-final.log.
+- Sau double-entry guard, testDebugUnitTest lintDebug assembleDebug
+  assembleRelease connectedDebugAndroidTest PASS4m55s;107/107 unit và full
+  device24/24 zero failures/errors/skips. TEMP/AND-LEARN-001-device.log;
+  full XML được giữ TEMP/AND-LEARN-001-full-device.xml.
+- Sau teardown-only fix cuối: cùng affected unit/lint/debug/release và
+  connectedDebugAndroidTest với
+  -Pandroid.testInstrumentationRunnerArguments.class=com.example.englishaicoach.feature.learning.LearningSessionInstrumentedTest
+  PASS2m45s;107/107 unit/16XML và focused device6/6 zero f/e/skip, actual final
+  source. Log C:/Users/Hi/AppData/Local/Temp/AND-LEARN-001-final-affected.log.
+  Mọi Gradle command dùng ./android/gradlew.bat -p android, prefix tasks :app:,
+  --console=plain; JDK21/SDK process-only, không skip test hoặc đổi global env.
+
+Device Pixel_8 existing AVD, emulator-5554, Android17/API37,
+sdk_gphone16k_x86_64,1080x2400. Sáu learning cases kiểm chứng duplicate entry,
+Front/reveal/hardwareBack, pending SavedState explicit same-event retry,
+new Fragment/ViewModel từ OS SavedState (không claim am-kill process E2E),
+open GET restore/resetFront, Activity rotation/retained state, closed state và
+auth invalidation/late callback. Unit fakeclock kiểm chứng pause background/
+offline/revalidation, reveal/Back no-reset, rotation giữ elapsed, recreatedVM0.
+Repository8cases dùng actual Retrofit/MockWebServer, auth/header/body/status/
+GETonly/closed/contenterror/reuse/changedowner. Không claim real backend E2E;
+QA-E2E-001 vẫn task riêng. Audio null disabled không chặn reveal, real-provider
+playback không được giả là tested.
+
+Full device run đầu có System UI ANR overlay trong screenshots dù assertions
+24/24PASS; đây environment observation, không app/test FAIL và không claim
+visual từ ảnh che. Đã chọn Wait trên task emulator, final focused run recapture
+và view ảnh rõ Front/Back không overlay, word/IPA/meaning/examples/translation
+không clip, UI resource Việt, Back và Reveal touch48dp+. Ảnh ngoài repository:
+C:/Users/Hi/AppData/Local/Temp/AND-LEARN-001-front-final.png và back-final.png.
+Lint final0errors/30warnings, mọi warning ở existing files/dependency hints;
+không issue mới ở learning source. CI workflow hiện hành bao phủ lintDebug,
+testDebugUnitTest, assembleDebug/release; device evidence local riêng.
+
+Baseline/CIworkflow/secret audits PASS; Python46/46PASS1.400s, py_compile PASS.
+Diff/cached-diff PASS, new12 UTF8/noBOM/singleEOF/whitespace/conflict/generated
+PASS; scope24files, không credential/sensitive logging/generated outputs.
+Local/remote immutable tags giữ objects5ccf0650d81ffbbd3d96eb523d097e0b9b022308
+→ff6e13f4fe1444879b28d846801d0caa555bf4a7 và
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Task IN_PROGRESS; no reviewer claim, synchronization/finalization/commit/push.
+Required CI current-task NOT RUN / NOT CLAIMED trước publication. Canonical
+QAR tiếp theo; root điều phối impact SR (SavedState/private auth ownership) và
+AR (new client module/layering). Không sửa proxy/global environment. Emulator
+được giữ cho independent validation; không xóa AVD hoặc dữ liệu unrelated.
+
+## AND-LEARN-001 — Synchronize independent reviewer evidence — 2026-10-18
+
+Operation chỉ đồng bộ authoritative reports do orchestrator chuyển; không tự
+review hoặc tự suy diễn PASS từ TEST. Canonical mapping vẫn QAR; AR/SR là
+impact gates cho module/layering và SavedState/private auth ownership. Cả ba
+reviewer inspect toàn bộ24files tracked+untracked, strictly read-only.
+
+| Reviewer / authoritative session | Kết quả | Findings |
+|---|---|---|
+| SR /root/and_learn001_sr | Initial PASS / APPROVE | NONE |
+| AR /root/and_learn001_ar_resume | Initial PASS / APPROVE | NONE |
+| QAR /root/and_learn001_qa_resume | Initial PASS / APPROVE | NONE |
+
+SR xác minh GETme USER/stable owner lock, shared call factory, stage/callback
+generation checks, SavedState IDs không token/content/PII, HTTPS audio không
+userinfo/Bearer, same-event explicit retry không autoPOST và account switch
+không restore state cũ. SR chạy review context/secret_audit/baseline/diff PASS,
+không Gradle. PowerShell glob search diagnostic được chạy lại đúng docs/api
+PASS; không phải security finding hoặc product/test failure.
+
+AR xác minh Fragment→ViewModel→UseCase→Repository→shared Retrofit, backend
+authority, không future-task behavior và owner contract đồng bộ additive ở
+năm mobile documents. AR chạy review context/baseline/diff/cached-diff PASS,
+không Gradle. Session AR trước bị gián đoạn trước final report; session resume
+hoàn tất review và phát authoritative PASS, không có AR FAIL trước đó.
+
+QAR xác minh acceptance, lifecycle, eventId, timer, offline/auth ownership và
+visual Front/Back rõ không overlay. Original QAR /root/and_learn001_qa thực sự
+chạy focused25unit (repository8+ViewModel17) và device6/6, zero failure/error/skip,
+BUILD SUCCESS1m51s: C:/Users/Hi/AppData/Local/Temp/
+AND-LEARN-001-independent-qa.log. Session này gặp usage error trước final report,
+không phải test FAIL và chưa có reviewer verdict. QAR resume độc lập đọc source,
+log/XML timestamp sau final source, owner full107unit/lint/build và full24device
+XML; không claim execution cũ là lần chạy của mình. QAR resume chạy baseline,
+CIworkflow/secret audits, py_compile, diff/cached-diff và new12 UTF8/noBOM/
+singleEOF/whitespace/conflict/generated guards PASS rồi phát final PASS.
+
+Không có task reviewer FAIL/finding/remediation; resolved0, unresolved NONE.
+Không stale FAIL snapshot cần override hoặc tự resolve. Giới hạn evidence giữ
+nguyên: fixture HTTP/SavedState fresh ViewModel/Activity recreation, không claim
+live process kill, real backend E2E hoặc real-provider audio playback. QA-E2E-001
+và AND-LEARN-002/003 giữ nguyên scope riêng.
+
+Synchronization giữ AND-LEARN-001 IN_PROGRESS, checkbox chưa đóng; không product
+patch, Gradle run, finalize, commit/push/index/tag mutation. HEAD=origin/main
+bb517fb3c8dd3b75657851353f8be1f494a9c2d1; current-task Required CI NOT RUN /
+NOT CLAIMED trước publication. Emulator giữ cho validation; không proxy/global
+environment mutation. Next operation hợp lệ: finalize AND-LEARN-001 sau khi
+revalidate mọi closure gate.
+
+## AND-LEARN-001 — FINALIZE — 2026-10-18
+
+Closure consume synchronized independent SR/AR/QAR initial PASS/APPROVE, resolved0,
+unresolved NONE; không self-review hoặc fabricate missing report. Canonical QAR
+và impact SR/AR giữ nguyên. Acceptance single-word MIXED/flashcard/timer/Back/
+interruption/owner-safe SavedState thỏa ba owner approvals; dependencies
+AND-VOC-001 và BE-LEARN-001 DONE. Không mở submit/completion/future-task scope.
+
+Owner full107unit/16XML, lint0errors/30existing warnings, debug/release builds,
+full24device và final affected6device PASS theo IMPLEMENT/TEST evidence. Original
+independent QAR focused25unit/6device PASS1m51s và resume final verdict được phân
+biệt đúng trong synchronization. Fresh closure đọc actual final-affected và
+independent-qa logs BUILD SUCCESSFUL, xác minh timestamps sau final Java/XML;
+current focused XML25/25 zero f/e/skip và archived full device24/24 zero f/e/skip.
+Không optional Gradle rerun; source không đổi sau executable tests/reviews.
+
+Fresh baseline_audit, ci_workflow_audit, secret_audit PASS; Python unittest46/46
+PASS1.451s; python -m compileall -q tools PASS; diff/cached-diff PASS. Scope24files
+(12tracked12new), new12 UTF8/noBOM/singleEOF/whitespace, conflict và generated
+guards PASS. Hai baseline tags local/remote object/peeled giữ nguyên canonical
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Không credential/sensitive logging/local SDK/APK/build output bị track.
+
+Closure diagnostic đếm M3 lần đầu thiếu encoding UTF8, read_text theo cp1252
+gây UnicodeDecodeError trước count/lifecycle mutation; rerun explicit UTF8 trên
+canonical #M3 table PASS12/16 trước transition. Không product/test gate FAIL.
+Emulator5554 query báo connection refused; adb devices xác nhận không thiết bị
+đang chạy, nên không gửi emu kill hoặc xóa AVD. Không claim finalizer đã dừng
+emulator và không ảnh hưởng thiết bị khác; adb chỉ khởi động daemon cục bộ.
+
+| AND-LEARN-001 closure gate | Final result |
+|---|---|
+| Dependencies / approved sources / scope | PASS |
+| Session/eventId/flashcard/timer/Back/SavedState acceptance | PASS |
+| Owner unit/lint/debug/release/device gates | PASS107unit;24device;final6device |
+| Independent SR / AR / QAR | PASS / PASS / PASS |
+| Independent executable evidence | PASS25unit;6device |
+| Reviewer chronology synchronized / unresolved findings | PASS / NONE |
+| Baseline/CIworkflow/secret/Python/pycompile/diff guards | PASS |
+| Newfile/scope/generated/conflict/tags | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS39089606641 SHAbb517fb3c8dd3b75657851353f8be1f494a9c2d1 |
+| Failed-check waiver | NOT USED |
+| Current-task remote Required CI | NOT RUN / NOT CLAIMED before publication |
+| Final task status | DONE |
+
+Exact row IN_PROGRESS→DONE và checklist[x] được cập nhật; readback/assert canonical
+M3 table13/16 DONE, còn AND-LEARN-002/003 và QA-E2E-001. M3 exit chưa đạt.
+HEAD=origin/main vẫn bb517fb3c8dd3b75657851353f8be1f494a9c2d1; không product patch,
+commit/push/index/tag hoặc proxy/global environment mutation. STOP tại FINALIZE;
+publication command riêng: $english-ai-coach-git-workflow publish AND-LEARN-001.

@@ -48,11 +48,18 @@ public final class VocabularyDetailFragment extends Fragment {
         }).get(VocabularyDetailViewModel.class);
         binding.backButton.setOnClickListener(ignored ->
                 requireActivity().getSupportFragmentManager().popBackStack());
+        binding.learnButton.setOnClickListener(ignored ->
+                ((com.example.englishaicoach.MainActivity) requireActivity()).openLearning(
+                        requireArguments().getString(ARG_ID)));
         binding.retryButton.setOnClickListener(ignored -> viewModel.retry());
         viewModel.detail().observe(getViewLifecycleOwner(), this::renderDetail);
         viewModel.examples().observe(getViewLifecycleOwner(), this::renderExamples);
-        new ConnectivityMonitor(requireContext()).observe(getViewLifecycleOwner(), available ->
-                viewModel.setOnline(Boolean.TRUE.equals(available)));
+        binding.learnButton.setEnabled(false);
+        new ConnectivityMonitor(requireContext()).observe(getViewLifecycleOwner(), available -> {
+            boolean online = Boolean.TRUE.equals(available);
+            binding.learnButton.setEnabled(online);
+            viewModel.setOnline(online);
+        });
         if (viewModel.detail().getValue() == null
                 || viewModel.detail().getValue().getStatus() == UiState.Status.INITIAL) {
             viewModel.load(requireArguments().getString(ARG_ID));

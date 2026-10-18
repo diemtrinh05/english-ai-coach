@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="learning_status" type="id" />
+    <item name="learning_word" type="id" />
+    <item name="learning_reveal_button" type="id" />
+    <item name="learning_retry_button" type="id" />
+</resources>

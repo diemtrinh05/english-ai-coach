@@ -179,3 +179,21 @@ API/schema/migration và backend CEFR/recommendation/Daily Plan giữ nguyên.
 Tên goal canonical có display label Việt từ strings.xml; giữ nguyên name/ID
 trong DTO/API. Goal name mới chưa có resource hiển thị nội dung server, không
 tự tạo code hoặc đổi lựa chọn.
+
+
+## AND-LEARN-001 — Phiên học một thẻ
+
+Từ Vocabulary Detail, “Học từ này” mở một từ đã chọn trong session MIXED.
+Front/Reveal/Back và audio HTTPS hiện có; chưa submit answerQuality, next card
+hay completion. Dùng shared session client, GETme và GET session revalidation;
+retry explicit giữ body eventId, không tự POST sau restore/offline. OS SavedState
+giữ ID/payload gắn stable auth session, không token/content/offline queue.
+Timer monotonic pause background/offline/rotation/revalidation; rotation giữ
+face/elapsed, process recreation reset Front/timer0. Hardware/toolbar Back từ
+Back về Front; trạng thái khác xác nhận exit local.
+
+Focused unit: ./gradlew.bat :app:testDebugUnitTest --tests '*LearningSession*Test'.
+Device lifecycle: ./gradlew.bat :app:connectedDebugAndroidTest
+-Pandroid.testInstrumentationRunnerArguments.class=com.example.englishaicoach.feature.learning.LearningSessionInstrumentedTest.
+Test device dùng fixture trong test APK; kiểm chứng client lifecycle/UX không
+thay evidence real backend/PostgreSQL của QA-E2E-001.

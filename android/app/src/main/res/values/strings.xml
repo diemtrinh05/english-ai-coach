@@ -97,4 +97,22 @@
     <string name="onboarding_goal_academic">Học thuật</string>
     <string name="onboarding_goal_ielts">IELTS</string>
     <string name="onboarding_goal_toeic">TOEIC</string>
+    <string name="learning_entry">Học từ này</string>
+    <string name="learning_back">Quay lại</string>
+    <string name="learning_audio">Nghe phát âm</string>
+    <string name="learning_reveal">Xem nghĩa</string>
+    <string name="learning_retry">Thử lại</string>
+    <string name="learning_loading">Đang xác nhận phiên học…</string>
+    <string name="learning_auth_error">Chưa xác thực được phiên. Vui lòng thử lại khi có mạng.</string>
+    <string name="learning_card_position">Thẻ 1 / 1</string>
+    <string name="learning_closed">Phiên học hoặc nội dung không còn khả dụng. Vui lòng quay lại.</string>
+    <string name="learning_expired">Phiên đăng nhập đã thay đổi. Vui lòng quay lại.</string>
+    <string name="learning_pending">Chưa xác nhận được kết quả. Thử lại để tiếp tục cùng phiên học.</string>
+    <string name="learning_reuse">Thao tác không khớp với yêu cầu trước đó. Vui lòng quay lại.</string>
+    <string name="learning_forbidden">Tài khoản không có quyền thực hiện thao tác này.</string>
+    <string name="learning_offline">Đang ngoại tuyến. Kết nối lại để xác nhận phiên học.</string>
+    <string name="learning_audio_error">Chưa phát được âm thanh. Vui lòng thử lại.</string>
+    <string name="learning_exit_confirm">Rời phiên học? Thao tác này chỉ đóng màn hình; phiên chưa được hoàn tất.</string>
+    <string name="learning_stay">Ở lại</string>
+    <string name="learning_exit">Rời phiên</string>
 </resources>

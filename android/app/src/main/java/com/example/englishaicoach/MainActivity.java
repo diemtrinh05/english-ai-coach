@@ -20,6 +20,7 @@ public final class MainActivity extends AppCompatActivity {
     private static final String STATE_DESTINATION = "selected_destination";
     private ActivityMainBinding binding;
     private MainNavigationViewModel navigationViewModel;
+    private boolean openingLearning;
     private com.example.englishaicoach.feature.auth.AuthSessionViewModel authViewModel;
 
     @Override
@@ -54,6 +55,8 @@ public final class MainActivity extends AppCompatActivity {
                 renderDestination(destination);
         });
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            openingLearning = getSupportFragmentManager().findFragmentById(R.id.main_content)
+                    instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment;
             if (binding != null) binding.mainNavigation.setVisibility(
                     authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED
                     && getSupportFragmentManager().getBackStackEntryCount() == 0
@@ -64,6 +67,14 @@ public final class MainActivity extends AppCompatActivity {
             boolean authenticated = state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED;
             binding.mainNavigation.setVisibility(authenticated
                     && getSupportFragmentManager().getBackStackEntryCount() == 0 ? View.VISIBLE : View.GONE);
+            Fragment preserved = getSupportFragmentManager().findFragmentById(R.id.main_content);
+            if (!authenticated && preserved instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
+                    && (state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.UNKNOWN
+                    || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.LOADING
+                    || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.ERROR)) {
+                if (state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.UNKNOWN) authViewModel.restore();
+                return;
+            }
             if (authenticated) {
                 Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
                 if (current == null || current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment)
@@ -88,6 +99,8 @@ public final class MainActivity extends AppCompatActivity {
             binding.mainNavigation.setSelectedItemId(destination.getMenuId());
         }
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+        if (current instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
+                && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         // Observer HOME khi recreate không được thay thế flow thiết lập đang mở.
         if (destination == MainDestination.HOME
                 && current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment
@@ -118,6 +131,17 @@ public final class MainActivity extends AppCompatActivity {
                 .replace(R.id.main_content, new VocabularyListFragment(), "VOCABULARY_LIST")
                 .addToBackStack("VOCABULARY_LIST")
                 .commit();
+    }
+
+    public void openLearning(String id) {
+        if (openingLearning || getSupportFragmentManager().isStateSaved()) return;
+        if (authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return;
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+        if (current instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment) return;
+        openingLearning = true;
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, com.example.englishaicoach.feature.learning.LearningSessionFragment.forVocabulary(id), "LEARNING")
+                .addToBackStack("LEARNING").commit();
     }
 
     public void openVocabularyDetail(String id) {

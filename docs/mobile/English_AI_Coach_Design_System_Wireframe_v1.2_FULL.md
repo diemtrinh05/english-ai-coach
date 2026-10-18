@@ -3033,3 +3033,35 @@ API/schema/migration và backend CEFR/recommendation/Daily Plan giữ nguyên.
 Tên goal canonical có display label Việt từ strings.xml; giữ nguyên name/ID
 trong DTO/API. Goal name mới chưa có resource hiển thị nội dung server, không
 tự tạo code hoặc đổi lựa chọn.
+
+
+## AND-LEARN-001 — Client learning boundary (owner duyệt 2026-10-18)
+
+Điểm vào “Học từ này” ở Vocabulary Detail mở một thẻ vocabulary đã chọn và
+`sessionType=MIXED`. Không suy diễn từ NEW theo progress hoặc xếp hạng queue.
+Start explicit tạo một body `eventId`; timeout/retry cùng logical operation giữ
+nguyên eventId và payload. Không blind POST. GET /users/me xác thực USER và
+stable auth session identity trước từng start/get; server session có ID được
+GET kiểm tra open trước khi tải detail/examples. API và database không đổi.
+
+Task này triển khai Front → Reveal → Back và HTTPS audio URL hiện có; audio
+thiếu không chặn reveal và không gọi TTS generation. Quality/submit/feedback/
+next thuộc AND-LEARN-002; due review/completion thuộc AND-LEARN-003. Không tạo
+attempt, summary giả, XP hoặc SRS trên client.
+
+Timer dùng monotonic clock, bắt đầu khi card đã tải, Fragment RESUMED, online
+và session đã xác nhận open; pause background/offline/rotation gap/revalidation.
+Reveal hoặc Back về Front không reset; rotation giữ elapsed và face. Sau process
+recreation về Front/timer0. Hardware Back và toolbar Back cùng semantics:
+BACK→FRONT; FRONT/loading/error/pending hỏi xác nhận; cancel giữ logical state,
+exit chỉ clear local/cancel request, không completion hoặc XP.
+
+OS SavedState chỉ giữ eventId/payload (`MIXED`), vocabularyId, stable auth
+TokenSession.sessionId và server sessionId nếu có, không token/content/queue.
+Refresh giữ stable auth identity; đổi account/logout làm mất hiệu lực state cũ.
+Restore phải qua auth gate GET /users/me và khớp owner; chưa có server ID chỉ
+explicit retry cùng event/body, không autoPOST/replacementevent. Có server ID
+chỉ GET open rồi reload content; closed/missing báo không khả dụng và cho exit.
+SavedState chỉ phục hồi cùng Android task khi OS recreation; không cold-start
+session restoration, offline mutation queue hoặc automatic sync. Không gửi
+private request/state của phiên A dưới phiên B.
