@@ -61,13 +61,18 @@ public final class RetrofitLearningSessionRepository implements LearningSessionR
     }
     @Override public Cancelable load(String owner, String event, String vocabularyId,
             String sessionId, boolean start, LearningSessionRepository.Callback callback) {
+        return load(owner, event, vocabularyId, sessionId, start, "MIXED", callback);
+    }
+    @Override public Cancelable load(String owner, String event, String vocabularyId,
+            String sessionId, boolean start, String sessionType, LearningSessionRepository.Callback callback) {
+        if (!Set.of("MIXED", "REVIEW").contains(sessionType)) throw new IllegalArgumentException();
         synchronized (sessions) {
             Operation op = new Operation(owner, callback);
             op.request(api::user, 200, user -> {
                 CurrentUserDto dto = new Gson().fromJson(user, CurrentUserDto.class);
                 if (dto == null || !dto.valid() || !"USER".equals(dto.role)) { op.fail(403); return; }
                 Supplier<Call<JsonElement>> action = start
-                        ? () -> api.start(Map.of("sessionType", "MIXED", "eventId", event))
+                        ? () -> api.start(Map.of("sessionType", sessionType, "eventId", event))
                         : () -> api.get(sessionId);
                 op.request(action, start ? 201 : 200, body -> {
                     JsonObject json = body.getAsJsonObject();
@@ -77,7 +82,7 @@ public final class RetrofitLearningSessionRepository implements LearningSessionR
                     String ended = json.has("endedAt") && !json.get("endedAt").isJsonNull()
                             ? required(json, "endedAt") : null;
                     if (ended != null) java.time.Instant.parse(ended);
-                    if (!"MIXED".equals(type) || (!start && !id.equals(sessionId))) throw new IllegalArgumentException();
+                    if (!sessionType.equals(type) || (!start && !id.equals(sessionId))) throw new IllegalArgumentException();
                     op.session = new LearningSession(id, type, began, ended);
                     if (!op.session.open()) { callback.completed(new Result(op.session, null, null)); return; }
                     op.request(() -> vocabulary.detail(vocabularyId), 200, detail -> {

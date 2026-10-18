@@ -27,7 +27,7 @@ public final class MainNavigationInstrumentedTest {
         instrumentation.waitForIdleSync();
         try {
             assertTab(activity, R.id.nav_home, R.string.nav_home, "HOME");
-            assertTab(activity, R.id.nav_review, R.string.nav_review, "REVIEW");
+            assertTab(activity, R.id.nav_review, R.string.review_title, "REVIEW");
             assertTab(activity, R.id.nav_profile, R.string.nav_profile, "PROFILE");
         } finally {
             activity.runOnUiThread(activity::finish);

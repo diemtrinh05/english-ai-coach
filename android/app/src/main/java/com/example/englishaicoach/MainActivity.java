@@ -112,7 +112,8 @@ public final class MainActivity extends AppCompatActivity {
                     androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.main_content,
-                            FoundationDestinationFragment.forDestination(destination),
+                            destination == MainDestination.REVIEW ? new com.example.englishaicoach.feature.review.ReviewFragment()
+                                    : FoundationDestinationFragment.forDestination(destination),
                             destination.name())
                     .commit();
         }
@@ -133,14 +134,16 @@ public final class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void openLearning(String id) {
+    public void openLearning(String id) { openLearning(id, "MIXED", "DETAIL"); }
+    public void openReviewLearning(String id) { openLearning(id, "REVIEW", "REVIEW"); }
+    private void openLearning(String id, String type, String origin) {
         if (openingLearning || getSupportFragmentManager().isStateSaved()) return;
         if (authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return;
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
         if (current instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment) return;
         openingLearning = true;
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, com.example.englishaicoach.feature.learning.LearningSessionFragment.forVocabulary(id), "LEARNING")
+                .replace(R.id.main_content, com.example.englishaicoach.feature.learning.LearningSessionFragment.forVocabulary(id, type, origin), "LEARNING")
                 .addToBackStack("LEARNING").commit();
     }
 

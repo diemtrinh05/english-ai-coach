@@ -5,6 +5,9 @@ import com.example.englishaicoach.core.auth.*;
 import com.example.englishaicoach.core.network.ApiError;
 import com.example.englishaicoach.domain.model.VocabularyItem;
 import com.example.englishaicoach.domain.model.LearningAttempt;
+import com.example.englishaicoach.domain.model.LearningSummary;
+import com.example.englishaicoach.domain.model.VocabularyProgress;
+import com.example.englishaicoach.domain.usecase.ReviewLearningUseCase;
 import com.example.englishaicoach.domain.repository.LearningSessionRepository;
 import com.example.englishaicoach.domain.usecase.OpenLearningSessionUseCase;
 import com.example.englishaicoach.domain.usecase.SubmitLearningAttemptUseCase;
@@ -14,9 +17,10 @@ import java.util.function.LongSupplier;
 
 public final class LearningSessionViewModel extends ViewModel {
     public enum Phase { INITIAL, LOADING, FRONT, BACK, ERROR, OFFLINE, CLOSED, EXPIRED, EXITED,
-        SUBMITTING, PENDING, FEEDBACK, ACCEPTED, CONCURRENT, REUSE, REFRESHING, OVERFLOW, REJECTED }
+        SUBMITTING, PENDING, FEEDBACK, ACCEPTED, CONCURRENT, REUSE, REFRESHING, OVERFLOW, REJECTED, COMPLETING, COMPLETE_PENDING, COMPLETED, COMPLETE_REJECTED }
     public static final class Snapshot {
-        public final String owner, event, vocabulary, server;
+        public final String owner, event, vocabulary, server, sessionType, origin, completeEvent;
+        public final boolean completed, completeRejected;
         public final LearningAttempt.Request attempt;
         public final boolean accepted, conflict, reuse, rejected;
         public Snapshot(String owner, String event, String vocabulary, String server) {
@@ -24,6 +28,14 @@ public final class LearningSessionViewModel extends ViewModel {
         }
         public Snapshot(String owner, String event, String vocabulary, String server, LearningAttempt.Request attempt,
                 boolean accepted, boolean conflict, boolean reuse, boolean rejected) {
+            this(owner, event, vocabulary, server, attempt, accepted, conflict, reuse, rejected,
+                    "MIXED", "DETAIL", null, false, false);
+        }
+        public Snapshot(String owner, String event, String vocabulary, String server, LearningAttempt.Request attempt,
+                boolean accepted, boolean conflict, boolean reuse, boolean rejected, String type, String origin,
+                String completeEvent, boolean completed, boolean completeRejected) {
+            this.sessionType = type; this.origin = origin; this.completeEvent = completeEvent;
+            this.completed = completed; this.completeRejected = completeRejected;
             this.owner = owner; this.event = event; this.vocabulary = vocabulary; this.server = server;
             this.attempt = attempt; this.accepted = accepted; this.conflict = conflict; this.reuse = reuse;
             this.rejected = rejected;
@@ -38,6 +50,23 @@ public final class LearningSessionViewModel extends ViewModel {
         }
     }
     private final SessionManager sessions;
+    private ReviewLearningUseCase reviews;
+    private String sessionType = "MIXED", origin = "DETAIL", completeEvent;
+    private boolean completed, completeRejected, progressLoading, progressLoaded;
+    private VocabularyProgress progress;
+    private LearningSummary summary;
+    private ApiError progressError;
+    private LearningSessionRepository.Cancelable progressCall;
+    private long progressGeneration;
+    public VocabularyProgress progress() { return progress; }
+    public ApiError progressError() { return progressError; }
+    public boolean progressLoading() { return progressLoading; }
+    public LearningSummary summary() { return summary; }
+    public String origin() { return origin; }
+    public void configure(ReviewLearningUseCase reviews, String type, String origin) {
+        this.reviews = reviews;
+        if (fresh) { this.sessionType = type; this.origin = origin; }
+    }
     private final OpenLearningSessionUseCase useCase;
     private final SubmitLearningAttemptUseCase attempts;
     private final Executor executor;
@@ -70,6 +99,8 @@ public final class LearningSessionViewModel extends ViewModel {
             server = restored.server; sent = true;
             pending = restored.attempt; accepted = restored.accepted; conflict = restored.conflict; reuse = restored.reuse;
             rejected = restored.rejected;
+            sessionType = restored.sessionType; origin = restored.origin;
+            completeEvent = restored.completeEvent; completed = restored.completed; completeRejected = restored.completeRejected;
         }
         state.setValue(new State(Phase.INITIAL, null, null));
         listener = () -> executor.execute(() -> { if (!disposed && !current()) expire(); });
@@ -77,7 +108,8 @@ public final class LearningSessionViewModel extends ViewModel {
         if (!current()) expire();
     }
     public LiveData<State> state() { return state; }
-    public Snapshot snapshot() { return new Snapshot(owner, event, vocabulary, server, pending, accepted, conflict, reuse, rejected); }
+    public Snapshot snapshot() { return new Snapshot(owner, event, vocabulary, server, pending, accepted, conflict, reuse, rejected,
+            sessionType, origin, completeEvent, completed, completeRejected); }
     private boolean current() { return owner != null && sessions.isCurrentSession(owner); }
     private boolean terminal() {
         Phase phase = state.getValue().phase;
@@ -105,7 +137,9 @@ public final class LearningSessionViewModel extends ViewModel {
     private void activate() {
         if (disposed || terminal() || !resumed || !authenticated || !online || busy) return;
         if (!current()) { expire(); return; }
-        if (hasAttempt()) { showAttempt(); return; }
+        if (completed) { if (summary == null) loadSummary(); else publish(Phase.COMPLETED, null, null); return; }
+        if (completeEvent != null) { publish(completeRejected ? Phase.COMPLETE_REJECTED : Phase.COMPLETE_PENDING, null, null); return; }
+        if (hasAttempt()) { showAttempt(); if (accepted && !progressLoaded) refreshProgress(); return; }
         if (server != null) request(false);
         else if (fresh && !sent) request(true);
         else publish(Phase.ERROR, null, state.getValue().error);
@@ -113,6 +147,8 @@ public final class LearningSessionViewModel extends ViewModel {
     public void retry() {
         if (disposed || terminal() || busy || !resumed || !authenticated || !online) return;
         if (!current()) { expire(); return; }
+        if (completed) { if (summary == null) loadSummary(); return; }
+        if (completeEvent != null) { if (!completeRejected) submitCompletion(); return; }
         if (accepted || rejected) return;
         if (conflict || reuse) { refreshConflict(); return; }
         if (pending != null) { submitPending(); return; }
@@ -123,7 +159,7 @@ public final class LearningSessionViewModel extends ViewModel {
         sent = true; fresh = false;
         long request = ++generation;
         publish(Phase.LOADING, null, null);
-        active = useCase.load(owner, event, vocabulary, server, start, result -> executor.execute(() -> {
+        active = useCase.load(owner, event, vocabulary, server, start, sessionType, result -> executor.execute(() -> {
             if (disposed || !current() || request != generation || !resumed || !authenticated || !online) return;
             busy = false;
             if (result.session != null) server = result.session.sessionId;
@@ -150,7 +186,10 @@ public final class LearningSessionViewModel extends ViewModel {
         if (!running && confirmed && resumed && online && authenticated) { runningSince = clock.getAsLong(); running = true; }
     }
     private void pauseTimer() { if (running) { elapsed += Math.max(0, clock.getAsLong() - runningSince); running = false; } }
-    private void cancel() { generation++; busy = false; if (active != null) active.cancel(); active = null; }
+    private void cancel() {
+        progressGeneration++; if (progressCall != null) progressCall.cancel(); progressCall = null;
+        if (progressLoading) { progressLoading = false; progressLoaded = false; }
+        generation++; busy = false; if (active != null) active.cancel(); active = null; }
     private void publish(Phase phase, VocabularyItem card, ApiError error) { state.setValue(new State(phase, card, error)); }
     private void showAttempt() {
         publish(accepted ? feedback == null ? Phase.ACCEPTED : Phase.FEEDBACK : rejected ? Phase.REJECTED : reuse ? Phase.REUSE
@@ -172,7 +211,7 @@ public final class LearningSessionViewModel extends ViewModel {
         active = attempts.submit(owner, pending, (result, error) -> executor.execute(() -> {
             if (disposed || !current() || request != generation || !resumed || !authenticated || !online) return;
             busy = false;
-            if (result != null) { accepted = true; feedback = result; publish(Phase.FEEDBACK, null, null); return; }
+            if (result != null) { accepted = true; feedback = result; publish(Phase.FEEDBACK, null, null); refreshProgress(); return; }
             conflict = error != null && error.status == 409 && error.isConcurrentUpdate();
             reuse = error != null && error.status == 409 && error.isIdempotencyKeyReuse();
             if (conflict || reuse) { showAttempt(); return; }
@@ -195,14 +234,57 @@ public final class LearningSessionViewModel extends ViewModel {
             request(false);
         }));
     }
+    public void refreshProgress() {
+        if (reviews == null || !accepted || progressLoading || disposed || !current() || !resumed || !authenticated || !online) return;
+        progressLoading = true; progressError = null; long request = ++progressGeneration;
+        state.setValue(state.getValue());
+        progressCall = reviews.progress(owner, vocabulary, (value, error) -> executor.execute(() -> {
+            if (disposed || !current() || request != progressGeneration || !resumed || !authenticated || !online) return;
+            progressLoading = false; progressLoaded = true; progress = value; progressError = error;
+            state.setValue(state.getValue());
+        }));
+    }
+    public void complete() {
+        if (!accepted || reviews == null || completeEvent != null || busy || disposed || !current()
+                || !resumed || !authenticated || !online) return;
+        completeEvent = UUID.randomUUID().toString(); submitCompletion();
+    }
+    private void submitCompletion() {
+        cancel(); busy = true; long request = ++generation;
+        publish(Phase.COMPLETING, null, null);
+        active = reviews.complete(owner, server, completeEvent, (value, error) -> executor.execute(() -> {
+            if (disposed || !current() || request != generation || !resumed || !authenticated || !online) return;
+            busy = false;
+            if (value != null && sessionType.equals(value.sessionType)) {
+                completed = true; summary = value; publish(Phase.COMPLETED, null, null); return;
+            }
+            completeRejected = error != null && error.status != 0 && error.status != 429 && error.status < 500;
+            publish(completeRejected ? Phase.COMPLETE_REJECTED : Phase.COMPLETE_PENDING, null, error);
+        }));
+    }
+    private void loadSummary() {
+        if (reviews == null) return;
+        cancel(); busy = true; long request = ++generation; publish(Phase.COMPLETING, null, null);
+        active = reviews.summary(owner, server, (value, error) -> executor.execute(() -> {
+            if (disposed || !current() || request != generation || !resumed || !authenticated || !online) return;
+            busy = false;
+            if (value != null && sessionType.equals(value.sessionType)) { summary = value; publish(Phase.COMPLETED, null, null); }
+            else publish(Phase.COMPLETE_PENDING, null, error);
+        }));
+    }
+    private void clearPrivateResults() {
+        progressGeneration++; if (progressCall != null) progressCall.cancel();
+        progressCall = null; progress = null; progressError = null; summary = null;
+        completeEvent = null; completed = false; completeRejected = false; progressLoading = false; progressLoaded = false;
+    }
     private void expire() {
-        pauseTimer(); cancel(); owner = null; event = null; vocabulary = null; server = null;
+        pauseTimer(); cancel(); clearPrivateResults(); owner = null; event = null; vocabulary = null; server = null;
         elapsed = 0; back = false;
         pending = null; feedback = null; accepted = false; conflict = false; reuse = false; rejected = false;
         publish(Phase.EXPIRED, null, null);
     }
     public void exit() {
-        pauseTimer(); cancel(); owner = null; event = null; vocabulary = null; server = null;
+        pauseTimer(); cancel(); clearPrivateResults(); owner = null; event = null; vocabulary = null; server = null;
         elapsed = 0; back = false;
         pending = null; feedback = null; accepted = false; conflict = false; reuse = false; rejected = false;
         publish(Phase.EXITED, null, null);

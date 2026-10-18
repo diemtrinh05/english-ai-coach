@@ -207,7 +207,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 |---|---|---|---|---|---|---|---|---|
 | `AND-LEARN-001` | Learning session + Flashcard state flow | AFL | `AND-VOC-001`<br>`BE-LEARN-001` | P0 | QAR | Start session once/eventId, render flashcard, timer lifecycle, interruption/process handling per Android spec. | Theo global DoD + acceptance. | DONE |
 | `AND-LEARN-002` | Submit answerQuality attempt + retry | AFL | `AND-LEARN-001`<br>`BE-LEARN-002` | P0 | QAR | Send answerQuality/eventId; never isCorrect; retry preserves eventId; 409 codes handled distinctly. | Theo global DoD + acceptance. | DONE |
-| `AND-LEARN-003` | Review list + learning completion | AFL | `AND-LEARN-002`<br>`BE-LEARN-004`<br>`BE-LEARN-003` | P0 | QAR | Due reviews displayed; complete session; progress refresh after accepted attempt. | Theo global DoD + acceptance. | TODO |
+| `AND-LEARN-003` | Review list + learning completion | AFL | `AND-LEARN-002`<br>`BE-LEARN-004`<br>`BE-LEARN-003` | P0 | QAR | Due reviews displayed; complete session; progress refresh after accepted attempt. | Theo global DoD + acceptance. | DONE |
 
 ## Vertical Slice
 
@@ -769,7 +769,7 @@ P0 tasks:
 [x] QA-LEARN-002
 [x] AND-LEARN-001
 [x] AND-LEARN-002
-[ ] AND-LEARN-003
+[x] AND-LEARN-003
 [ ] QA-E2E-001
 ```
 

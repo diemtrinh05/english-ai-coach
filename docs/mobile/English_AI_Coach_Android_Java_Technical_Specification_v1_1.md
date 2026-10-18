@@ -5602,3 +5602,33 @@ conflict terminal, không retry/change event để bypass. Những read này ch�
 vụ conflict recovery, không triển khai accepted-progress-refresh của AND-LEARN-003.
 Timeout/network/429/5xx chỉ explicit retry cùng payload/event; lỗi definitive
 khác báo controlled error và không tự gửi lại. API/backend/schema không đổi.
+
+
+## AND-LEARN-003 — Review, completion và refresh (owner duyệt 2026-10-18)
+
+Mở rộng phạm vi tạm của AND-LEARN-001/002: Review tab gọi GET /learning/reviews
+với mặc định tối đa50, giữ nguyên thứ tự server; count là số đang hiển thị,
+không phải tổng mọi từ đến hạn. Hiển thị word/nextReviewAt từ server, loading,
+empty/error/offline và explicit tải lại. Không dựng risk/weak/accuracy/filter
+khi API chưa cung cấp. Mỗi dòng “Ôn từ này” mở một thẻ sessionType=REVIEW;
+Vocabulary Detail giữ MIXED. Type/origin đi cùng logical start và SavedState,
+không tự lấy thẻ tiếp theo hoặc tái xếp hạng. Trở về Review tải lại queue.
+
+Sau accepted attempt hoặc replay acknowledgment, GET vocabulary progress riêng
+và hiển thị snapshot server. GET lỗi không làm mất accepted, không gửi attempt
+lại, có explicit retry read; không chặn nút explicit “Hoàn tất phiên”. Một thẻ
+accepted không tạo attempt khác. Chỉ known accepted mới cho completion, với
+body eventId riêng tạo một lần; double tap/timeout không đổi event, không autoPOST.
+Vẫn có thoát local có xác nhận, không tự complete khi Back/background/offline.
+
+Completion thành công hiển thị chỉ wordsStudiedCount/accuracyPercent/startedAt/
+endedAt do server trả. Không giả XP/improved/weak hoặc thời gian active từ timer.
+Pending completion SavedState giữ IDs/event/type/origin/stable auth session UUID
+và markers, không token/content/offline queue. OS recreation qua GET /users/me
+và owner khớp: pending chỉ explicit POST cùng event, kể cả session đã closed để
+server replay; không GET-open guard trước POST. Completed marker chỉ GET session
+để lấy summary; read lỗi retry GET, không completion POST mới hoặc summary giả.
+IDEMPOTENCY_KEY_REUSE là terminal, không thay event để vượt lỗi. Logout/account
+switch clear private state và bỏ callback cũ. Review chỉ giữ snapshot riêng trong
+RAM theo auth owner, không lưu private queue vào disk/SavedState. Online-first;
+không offline mutation/sync. API/backend/schema/migration không đổi.

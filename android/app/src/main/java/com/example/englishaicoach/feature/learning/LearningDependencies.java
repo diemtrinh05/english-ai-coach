@@ -11,6 +11,16 @@ import com.example.englishaicoach.domain.usecase.SubmitLearningAttemptUseCase;
 public final class LearningDependencies {
     private static OpenLearningSessionUseCase useCase;
     private static SubmitLearningAttemptUseCase attemptUseCase;
+    private static com.example.englishaicoach.domain.usecase.ReviewLearningUseCase reviewUseCase;
+    public static synchronized com.example.englishaicoach.domain.usecase.ReviewLearningUseCase review(Context context) {
+        if (reviewUseCase == null) {
+            AppSessionDependencies dependencies = AppSessionDependencies.get(context);
+            reviewUseCase = new com.example.englishaicoach.domain.usecase.ReviewLearningUseCase(
+                    new com.example.englishaicoach.data.repository.RetrofitReviewLearningRepository(dependencies.sessions,
+                            dependencies.api.createExplicitRequests(ReviewLearningApi.class), dependencies.api.errors()));
+        }
+        return reviewUseCase;
+    }
     private LearningDependencies() { }
     public static synchronized SubmitLearningAttemptUseCase attempts(Context context) {
         if (attemptUseCase != null) return attemptUseCase;

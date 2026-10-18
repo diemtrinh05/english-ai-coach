@@ -25,12 +25,16 @@ public final class LearningSessionFragment extends Fragment {
     private MaterialTextView status, word, phonetic, meaning, examples;
     private MaterialButton reveal, retry, audio;
     private LinearLayout qualities;
-    private MaterialButton returnToVocabulary;
+    private MaterialButton returnToVocabulary, complete, progressRetry;
+    private MaterialTextView progressStatus;
     private MediaPlayer player;
     private boolean authReady;
     public static LearningSessionFragment forVocabulary(String id) {
+        return forVocabulary(id, "MIXED", "DETAIL");
+    }
+    public static LearningSessionFragment forVocabulary(String id, String type, String origin) {
         LearningSessionFragment fragment = new LearningSessionFragment();
-        Bundle args = new Bundle(); args.putString("vocabulary", id); fragment.setArguments(args); return fragment;
+        Bundle args = new Bundle(); args.putString("vocabulary", id); args.putString("sessionType", type); args.putString("origin", origin); fragment.setArguments(args); return fragment;
     }
     @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle saved) {
         ScrollView scroll = new ScrollView(requireContext());
@@ -71,6 +75,12 @@ public final class LearningSessionFragment extends Fragment {
         }
         returnToVocabulary = button(R.string.learning_return_vocabulary);
         returnToVocabulary.setId(R.id.learning_return_button); returnToVocabulary.setOnClickListener(v -> back());
+        complete = button(R.string.learning_complete); complete.setId(R.id.learning_complete_button);
+        complete.setOnClickListener(v -> model.complete());
+        progressStatus = text(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge);
+        progressStatus.setId(R.id.learning_progress_status);
+        progressRetry = button(R.string.learning_progress_reload); progressRetry.setId(R.id.learning_progress_retry);
+        progressRetry.setOnClickListener(v -> model.refreshProgress());
         return scroll;
     }
     private MaterialTextView text(int appearance) {
@@ -87,15 +97,20 @@ public final class LearningSessionFragment extends Fragment {
         LearningSessionViewModel.Snapshot snapshot = saved != null && saved.containsKey("event")
                 ? new LearningSessionViewModel.Snapshot(saved.getString("owner"), saved.getString("event"),
                     saved.getString("vocabulary"), saved.getString("server"), pending, saved.getBoolean("accepted"),
-                    saved.getBoolean("conflict"), saved.getBoolean("reuse"), saved.getBoolean("rejected")) : null;
+                    saved.getBoolean("conflict"), saved.getBoolean("reuse"), saved.getBoolean("rejected"),
+                    saved.getString("sessionType", "MIXED"), saved.getString("origin", "DETAIL"),
+                    saved.getString("completeEvent"), saved.getBoolean("completed"), saved.getBoolean("completeRejected")) : null;
         AppSessionDependencies dependencies = AppSessionDependencies.get(requireContext());
         model = new ViewModelProvider(this, new ViewModelProvider.Factory() {
             @NonNull @Override public <T extends ViewModel> T create(@NonNull Class<T> type) {
                 Handler handler = new Handler(Looper.getMainLooper());
-                return type.cast(new LearningSessionViewModel(dependencies.sessions,
+                LearningSessionViewModel created = new LearningSessionViewModel(dependencies.sessions,
                         LearningDependencies.useCase(requireContext()), LearningDependencies.attempts(requireContext()), command -> {
                             if (Looper.myLooper() == Looper.getMainLooper()) command.run(); else handler.post(command);
-                        }, SystemClock::elapsedRealtime, requireArguments().getString("vocabulary"), snapshot));
+                        }, SystemClock::elapsedRealtime, requireArguments().getString("vocabulary"), snapshot);
+                created.configure(LearningDependencies.review(requireContext()), requireArguments().getString("sessionType", "MIXED"),
+                        requireArguments().getString("origin", "DETAIL"));
+                return type.cast(created);
             }
         }).get(LearningSessionViewModel.class);
         model.state().observe(getViewLifecycleOwner(), state -> { if (authReady) render(state); });
@@ -117,9 +132,11 @@ public final class LearningSessionFragment extends Fragment {
     private void hideCard() {
         for (View view : new View[]{word, phonetic, meaning, examples, reveal, audio}) view.setVisibility(View.GONE);
         qualities.setVisibility(View.GONE); returnToVocabulary.setVisibility(View.GONE);
+        complete.setVisibility(View.GONE); progressStatus.setVisibility(View.GONE); progressRetry.setVisibility(View.GONE);
     }
     private void render(LearningSessionViewModel.State state) {
         hideCard(); retry.setVisibility(View.GONE); retry.setText(R.string.learning_retry);
+        returnToVocabulary.setText("REVIEW".equals(model.origin()) ? R.string.learning_return_review : R.string.learning_return_vocabulary);
         int message;
         switch (state.phase) {
             case FRONT: case BACK:
@@ -150,13 +167,26 @@ public final class LearningSessionFragment extends Fragment {
                 retry.setText(R.string.learning_refresh_conflict); retry.setVisibility(View.VISIBLE);
                 returnToVocabulary.setVisibility(View.VISIBLE); break;
             case REFRESHING: stopAudio(); message = R.string.learning_refreshing; break;
+            case COMPLETING: stopAudio(); message = R.string.learning_completing; break;
+            case COMPLETE_PENDING:
+                stopAudio(); message = R.string.learning_complete_pending; retry.setVisibility(View.VISIBLE);
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
+            case COMPLETE_REJECTED:
+                stopAudio(); message = state.error != null && state.error.isIdempotencyKeyReuse()
+                        ? R.string.learning_complete_reuse : R.string.learning_complete_rejected;
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
+            case COMPLETED:
+                stopAudio(); com.example.englishaicoach.domain.model.LearningSummary summary = model.summary();
+                status.setText(getString(R.string.learning_summary, summary.wordsStudiedCount,
+                        summary.accuracyPercent.toPlainString(), summary.startedAt, summary.endedAt));
+                returnToVocabulary.setVisibility(View.VISIBLE); return;
             case FEEDBACK:
                 stopAudio(); LearningAttempt feedback = model.feedback();
                 status.setText(getString(feedback.isCorrect ? R.string.learning_feedback_correct : R.string.learning_feedback_incorrect,
                         feedback.answerQuality, feedback.intervalDays, feedback.nextReviewAt));
-                returnToVocabulary.setVisibility(View.VISIBLE); return;
+                returnToVocabulary.setVisibility(View.VISIBLE); renderAccepted(); return;
             case ACCEPTED: stopAudio(); message = R.string.learning_attempt_recorded;
-                returnToVocabulary.setVisibility(View.VISIBLE); break;
+                returnToVocabulary.setVisibility(View.VISIBLE); renderAccepted(); break;
             case OVERFLOW: stopAudio(); message = R.string.learning_timer_overflow;
                 returnToVocabulary.setVisibility(View.VISIBLE); break;
             case REJECTED: stopAudio(); message = R.string.learning_attempt_rejected;
@@ -172,6 +202,23 @@ public final class LearningSessionFragment extends Fragment {
             default: message = R.string.learning_loading; break;
         }
         status.setText(message);
+    }
+    private void renderAccepted() {
+        complete.setVisibility(View.VISIBLE);
+        progressStatus.setVisibility(View.VISIBLE);
+        if (model.progressLoading()) progressStatus.setText(R.string.learning_progress_loading);
+        else if (model.progress() != null) {
+            com.example.englishaicoach.domain.model.VocabularyProgress progress = model.progress();
+            int label;
+            switch (progress.status) {
+                case "LEARNING": label = R.string.learning_status_learning; break;
+                case "REVIEWING": label = R.string.learning_status_reviewing; break;
+                case "MASTERED": label = R.string.learning_status_mastered; break;
+                default: label = R.string.learning_status_new; break;
+            }
+            progressStatus.setText(getString(R.string.learning_progress_snapshot, getString(label), progress.intervalDays,
+                    progress.nextReviewAt == null ? getString(R.string.learning_progress_no_review) : progress.nextReviewAt));
+        } else { progressStatus.setText(R.string.learning_progress_error); progressRetry.setVisibility(View.VISIBLE); }
     }
     private String join(String first, String second) {
         return (first == null ? "" : first) + (first != null && second != null ? "\n" : "") + (second == null ? "" : second);
@@ -211,6 +258,9 @@ public final class LearningSessionFragment extends Fragment {
         if (model != null) {
             LearningSessionViewModel.Snapshot saved = model.snapshot();
             out.putString("owner", saved.owner); out.putString("event", saved.event);
+            out.putString("sessionType", saved.sessionType); out.putString("origin", saved.origin);
+            out.putString("completeEvent", saved.completeEvent); out.putBoolean("completed", saved.completed);
+            out.putBoolean("completeRejected", saved.completeRejected);
             out.putString("vocabulary", saved.vocabulary); out.putString("server", saved.server);
             out.putBoolean("accepted", saved.accepted); out.putBoolean("conflict", saved.conflict);
             out.putBoolean("reuse", saved.reuse); out.putBoolean("rejected", saved.rejected);
@@ -223,7 +273,7 @@ public final class LearningSessionFragment extends Fragment {
     @Override public void onDestroyView() {
         stopAudio(); content = null; status = null; word = null; phonetic = null;
         meaning = null; examples = null; reveal = null; retry = null; audio = null;
-        qualities = null; returnToVocabulary = null;
+        qualities = null; returnToVocabulary = null; complete = null; progressStatus = null; progressRetry = null;
         super.onDestroyView();
     }
 }

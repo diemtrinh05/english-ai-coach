@@ -202,3 +202,8 @@ thay evidence real backend/PostgreSQL của QA-E2E-001.
 ### AND-LEARN-002
 
 Flashcard một từ gửi quality0..5 qua shared session-bound client, giữ body eventId/payload khi explicit retry. Server feedback authoritative; OS SavedState chỉ IDs/numbers/markers. Accepted là terminal local, không complete/next/accepted progress refresh. Hai409 có conflict recovery riêng; không offline mutation queue.
+
+
+### AND-LEARN-003
+
+Review tab hiển thị tối đa50 due items theo server, mỗi từ mở một REVIEW card; Detail giữ MIXED. Accepted attempt tải progress riêng, GET lỗi retry read không resend. Completion explicit giữ eventId qua retry/SavedState, pending không tự POST; completed restore chỉ GET summary. Summary chỉ server metrics, không XP/SRS client. Queue private chỉ RAM theo auth owner; offline chặn mutation.

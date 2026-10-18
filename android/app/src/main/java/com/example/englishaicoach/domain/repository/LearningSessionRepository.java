@@ -15,6 +15,10 @@ public interface LearningSessionRepository {
             this.session = session; this.card = card; this.error = error;
         }
     }
+    default Cancelable load(String owner, String eventId, String vocabularyId, String sessionId,
+            boolean start, String sessionType, Callback callback) {
+        return load(owner, eventId, vocabularyId, sessionId, start, callback);
+    }
     Cancelable load(String owner, String eventId, String vocabularyId, String sessionId,
                     boolean start, Callback callback);
 }
