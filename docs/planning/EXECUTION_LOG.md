@@ -12114,3 +12114,120 @@ vẫn e41e32217cfc46ecdea1c9365904dc54608f6cb4. Không commit/push/index/tag
 mutation; current-task Required CI chỉ có sau publication. Không proxy/global
 environment mutation. STOP: Git workflow publish QA-LEARN-001 revalidate, một
 finaltaskcommit trênmain, fastforwardpush và exactSHA RequiredCI boundary.
+
+
+## QA-LEARN-002 — PLAN — 2026-10-18
+
+Owner chọn task M3/P0/QAR, dependency BE-LEARN-002 DONE; canonical DBR/SR/QAR.
+GOV009_DIRECT_MAIN / ACTUAL_CI_REPOSITORY_HEALTH. Git pre-task READY tại
+b517397240c62d5aae8094f5b6e259e151b3f8bb, main sạch bằng origin/live, Required
+CI39019001187 PASS/HEALTHY, baseline tags nguyên vẹn, không task khác active.
+Đã cross-check PROJECT_RULES/AGENTS/plan/backlog/log, QA role, API/OpenAPI, DB,
+Architecture, Backend/Technical/SRS và suites learning/idempotency/locking hiện có.
+Không gap contract. Exact backlog row TODO→IN_PROGRESS đã readback/assert
+TRƯỚC tạo test patch. Phạm vi test-only: claim contention thật, replay snapshot,
+reuse theo payload/query/route/path/user, rollback claim và full side effects,
+stale @Version progress/streak và explicit retry cùng eventId. Spy chỉ điều phối
+thời điểm/fault injection; PostgreSQL/Flyway/JPA/mutation/API thật, không outer
+transaction che commit. Không đổi product/API/schema/migration/client/dependency
+hoặc scope Android/E2E. Required focused/repeat/full clean verify và audit guards;
+QAR reviewer bắt buộc khác session implementation. Giữ IN_PROGRESS sau TEST,
+không self-review/finalize/commit/push. Không proxy/global environment mutation.
+
+
+## QA-LEARN-002 — IMPLEMENT / focused TEST — 2026-10-18
+
+Scope4files: suite LearningConcurrencyContractIntegrationTests, docs/testing/
+QA-LEARN-002.md và hai planning files. Tám ca ép claim contention SQL thật
+(bốn duplicate, competing payload/user), canonical replay, reuse mọi chiều,
+late snapshot failure→waiting claimant takeover, HTTP stale progress/streak
+và explicit retry cùng event. Không mock mutation/SRS/XP hoặc outer transaction;
+spy chỉ timing/fault. Không product/schema/API/migration/dependency/client/CI diff.
+Initial command FAIL0.674s do PowerShell thiếu quotes -Dcontextcache; chưa test.
+Lần quote đúng testCompile FAIL12.677s do thiếu import MockMvc; thêm import
+test-only. Logs TEMP/QA-LEARN-002-focused.log và focused-final.log giữ nguyên.
+Focused-runtime8/8PASS zero failures/errors/skips, BUILD SUCCESS57.550s, exit0;
+log C:/Users/Hi/AppData/Local/Temp/QA-LEARN-002-focused-runtime.log. Focused repeat
+và full clean verify tiếp theo; không claim PASS khi chưa xong. Process-only
+JDK21/MAVEN_OPTS384m/fork512m codecache128m/contextcache4, không skip hoặc
+override instrumentation. Baseline/CIworkflow/secret auditsPASS; Python46/46
+PASS2.037s, pycompile/diff/cached-diffPASS. Task IN_PROGRESS, chưa reviewer gates,
+finalization hoặc publication; không proxy/global environment mutation.
+
+
+## QA-LEARN-002 — Final TEST evidence — 2026-10-18
+
+Focused repeat8/8PASS, zero failure/error/skip, BUILD SUCCESS33.229s, exit0,
+log C:/Users/Hi/AppData/Local/Temp/QA-LEARN-002-repeat.log. Required full command
+backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+-DargLine="-Xmx512m -XX:ReservedCodeCacheSize=128m"
+-Dspring.test.context.cache.maxSize=4 clean verify: BUILD SUCCESS04:36min, exit0,
+411/411PASS zero failures/errors/skips. Parsed/asserted70freshSurefireXML,
+new suite8/8PASS. Log C:/Users/Hi/AppData/Local/Temp/QA-LEARN-002-full.log.
+Fresh Flyway8 migrations/JPA validate/JAR/repackagePASS. Focused runtime8/8,
+repeat8/8 và full8/8 xác minh repeatability/isolation; không claim independent
+reviewer chạy test. Giữ initial command/property parsing và missing import FAIL
+chronology; không reviewer finding. Source Java không đổi sau focusedrepeat.
+Scope4files frozen, không product/API/schema/migration/dependency/CI/client diff.
+Baseline/CIworkflow/secret/Python46/pycompile/diff/cached-diff và new2UTF8/noBOM/
+singleEOF/whitespace/conflict/scope/generated guardsPASS; local/remote tags
+5ccf0650d81ffbbd3d96eb523d097e0b9b022308→ff6e13f4fe1444879b28d846801d0caa555bf4a7;
+e3884521c3d497094961d015b7b32d12a8e55650→34362780eb7ffeb9391ade95220cf895a4592f70.
+Maven writer kết thúc; task IN_PROGRESS. STOP trước independent DBR/SR/QAR;
+QAR cần khác agent/session implementer. Chưa finalize/commit/push, current-task
+Required CI chỉ có sau publication; không proxy/global environment mutation.
+
+
+## QA-LEARN-002 — Independent review / FINALIZE — 2026-10-18
+
+Orchestrator chuyển authoritative reports: DBR /root/qa_learn002_dbr initial
+PASS/NONE; SR /root/qa_learn002_sr initial PASS/NONE; independent QAR
+/root/qa_learn002_review initial PASS/NONE. QAR reviewer khác agent/session
+/root/qa_learn002_impl implementation; external evidence thỏa independence,
+không self-review hoặc đổi owner/mapping. Không reviewer FAIL/finding/remediation;
+resolved0, unresolvedNONE. Finalizer chỉ đồng bộ reports, không tự resolve.
+
+Independent QAR chạy suite8/8PASS zero failure/error/skip, BUILD SUCCESS56.518s,
+suite23.84s/exit0; đã đọc log C:/Users/Hi/AppData/Local/Temp/
+QA-LEARN-002-independent-qa.log. Phân biệt owner focused8/8PASS57.550s,
+repeat8/8PASS33.229s và full411/411PASS04:36min/70freshXML với independent
+focused8/8; không claim reviewer rerun full. Initial commandFAIL0.674s vì
+PowerShell property chưa quote và testCompileFAIL12.677s thiếu import MockMvc
+được giữ nguyên; sửa test-only, không product mutation để khớp test.
+
+Fresh finalization baseline/CIworkflow/secret auditsPASS; Python46/46PASS1.384s,
+pycompile/diff/cached-diffPASS. Scope4/new2UTF8/noBOM/singleEOF/whitespace/
+conflict/generated guardsPASS. Baseline tags local/remote object/peeled giữ
+nguyên canonical values ở TEST. Source Java không đổi sau focusedrepeat và
+review. Helper finalize advisory không tự chứng minh external reviewers;
+đã đối chiếu authoritative reports và actual independent log, không claim
+helper tự phát PASS hoặc waive SELF_REVIEW_CONFLICT.
+
+Sau transition/readback exact row và checkbox thành công, script đếm milestone
+ban đầu chọn nhầm section checklist ##M3 thay vì canonical table #M3 và assert
+0/0FAIL; không product mutation hoặc gate bypass. Đã sửa selector rồi readback
+canonical table12/16DONE đúng, không đảo/replay lifecycle hoặc sửa lịch sử.
+
+| QA-LEARN-002 closure gate | Final result |
+|---|---|
+| Dependency BE-LEARN-002 | DONE |
+| Replay/reuse/concurrent duplicate/stale progress | PASS |
+| Late claim rollback/stale streak/explicit same-event retry | PASS |
+| Owner full clean verify | PASS411/411;70freshXML |
+| Independent DBR | PASS |
+| Independent SR | PASS |
+| Independent QAR | PASS; own8/8; separate session |
+| Unresolved findings | NONE |
+| Baseline/CIworkflow/secret/Python/pycompile/diff guards | PASS |
+| Newfile/scope/generated/tags | PASS |
+| CI mode | ACTUAL_CI_REPOSITORY_HEALTH |
+| Admission base Required CI | PASS39019001187 SHAb517397240c62d5aae8094f5b6e259e151b3f8bb |
+| Failed-check waiver | NOT USED |
+| Final task status | DONE |
+
+Exact row IN_PROGRESS→DONE và current checkbox đã readback/assert; M3 hiện
+12/16DONE, remaining4; milestone exit QA-E2E-001 chưa đạt. HEAD=origin/main
+vẫn b517397240c62d5aae8094f5b6e259e151b3f8bb; không commit/push/index/tag
+mutation. Current-task Required CI chỉ có sau publication; không proxy/global
+environment mutation. STOP: Git workflow publish QA-LEARN-002 revalidate,
+tạo một final task commit main, fast-forward push và exactSHA RequiredCI boundary.
