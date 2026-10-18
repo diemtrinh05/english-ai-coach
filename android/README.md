@@ -197,3 +197,8 @@ Device lifecycle: ./gradlew.bat :app:connectedDebugAndroidTest
 -Pandroid.testInstrumentationRunnerArguments.class=com.example.englishaicoach.feature.learning.LearningSessionInstrumentedTest.
 Test device dùng fixture trong test APK; kiểm chứng client lifecycle/UX không
 thay evidence real backend/PostgreSQL của QA-E2E-001.
+
+
+### AND-LEARN-002
+
+Flashcard một từ gửi quality0..5 qua shared session-bound client, giữ body eventId/payload khi explicit retry. Server feedback authoritative; OS SavedState chỉ IDs/numbers/markers. Accepted là terminal local, không complete/next/accepted progress refresh. Hai409 có conflict recovery riêng; không offline mutation queue.

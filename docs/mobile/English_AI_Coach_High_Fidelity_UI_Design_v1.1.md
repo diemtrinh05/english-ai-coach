@@ -693,3 +693,39 @@ chỉ GET open rồi reload content; closed/missing báo không khả dụng và
 SavedState chỉ phục hồi cùng Android task khi OS recreation; không cold-start
 session restoration, offline mutation queue hoặc automatic sync. Không gửi
 private request/state của phiên A dưới phiên B.
+
+
+## AND-LEARN-002 — Submit flashcard và retry (owner duyệt 2026-10-18)
+
+Mở rộng luồng một từ MIXED của AND-LEARN-001: ở mặt sau có sáu lựa chọn
+0 Quên, 1 Rất khó, 2 Khó, 3 Tạm được, 4 Dễ, 5 Rất dễ. Chạm một mức tạo đúng
+một logical attempt `FLASHCARD`; request chỉ có sessionId/vocabularyId/attemptType/
+responseTimeMs/answerQuality/eventId, không isCorrect/version/header idempotency.
+Freeze elapsed monotonic, quality và toàn bộ payload/eventId tại lựa chọn; khóa
+chọn khi submitting/pending. Nếu elapsed vượt Integer.MAX_VALUE thì báo lỗi,
+không wrap/clamp hoặc gửi. Không tính correctness/SRS/XP trên client.
+
+Success hiển thị isCorrect/quality và interval/nextReviewAt từ response server;
+không hứa bảo đảm trí nhớ. Một thẻ đã accepted không tạo attempt khác. Nút
+Trở về từ vựng chỉ đóng local; không Next/complete/summary/XP giả. Progress refresh
+sau accepted và review/completion vẫn thuộc AND-LEARN-003.
+
+Rotation giữ operation; OS SavedState giữ event/payload số và IDs, stable auth
+session UUID, accepted/conflict marker; không token/content hoặc offline queue.
+Không tự POST khi resume/online/recreation. Pending chỉ explicit retry exact
+payload sau GET /users/me và owner khớp; không GET session-open/progress guard
+trước POST replay, kể cả server session đã closed hoặc vocabulary inactive.
+Accepted marker phục hồi trạng thái đã ghi nhận và chỉ thoát khi không còn
+feedback trong bộ nhớ; không giả feedback hoặc POST để khôi phục. Đổi account/
+logout vô hiệu state và callback phiên cũ. Back với pending/submitting/feedback
+hỏi xác nhận: cancel giữ state; confirm clear local/cancel, cảnh báo server có
+thể đã ghi nhận, không hoàn tất phiên. Khi chưa có attempt giữ BACK→FRONT cũ.
+
+CONCURRENT_UPDATE không tự retry mutation: explicit Tải lại chạy GET progress
+và GET session, cả hai PASS và session open mới cho explicit chọn quality như
+logical action mới với eventId mới/timer mới. Refresh lỗi giữ khóa; session
+closed/missing không tạo action. IDEMPOTENCY_KEY_REUSE refresh dữ liệu và báo
+conflict terminal, không retry/change event để bypass. Những read này chỉ phục
+vụ conflict recovery, không triển khai accepted-progress-refresh của AND-LEARN-003.
+Timeout/network/429/5xx chỉ explicit retry cùng payload/event; lỗi definitive
+khác báo controlled error và không tự gửi lại. API/backend/schema không đổi.

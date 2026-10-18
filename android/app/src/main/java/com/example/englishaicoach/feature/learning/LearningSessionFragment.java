@@ -14,6 +14,7 @@ import com.example.englishaicoach.R;
 import com.example.englishaicoach.core.auth.AppSessionDependencies;
 import com.example.englishaicoach.core.network.ConnectivityMonitor;
 import com.example.englishaicoach.domain.model.VocabularyItem;
+import com.example.englishaicoach.domain.model.LearningAttempt;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textview.MaterialTextView;
@@ -23,6 +24,8 @@ public final class LearningSessionFragment extends Fragment {
     private LinearLayout content;
     private MaterialTextView status, word, phonetic, meaning, examples;
     private MaterialButton reveal, retry, audio;
+    private LinearLayout qualities;
+    private MaterialButton returnToVocabulary;
     private MediaPlayer player;
     private boolean authReady;
     public static LearningSessionFragment forVocabulary(String id) {
@@ -51,6 +54,23 @@ public final class LearningSessionFragment extends Fragment {
             if (authReady) model.retry(); else ((MainActivity) requireActivity()).retryAuth();
         });
         retry.setId(R.id.learning_retry_button);
+        qualities = new LinearLayout(requireContext()); qualities.setOrientation(LinearLayout.VERTICAL);
+        qualities.setId(R.id.learning_quality_selector); content.addView(qualities);
+        int[] labels = {R.string.learning_quality_0, R.string.learning_quality_1, R.string.learning_quality_2,
+                R.string.learning_quality_3, R.string.learning_quality_4, R.string.learning_quality_5};
+        int[] ids = {R.id.learning_quality_0, R.id.learning_quality_1, R.id.learning_quality_2,
+                R.id.learning_quality_3, R.id.learning_quality_4, R.id.learning_quality_5};
+        for (int row = 0; row < 2; row++) {
+            LinearLayout line = new LinearLayout(requireContext()); qualities.addView(line);
+            for (int column = 0; column < 3; column++) {
+                final int quality = row * 3 + column;
+                MaterialButton choice = new MaterialButton(requireContext()); choice.setText(labels[quality]); choice.setId(ids[quality]);
+                choice.setOnClickListener(v -> model.selectQuality(quality));
+                line.addView(choice, new LinearLayout.LayoutParams(0, -2, 1));
+            }
+        }
+        returnToVocabulary = button(R.string.learning_return_vocabulary);
+        returnToVocabulary.setId(R.id.learning_return_button); returnToVocabulary.setOnClickListener(v -> back());
         return scroll;
     }
     private MaterialTextView text(int appearance) {
@@ -61,15 +81,19 @@ public final class LearningSessionFragment extends Fragment {
         MaterialButton view = new MaterialButton(requireContext()); view.setText(label); content.addView(view); return view;
     }
     @Override public void onViewCreated(@NonNull View view, Bundle saved) {
+        LearningAttempt.Request pending = saved != null && saved.containsKey("attemptEvent")
+                ? new LearningAttempt.Request(saved.getString("server"), saved.getString("vocabulary"),
+                    saved.getInt("attemptTime"), saved.getInt("attemptQuality"), saved.getString("attemptEvent")) : null;
         LearningSessionViewModel.Snapshot snapshot = saved != null && saved.containsKey("event")
                 ? new LearningSessionViewModel.Snapshot(saved.getString("owner"), saved.getString("event"),
-                    saved.getString("vocabulary"), saved.getString("server")) : null;
+                    saved.getString("vocabulary"), saved.getString("server"), pending, saved.getBoolean("accepted"),
+                    saved.getBoolean("conflict"), saved.getBoolean("reuse"), saved.getBoolean("rejected")) : null;
         AppSessionDependencies dependencies = AppSessionDependencies.get(requireContext());
         model = new ViewModelProvider(this, new ViewModelProvider.Factory() {
             @NonNull @Override public <T extends ViewModel> T create(@NonNull Class<T> type) {
                 Handler handler = new Handler(Looper.getMainLooper());
                 return type.cast(new LearningSessionViewModel(dependencies.sessions,
-                        LearningDependencies.useCase(requireContext()), command -> {
+                        LearningDependencies.useCase(requireContext()), LearningDependencies.attempts(requireContext()), command -> {
                             if (Looper.myLooper() == Looper.getMainLooper()) command.run(); else handler.post(command);
                         }, SystemClock::elapsedRealtime, requireArguments().getString("vocabulary"), snapshot));
             }
@@ -92,9 +116,10 @@ public final class LearningSessionFragment extends Fragment {
     }
     private void hideCard() {
         for (View view : new View[]{word, phonetic, meaning, examples, reveal, audio}) view.setVisibility(View.GONE);
+        qualities.setVisibility(View.GONE); returnToVocabulary.setVisibility(View.GONE);
     }
     private void render(LearningSessionViewModel.State state) {
-        hideCard(); retry.setVisibility(View.GONE);
+        hideCard(); retry.setVisibility(View.GONE); retry.setText(R.string.learning_retry);
         int message;
         switch (state.phase) {
             case FRONT: case BACK:
@@ -105,6 +130,7 @@ public final class LearningSessionFragment extends Fragment {
                 audio.setVisibility(View.VISIBLE); audio.setEnabled(validAudio(card.audioUrl));
                 if (state.phase == LearningSessionViewModel.Phase.FRONT) reveal.setVisibility(View.VISIBLE);
                 else {
+                    qualities.setVisibility(View.VISIBLE);
                     meaning.setVisibility(View.VISIBLE); examples.setVisibility(View.VISIBLE);
                     meaning.setText(join(card.meaningEn, card.meaningVi));
                     StringBuilder detail = new StringBuilder();
@@ -114,6 +140,27 @@ public final class LearningSessionFragment extends Fragment {
                     examples.setText(detail.toString());
                 }
                 break;
+            case SUBMITTING: stopAudio(); message = R.string.learning_submitting; break;
+            case PENDING:
+                stopAudio(); message = R.string.learning_attempt_pending;
+                retry.setText(R.string.learning_attempt_retry); retry.setVisibility(View.VISIBLE); break;
+            case CONCURRENT: case REUSE:
+                stopAudio(); message = state.phase == LearningSessionViewModel.Phase.CONCURRENT
+                        ? R.string.learning_concurrent : R.string.learning_attempt_reuse;
+                retry.setText(R.string.learning_refresh_conflict); retry.setVisibility(View.VISIBLE);
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
+            case REFRESHING: stopAudio(); message = R.string.learning_refreshing; break;
+            case FEEDBACK:
+                stopAudio(); LearningAttempt feedback = model.feedback();
+                status.setText(getString(feedback.isCorrect ? R.string.learning_feedback_correct : R.string.learning_feedback_incorrect,
+                        feedback.answerQuality, feedback.intervalDays, feedback.nextReviewAt));
+                returnToVocabulary.setVisibility(View.VISIBLE); return;
+            case ACCEPTED: stopAudio(); message = R.string.learning_attempt_recorded;
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
+            case OVERFLOW: stopAudio(); message = R.string.learning_timer_overflow;
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
+            case REJECTED: stopAudio(); message = R.string.learning_attempt_rejected;
+                returnToVocabulary.setVisibility(View.VISIBLE); break;
             case CLOSED: message = R.string.learning_closed; stopAudio(); break;
             case EXPIRED: case EXITED: message = R.string.learning_expired; stopAudio(); break;
             case ERROR:
@@ -150,7 +197,8 @@ public final class LearningSessionFragment extends Fragment {
     private void back() {
         if (model == null) return;
         if (authReady && model.backToFront()) return;
-        new MaterialAlertDialogBuilder(requireContext()).setMessage(R.string.learning_exit_confirm)
+        new MaterialAlertDialogBuilder(requireContext()).setMessage(model.hasAttempt()
+                ? R.string.learning_attempt_exit_confirm : R.string.learning_exit_confirm)
                 .setNegativeButton(R.string.learning_stay, (dialog, which) -> { })
                 .setPositiveButton(R.string.learning_exit, (dialog, which) -> {
                     model.exit(); stopAudio(); requireActivity().getSupportFragmentManager().popBackStack();
@@ -164,11 +212,18 @@ public final class LearningSessionFragment extends Fragment {
             LearningSessionViewModel.Snapshot saved = model.snapshot();
             out.putString("owner", saved.owner); out.putString("event", saved.event);
             out.putString("vocabulary", saved.vocabulary); out.putString("server", saved.server);
+            out.putBoolean("accepted", saved.accepted); out.putBoolean("conflict", saved.conflict);
+            out.putBoolean("reuse", saved.reuse); out.putBoolean("rejected", saved.rejected);
+            if (saved.attempt != null) {
+                out.putString("attemptEvent", saved.attempt.eventId); out.putInt("attemptTime", saved.attempt.responseTimeMs);
+                out.putInt("attemptQuality", saved.attempt.answerQuality);
+            }
         }
     }
     @Override public void onDestroyView() {
         stopAudio(); content = null; status = null; word = null; phonetic = null;
         meaning = null; examples = null; reveal = null; retry = null; audio = null;
+        qualities = null; returnToVocabulary = null;
         super.onDestroyView();
     }
 }

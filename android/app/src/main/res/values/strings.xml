@@ -115,4 +115,24 @@
     <string name="learning_exit_confirm">Rời phiên học? Thao tác này chỉ đóng màn hình; phiên chưa được hoàn tất.</string>
     <string name="learning_stay">Ở lại</string>
     <string name="learning_exit">Rời phiên</string>
+    <string name="learning_quality_0">Quên</string>
+    <string name="learning_quality_1">Rất khó</string>
+    <string name="learning_quality_2">Khó</string>
+    <string name="learning_quality_3">Tạm được</string>
+    <string name="learning_quality_4">Dễ</string>
+    <string name="learning_quality_5">Rất dễ</string>
+    <string name="learning_return_vocabulary">Trở về từ vựng</string>
+    <string name="learning_submitting">Đang ghi nhận câu trả lời…</string>
+    <string name="learning_attempt_pending">Chưa xác nhận kết quả. Thử lại sẽ giữ nguyên câu trả lời đã chọn.</string>
+    <string name="learning_attempt_retry">Thử lại câu trả lời</string>
+    <string name="learning_refresh_conflict">Tải lại dữ liệu</string>
+    <string name="learning_refreshing">Đang tải lại dữ liệu…</string>
+    <string name="learning_concurrent">Dữ liệu đã thay đổi. Tải lại trước khi chọn câu trả lời mới.</string>
+    <string name="learning_attempt_reuse">Thao tác bị xung đột định danh. Không thể gửi lại; hãy tải lại dữ liệu và trở về từ vựng.</string>
+    <string name="learning_feedback_correct">Máy chủ ghi nhận trả lời đúng (mức %1$d). Lần ôn tiếp theo: %3$s. Số ngày theo lịch ôn: %2$d.</string>
+    <string name="learning_feedback_incorrect">Máy chủ ghi nhận cần ôn thêm (mức %1$d). Lần ôn tiếp theo: %3$s. Số ngày theo lịch ôn: %2$d.</string>
+    <string name="learning_attempt_recorded">Câu trả lời đã được ghi nhận. Trở về từ vựng để tiếp tục.</string>
+    <string name="learning_timer_overflow">Thời gian tương tác vượt giới hạn. Không gửi câu trả lời này; hãy trở về từ vựng.</string>
+    <string name="learning_attempt_rejected">Máy chủ từ chối thao tác. Không gửi lại; hãy trở về từ vựng.</string>
+    <string name="learning_attempt_exit_confirm">Thoát màn hình học? Câu trả lời có thể đã được máy chủ ghi nhận. Thoát chỉ đóng màn hình, không hoàn tất phiên học.</string>
 </resources>

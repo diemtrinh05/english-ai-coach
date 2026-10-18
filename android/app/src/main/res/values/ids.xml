@@ -4,4 +4,12 @@
     <item name="learning_word" type="id" />
     <item name="learning_reveal_button" type="id" />
     <item name="learning_retry_button" type="id" />
+    <item type="id" name="learning_quality_selector" />
+    <item type="id" name="learning_return_button" />
+    <item type="id" name="learning_quality_0" />
+    <item type="id" name="learning_quality_1" />
+    <item type="id" name="learning_quality_2" />
+    <item type="id" name="learning_quality_3" />
+    <item type="id" name="learning_quality_4" />
+    <item type="id" name="learning_quality_5" />
 </resources>
