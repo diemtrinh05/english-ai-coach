@@ -17,6 +17,7 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -30,6 +31,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** QA-E2E-001: explicit local gate; tên Scenario không nằm trong default Surefire scan. */
+@EnabledIfSystemProperty(named = "eac.e2e.serial", matches = "\\S+")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "spring.jpa.hibernate.ddl-auto=validate")
 @Import({PostgreSqlTestContainerConfiguration.class, AndroidLearningE2eScenario.TimeConfiguration.class})
@@ -37,7 +39,10 @@ class AndroidLearningE2eScenario {
     private static final Instant NOW = Instant.parse("2026-10-18T08:00:00Z");
     private static final String PASSWORD = randomSecret();
     private static final String JWT_SECRET = randomSecret();
-    private static final Path TLS = createTls();
+    // Chỉ tạo TLS khi explicit runner đã qua điều kiện serial; discovery không chạy process ngoài.
+    private static final class TlsFixture {
+        private static final Path DIRECTORY = createTls();
+    }
     private static final String APP = "com.example.englishaicoach.debug";
     private static final String CLASS = "com.example.englishaicoach.e2e.RealBackendLearningInstrumentedTest";
     @LocalServerPort int port;
@@ -46,7 +51,7 @@ class AndroidLearningE2eScenario {
     @MockitoSpyBean IdempotencyRepository claims;
     @MockitoSpyBean LearningAttemptRepository attempts;
     private final Path repository = Path.of(System.getProperty("user.dir")).toAbsolutePath().getParent();
-    private final String serial = System.getProperty("eac.e2e.serial", "emulator-5554");
+    private final String serial = System.getProperty("eac.e2e.serial");
     private final String run = UUID.randomUUID().toString();
     private final UUID firstWord = UUID.randomUUID(), dueWord = UUID.randomUUID();
     private UUID user;
@@ -57,7 +62,7 @@ class AndroidLearningE2eScenario {
 
     @DynamicPropertySource static void properties(DynamicPropertyRegistry registry) {
         registry.add("server.ssl.enabled", () -> true);
-        registry.add("server.ssl.key-store", () -> TLS.resolve("server.p12").toUri().toString());
+        registry.add("server.ssl.key-store", () -> TlsFixture.DIRECTORY.resolve("server.p12").toUri().toString());
         registry.add("server.ssl.key-store-password", () -> PASSWORD);
         registry.add("server.ssl.key-store-type", () -> "PKCS12");
         registry.add("server.ssl.key-alias", () -> "fixture");
@@ -79,7 +84,7 @@ class AndroidLearningE2eScenario {
             assertThat(adb("install", "-r", repository.resolve("android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk").toString())).contains("Success");
             adb("reverse", "tcp:" + port, "tcp:" + port);
             KeyStore store = KeyStore.getInstance("PKCS12");
-            try (InputStream input = Files.newInputStream(TLS.resolve("server.p12"))) { store.load(input, PASSWORD.toCharArray()); }
+            try (InputStream input = Files.newInputStream(TlsFixture.DIRECTORY.resolve("server.p12"))) { store.load(input, PASSWORD.toCharArray()); }
             String ca = Base64.getEncoder().encodeToString(store.getCertificate("fixture").getEncoded());
             device = new ProcessBuilder(adbArgs("shell", "am", "instrument", "-w", "-r", "-e", "class", CLASS,
                     "-e", "e2eRun", run, "-e", "e2eCa", ca, "-e", "e2eWord", word,
@@ -198,7 +203,7 @@ class AndroidLearningE2eScenario {
             }
             cleanupOwned();
             // Các path đều là file cố định trong TEMP riêng do chính test tạo; không recursive delete.
-            Files.deleteIfExists(TLS.resolve("server.p12")); Files.deleteIfExists(TLS.resolve("keytool.log")); Files.deleteIfExists(TLS);
+            Files.deleteIfExists(TlsFixture.DIRECTORY.resolve("server.p12")); Files.deleteIfExists(TlsFixture.DIRECTORY.resolve("keytool.log")); Files.deleteIfExists(TlsFixture.DIRECTORY);
         }
     }
 

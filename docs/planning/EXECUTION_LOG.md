@@ -13042,3 +13042,139 @@ luận fullV1E2E/processkill/externalprovider/performance. HEAD=origin/main vẫ
 126f19cea1ad51155d555cc48d24ade612f1fe2d; không index/commit/push/tag mutation.
 STOPFINALIZE. Git publish QA-E2E-001 là command riêng; saupush CI_PENDING và phải
 đợi exactpublishedSHA RequiredCIPASS/HEALTHY trước normalM4admission; không autoNEXT.
+
+## QA-E2E-001 — PUBLISHED_MAIN_RECOVERY OPEN — 2026-10-19
+
+Originating task QA-E2E-001 giữ DONE; repository health BLOCKED, recovery OPEN.
+Required CI run39131646297/job117687866883 trên published origin/main
+ae7b369e8447792aab7e0859763f3979fc530b7e completed FAILURE ở bước11 Unit tests;
+build/static, Admin và Android trước đó SUCCESS; các bước sau SKIPPED.
+REST job/annotation xác nhận failure và exit1; endpoint log trả403 nên chưa có
+remote stacktrace. Không suy đoán stacktrace hoặc waive failing check.
+
+Strategy FIX_FORWARD theo PROJECT_RULES §59.2: chỉ sửa ranh giới opt-in/lifecycle
+của explicit local host Scenario, không đổi CI selector/workflow/pom, product,
+API, schema, SQL/barrier hoặc reopen task. Surefire3.5.6 TestListResolver thật
+trong JShell xác nhận negative-only selector của Unit gate chọn Scenario, dù
+default clean verify scan không chọn tên này. Linux reproduction dùng official
+eclipse-temurin:21-jdk digest sha256:23cc5734ff46e776f51ce66eb9ee08444fd47caabec0a95b7eb6e94be2d3696d;
+baseline copy trong task TEMP mount read-only rồi copy vào container workspace,
+chỉ Maven repository cache được mount, không settings/credential/OS proxy/trust.
+Actual Linux failure và affected test results sẽ được append trước review.
+
+Recovery không phải normal PLAN hoặc backlog task; không TODO→IN_PROGRESS.
+Historical owner/test/reviewer/closure evidence ở trên được bảo toàn. Affected
+independent reviewers AR/SR/QAR; DBR không bị ảnh hưởng khi SQL/timing không đổi.
+Recovery commit/push chỉ Git specialist thực hiện sau affected gates PASS và
+unresolved recovery findings NONE. Không mở M4 khi recovery OPEN/CI_PENDING.
+
+Recovery VALIDATING: before-fix exact Linux Unit selector tái lập lỗi
+AndroidLearningE2eScenario.<clinit>:40→createTls:307; IOException không tìm thấy
+`/opt/java/openjdk/bin/keytool.exe`. Isolated run có176tests/0failure/1error/0skip,
+BUILD2:54. Diagnostic run đầu thiếu canonical docs có thêm9 OpenAPI failures;
+copy docs đúng vị trí rồi rerun trước patch, loại9setupfail và giữ đúng1hosterror.
+Không gán diagnostic failures này cho remote run chưa đọc được stacktrace.
+
+Patch chỉ host Scenario: JUnit @EnabledIfSystemProperty eac.e2e.serial matches
+non-whitespace, bỏ implicit serial fallback và đưa TLS vào lazy holder, chỉ truy
+cập khi explicit Spring fixture được chạy. Docs explicit command giữ nguyên serial
+flag. Không sửa existing CI selector/exclusion hoặc thay mandatory real E2E thành
+default suite PASS. Không đổi SQL/timing/Android source/TLS policy.
+
+After-fix cùng Linux image/exact selector và canonical docs đầy đủ PASS176
+discovered/175executed/0failure/0error/1skip, BUILD1:52. Only skipped test là
+Scenario, XML reason `System property [eac.e2e.serial] does not exist`, time0.004s.
+Container không AndroidSDK/Docker socket; không Scenario Spring bootstrap và
+`find /tmp -maxdepth 1 -name 'qa-e2e-001*'` trả rỗng, chứng minh gate-off không
+tạo TLS/khởi chạy keytool/Gradle/adb/PostgreSQL fixture. Đây NOT RUN, không E2EPASS.
+Exact commands sử dụng `sh ./backend/mvnw --no-transfer-progress -f backend/pom.xml
+-Dtest='!*IntegrationTests,!OpenApiContractHarnessTests' test` trong workspacecopy.
+Logs/isolated XML giữ TEMP/QA-E2E-001-recovery-20261019/{before-linux.log,
+before-reports,after-linux.log,after-reports,after-linux-tls-paths.txt}.
+
+Recovery owner TEST PASS trước independent review: Windows JDK21/process-only
+MAVEN_OPTS=-Xmx384m, wrapper clean verify với argLine=-Xmx512m
+-XX:ReservedCodeCacheSize=128m và spring.test.context.cache.maxSize=4 PASS411,
+70XML/0failure/error/skip BUILD5:45. XML copy full-reports trong task TEMP trước
+explicit scenario, không cộng default411 với explicit1 thành một default412run.
+Documented explicit serial command PASS1host151.4s/8checkpoints,0failure/error/skip,
+BUILD3:09; actual Android device1test18.569s OK, không assumption. APK build thật
+qua host Gradle1m42. Run9b7ea560-58f1-4a90-9321-fd8cb47a5af6, artifacts
+TEMP/qa-e2e-001-9b7ea560-58f1-4a90-9321-fd8cb47a5af6-11755899940443507107,
+outer logs task TEMP/full-maven.log và e2e-final.log. Full/final tests dùng exact
+same frozen Java patch; source→class→XML readback trước handoff.
+
+Source impact đúng3files: host Scenario, docs/testing/QA-E2E-001.md, executionlog.
+Backlog QA-E2E-001 DONE/M3table16/16 giữ nguyên; không normal finalize hoặc PLAN.
+Không product/API/database/SQL/racebarrier/CIworkflow/pom/Androidsource change.
+Existing Android162unit và37legacydevice không rerun/claim trong recovery;
+actual APK/device trong explicit scenario được chạy mới như trên. Cleanup
+reverse mappings rỗng, TLS private TEMP gone; giữ đúng task-owned Pixel_8/5554
+online để independent QAR kiểm chứng. Không AVD delete/globalproxy/env/trust.
+Current recovery VALIDATING, AR/SR/QAR chưa review; implementer không tự PASS
+reviewer hoặc resolve findings. Dừng sau TEST và giao independent review.
+
+Fresh recovery guards sau append TEST evidence: baseline/CIworkflow/secret audits
+PASS, Python46/46PASS1.458s, compileall/diff/cached-diff PASS; exact3file scope,
+UTF8/noBOM/conflict/generated/untracked-empty guards PASS; source→compiledclass→
+successful1testXML timestamps PASS; backlogDONE readback PASS và local/remote
+immutabletag object/peeled giữ nguyên. Chưa commit/push hoặc claim remotePASS.
+
+## QA-E2E-001 — Recovery independent review / publication readiness — 2026-10-19
+
+Đồng bộ authoritative affected reviewer reports do orchestrator cung cấp, không
+normal finalize hoặc task lifecycle change. Originating QA-E2E-001 DONE/M3table
+16/16, repository BLOCKED, recovery OPEN→VALIDATING; current VALIDATING. Incident
+vẫn failing ae7b369e8447792aab7e0859763f3979fc530b7e, run39131646297/
+job117687866883, Unit tests step11, strategy FIX_FORWARD; REST logs403 và local
+Linux confirmed cause được phân biệt như chronology ở trên.
+
+| Recovery gate / independent authority | Initial / final | Findings |
+|---|---|---|
+| AR `/root/qa_e2e001_recovery_ar` | PASS / APPROVE | NONE;0resolved/0open |
+| SR `/root/qa_e2e001_recovery_sr` | PASS / APPROVE | NONE;0resolved/0open |
+| QAR `/root/qa_e2e001_recovery_qa` | PASS / APPROVE | NONE;0resolved/0open |
+
+Implementer `/root/qa_e2e001_recovery_impl` khác independent QAR session. AR/SR
+review minimal3file test-admission/lazy-resource boundary và owner evidence;
+không claim tự Maven. SR xác nhận nonblank serial gate/lazy holder, no external
+process discovery, randomsecretRAM/PKIX/hostname/cleanup unchanged. AR xác nhận
+không selector/CI/pom/SQL/barrier/production change. Historical DBR PASS còn giá
+trị vì SQL/schema/timing không đổi, không affected DBR rerun. Không recovery
+finding hoặc reviewer FAIL; resolved0/unresolvedNONE, không selfreview/resolve.
+
+QAR chạy own exactnegativeUnitselector PASS176discovered/175executed/0failure/
+error/1skip ONLY Scenario BUILD32.089s; log taskTEMP/qar-unit.log. Own explicit
+gate-on realE2E runa359e7d2-8388-4814-ba82-f42a445c1634 PASS1host72.97s,
+BUILD1:18,1device22.473s/Androidbuild21s/8checkpoints, không assumption/failure/
+skip. Log taskTEMP/qar-e2e.log, artifacts
+TEMP/qa-e2e-001-a359e7d2-8388-4814-ba82-f42a445c1634-4730769443732958513.
+QAR own baseline/CIworkflow/secret/pycompile/diff/cached-diff PASS, Python46PASS
+0.923s. Linux before/after chỉ QAR đọc owner artifacts, không QAR-own-Linuxrun.
+
+QAR correction về artifact attribution: `after-reports` copy giữ71XML/412records
+gồm stale XML từ baseline target, KHÔNG isolated Unit176 folder. ActualUnit176
+được chứng minh từ after-linux.log và fresh Scenario XML missing serial0.004s.
+`full-reports` riêng70XML411/0failure/error/skip là kết quả fresh cleanverify.
+Không dùng tổng folder stale để bịa counts hoặc thay actual run. Historical
+phrasing “isolated XML” trong TEST snapshot ở trên được correction này làm rõ;
+mọi failure/test chronology giữ nguyên.
+
+Java patch unchanged sau owner LinuxPASS và ba review; chỉ evidence append.
+Private TLS TEMP gone, reverse mappings empty; AVDnamePixel_8/port5554/PID23180
+đúng task-owned launch đã verify trước emu kill, không AVD/data/OStrust/proxy/
+globalenv mutation. Không optional Maven/Gradle rerun. Recovery commit SHA/push/
+remoteCI PENDING; không claim CLOSED/HEALTHY hoặc bắt đầu M4. Fresh global gates
+sẽ đọc lại sau evidence trước Git recovery-prepare/commit/push.
+
+Closure-readiness fresh guards: baseline/CIworkflow/secret PASS, Python46PASS
+0.565s, compileall/diff/cached-diff PASS. Timestamp helper ban đầu so sánh literal
+XML72.97 với actual72.966 nên diagnostic AssertionError; log Maven làm tròn72.97.
+Chỉ sửa helper numeric rounding rồi readback actual QAR XML72.966/1test0f/e/skip,
+source→class→XML, exact3file scope/UTF8/conflict/generated/untrackedempty,
+taskDONE/M3table16/16 và local/remote immutabletags PASS. Không đổi source hoặc
+test result để thỏa helper. Frozen Java SHA256
+f21f82cc80f1e91064ac25a28118a195e612aa027dfa546806161bb20021da05.
+adb devices sau task-owned emu kill rỗng, private TLS TEMP không còn, không
+recovery container đang chạy. Ready for Git recovery-prepare; commit/push/remote
+CI vẫn PENDING. Không normal finalize/lifecycle/index/Git mutation bởi implementer.
