@@ -2889,3 +2889,39 @@ bắt buộc hiện diện, nullable (explicit null). Path UUID sai hoặc query
 bất kỳ ngoài hợp đồng trả400 VALIDATION_ERROR; không nhận userId từ client.
 Đồng bộ API/OpenAPI; client chỉ hiển thị snapshot, không tự tính SRS hoặc tạo
 mutation khi GET. Không đổi schema/migration/thuật toán hay triển khai client.
+
+## Làm rõ assessment-block-v1 — BE-ASMT-001 (owner duyệt 2026-10-23)
+
+Quyết định owner `call_e49ee48b560e4f96a3efad6f5f0ffc7c` làm rõ các biên của
+baseline hiện hành. Block đủ 4 câu: >=3 đúng PROMOTE, <=1 DEMOTE, 2 HOLD;
+đổi level reset stable về 0, giữ level tăng stable 1. PROMOTE tại C2 và DEMOTE
+tại A1 bị clamp, được tính stable như HOLD. Sau mỗi block đủ 4 reset counters
+block. Hoàn tất khi >=20 câu và >=2 stable block liên tiếp tại cùng difficulty,
+hoặc đúng 50 câu. Câu 50 thuộc block chưa đủ 4 không suy diễn PROMOTE/DEMOTE/HOLD:
+giữ difficulty và stable hiện có, giữ counters partial. Final CEFR là difficulty
+hiện tại; percentage score không quyết định CEFR.
+
+Question selector nhận snapshot catalog và used target IDs của assessment.
+Usable = active, word/part_of_speech/meaning_vi không null hoặc blank; chỉ dùng
+kiểm tra blank, không trim/normalize text. Mỗi A1/A2/B1/B2/C1/C2 cần >=30 distinct
+vocabulary UUID usable, không yêu cầu 30 distinct meanings và không giới hạn
+source MANUAL. Target đúng current difficulty, chưa từng là target trong bài.
+Ba distractor khác target, raw meaning_vi khác correct và khác nhau theo exact
+String equality (không trim/casefold); được dùng vocabulary từng là target cũ.
+Ưu tiên distance CEFR nhỏ nhất, cùng distance chọn level thấp hơn trước.
+
+Cùng snapshot, assessment UUID, sequenceNo (1..50), difficulty và used set phải
+trả cùng question/options, độc lập thứ tự input. Backend xếp hạng SHA-256 UTF-8
+`assessment-block-v1:<assessmentUUID>:<sequenceNo>:<purpose>:<vocabularyUUID>`;
+UUID chữ thường chuẩn, purpose target/distractor/option; so hash hex tăng dần,
+UUID string tăng dần khi tie. Target chọn rank đầu; distractor xếp distance,
+level, rank rồi lấy ba raw meanings distinct; bốn options xếp option rank.
+Question text tiếng Việt: `Từ '<word>' có nghĩa là gì?`, giữ raw word/meanings.
+Question/options/order phải được persistence task lưu trước khi trả client;
+retry dùng persisted snapshot, không regenerate từ catalog đã thay đổi.
+
+Bất kỳ CEFR thiếu 30 usable distinct IDs, hết unused target ở current difficulty
+hoặc thiếu ba distinct distractor meanings: ASSESSMENT_CONTENT_UNAVAILABLE,
+không reuse target, không fallback target sang CEFR khác, không hạ readiness.
+BE-ASMT-001 chỉ cung cấp core thuần/typed failure, không DB/HTTP/aggregate hay
+start/answer mutation; HTTP 503 và transaction persistence thuộc BE-ASMT-002..004.

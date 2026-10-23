@@ -23,4 +23,15 @@ public record AssessmentProperties(
         String startingLevel,
         int optionsPerQuestion,
         int minimumVocabularyPerLevel) {
+
+    public AssessmentProperties {
+        // V1 khóa thuật toán; cấu hình khác phải qua phê duyệt baseline trước khi khởi động.
+        if (!"assessment-block-v1".equals(algorithmVersion)
+                || minimumQuestions != 20 || maximumQuestions != 50 || blockSize != 4
+                || promoteCorrectThreshold != 3 || demoteCorrectThreshold != 1
+                || stableHoldBlocksRequired != 2 || !"A1".equals(startingLevel)
+                || optionsPerQuestion != 4 || minimumVocabularyPerLevel != 30) {
+            throw new IllegalArgumentException("Cấu hình assessment-block-v1 không đúng baseline");
+        }
+    }
 }

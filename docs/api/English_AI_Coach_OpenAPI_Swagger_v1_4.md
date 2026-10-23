@@ -2227,6 +2227,9 @@ components:
           type: string
         options:
           type: array
+          minItems: 4
+          maxItems: 4
+          uniqueItems: true
           items:
             type: string
         cefrLevel:
@@ -3864,3 +3867,20 @@ POST /learning/attempts
 POST /quiz-attempts/{attemptId}/answers
 POST /quiz-attempts/{attemptId}/complete
 ```
+
+## Làm rõ Assessment V1 — BE-ASMT-001 (owner duyệt 2026-10-23)
+
+Áp dụng đầy đủ mục “Làm rõ assessment-block-v1 — BE-ASMT-001” trong SRS v1.2
+và AI Personalization v1.3: clamp A1/C2 tính stable HOLD; block cuối partial tại
+50 không đổi difficulty/stable; deterministic target/options từ catalog snapshot
+và assessment UUID/sequence, raw Vietnamese meanings distinct, nearest CEFR với
+lower-level tie; mỗi CEFR >=30 usable distinct IDs. Thiếu content trả
+ASSESSMENT_CONTENT_UNAVAILABLE, không lặp/fallback target. Nội dung question,
+options và order được persist trong mutation, GET chỉ đọc; replay dùng snapshot
+đã lưu. Clients chỉ hiển thị response, không tính lại difficulty/CEFR/stopping
+hoặc regenerate câu hỏi/option order. Response không công bố correct answer.
+
+BE-ASMT-001 cung cấp properties/core/selector thuần và typed failure; không
+triển khai aggregate, HTTP route, database migration hoặc client assessment flow.
+Các API assessment và mapping 503 được triển khai ở task BE-ASMT-002..004,
+không được coi là đã có endpoint runtime sau task này. Không thay field/path.
