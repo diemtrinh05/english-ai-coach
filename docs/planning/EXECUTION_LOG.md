@@ -13343,3 +13343,198 @@ rerun sau independent gates, chỉ metadata/evidence update.
 STOP FINALIZE: không index/commit/push/tag/proxy/globalenv/OStrust mutation.
 Git publish BE-ASMT-001 là bước riêng; saupush repository CI_PENDING và cần
 exactpublishedSHA RequiredCI PASS/HEALTHY trước PLAN task tiếp theo. Không autoNEXT.
+
+## BE-ASMT-002 — PLAN — 2026-10-24
+
+Command execute BE-ASMT-002; Owner CBL, M4/P0; GOV009_DIRECT_MAIN,
+ACTUAL_CI_REPOSITORY_HEALTH. Canonical row225 và dependencies BE-FND-004 /
+BE-ASMT-001 DONE; required independent DBR/QAR. Git pre-task authority
+/root/next_git_1024 xác nhận PLAN READY: clean main == origin/main == live
+3903a1a0d52ebae8df69f70114aeb4910549a5d4, không Git operation hoặc task khác
+active. Actual Required CI39948138095/job120395737536 completed SUCCESS trên
+exact SHA; repository HEALTHY, failed-check waiver NOT USED; cả hai baseline
+tag local/remote object và peeled giữ nguyên.
+
+Đã cross-check PROJECT_RULES đầy đủ, AGENTS, IMPLEMENTATION_PLAN, toàn bộ backlog,
+evidence hiện hành, CBL/DBR/QAR instructions; SRS assessment-block-v1 và owner
+clarifications BE-ASMT-001, DB v1.6 §6.2/6.3, Architecture v1.3, API/OpenAPI v1.4,
+Technical v1.2/Backend v1.3 assessment/persistence conventions. Reuse approved
+selector/block contract; không hỏi lại ba quyết định owner của BE-ASMT-001.
+
+Scope: JPA aggregate user_level_assessments và persisted assessment_items với
+JSONB four-option ordered snapshot; repository owned reads, ordered unanswered
+question reads, explicit caller transaction và row-lock access. Initial aggregate
+và first question persist/flush atomically trước caller trả response. Partial
+unique index canonical chặn hai IN_PROGRESS/user; INSERT ON CONFLICT targeted
+partial index giữ expected conflict không làm hỏng transaction. Dùng UUID đã
+cấp trước selector, không thêm schema/version column hoặc migration khi V1/V2
+hiện hành đã có đủ constraints/indexes.
+
+Out of scope: HTTP start/get/next/answer của BE-ASMT-003/004, idempotency/API error
+mapping, grading/score/cancel/expiry policies, completion/profile CEFR mutation,
+client/UI, AI/provider, XP/streak. Không thay source-of-truth contract.
+
+Tests dự kiến: PostgreSQL16/Flyway/JPA validation; JSONB/order/raw text snapshot
+sau catalog đổi, owned reads, full column/nullability mapping, unique/FK/check,
+atomic rollback và concurrent same-user create/reload with usable caller TX;
+mandatory transaction/row locking. CI exact negative Unit selector và full Maven
+clean verify; baseline/CIworkflow/secret/Python46/compile/diff/newfile/scope/tag
+guards. PLAN TODO→IN_PROGRESS persist và readback phải PASS trước source/test
+patch. Không index/commit/push/proxy/global-env/OS-trust mutation.
+
+## BE-ASMT-002 — IMPLEMENT / TEST — 2026-10-24
+
+PLAN exact row IN_PROGRESS và log đã persist/readback/assert trước mọi product/
+test patch, không lifecycle deviation. Thêm AssessmentType/AssessmentStatus và
+JPA UserLevelAssessment/AssessmentItem theo toàn bộ columns DB v1.6 §6.2/6.3.
+UUID được caller cấp trước selector, entity không sinh lại ID; timestamps nhận
+server Instant từ caller. Không tự tính difficulty, score hoặc CEFR completion.
+Question/options/order/correct answer là immutable persisted snapshot; JSONB
+List<String> giữ raw whitespace/newline/Unicode và array order, getter defensive.
+Không expose entities hoặc correct answer qua controller/DTO.
+
+UserLevelAssessmentRepository.insertInProgress yêu cầu MANDATORY caller TX,
+A1 initial question, INSERT targeted partial ON CONFLICT(user_id) WHERE
+status='IN_PROGRESS' DO NOTHING; conflict trả Optional.empty, không catch unique
+violation rồi tiếp tục PostgreSQL transaction đã lỗi. Thắng insert aggregate rồi
+persist/flush first item trong cùng caller TX; failure hoặc caller rollback xóa
+cả hai. Flush không phải commit; future application service phải commit trước
+HTTP response. lockOwned dùng PESSIMISTIC_WRITE trong caller TX; findOwned /
+findInProgress / owned ordered/unanswered item reads chỉ đọc persisted state.
+AssessmentItemRepository.persist yêu cầu caller TX; future mutation caller phải
+khóa owned aggregate. Không implement API start/answer/idempotency/score/cancel/
+expiry/profileCEFR; các policy đó thuộc BE-ASMT-003/004. Không thêm version,
+column, index, migration, dependency hoặc API contract. V1/V2 migrations giữ nguyên.
+
+Scope10files =7newJava (6production + AssessmentPersistenceIntegrationTests),
+3tracked (planning2 + EnglishAiCoachBackendApplicationTests). Smoke test hiện có
+exclude DataSource, mock các persistence repositories; bổ sung đúng2 new repo
+mocks để giữ no-DB smoke purpose. PG suite dùng real repos/JPA/JdbcTemplate,
+không H2, mocked EntityManager hoặc mocked database để chứng minh acceptance.
+
+TEST chronology, không xóa failure:
+1. Initial focused command testCompile FAIL (0tests): AssertJ overload ambiguous
+   khi assert trực tiếp TransactionTemplate.execute(Optional); sửa test-only dùng
+   local var. Log focused.log, BUILD55.153s; production compile PASS.
+2. Rerun focused13cases FAIL1/0errors/0skip, BUILD1:09: invalid A1 input guard
+   được Spring @Repository dịch IllegalArgumentException thành
+   InvalidDataAccessApiUsageException. Sửa test-only assert actual Spring boundary
+   và root cause, không sửa product để vượt test. Log focused-rerun.log.
+3. Final focused13/0failure/error/skip PASS, suite19.20s, BUILD49.694s; log
+   focused-final.log và isolated focused-final.xml. Bao gồm3 assessment types,
+   2 historical statuses, all column/nullability mapping, raw JSONB/options/order
+   immutable snapshot sau catalog đổi; ownership/missing reads không mutation;
+   first-unanswered/order, mandatory TX, FK/check/unique, rollback sau flush,
+   partial-index duplicate giữ TX SELECT1 usable, 4concurrent creates chỉ1aggregate/
+   first item, và row lock giữ tới caller commit. Expected FK/unique SQL WARN là
+   negative assertions; không mô tả thành actual business duplicate success.
+4. Exact CI Unit selector `-Dtest=!*IntegrationTests,!OpenApiContractHarnessTests`
+   initial FAIL221discovered/0failures/1error/1skip BUILD24.282s: no-DB
+   contextLoads thiếu EntityManager cho new repository. Bổ sung2 repository
+   @MockitoBean vào existing no-DB smoke fixture, không production conditional
+   bean hoặc CI selector/workflow bypass. Log ci-unit.log giữ nguyên.
+5. Final exact CI selector PASS221discovered/220executed/0failure/error/1skip,
+   BUILD43.429s, ci-unit-final.log. Only AndroidLearningE2eScenario thiếu explicit
+   serial là NOT RUN, không E2E PASS; không exclude thêm test để che regression.
+6. Final source bounded Maven clean verify PASS469/74freshXML, zero failure/
+   error/skip, BUILD5:15. Existing456 +13new PG tests; fresh PostgreSQL16.15/
+   Flyway8/Hibernate validate, unit/integration/API/OpenAPI, jar/repackage PASS.
+   New suite trong full run13PASS9.173s; no-DB contextLoads1PASS2.585s.
+   JDK21, process-only MAVEN_OPTS=-Xmx384m, argLine=-Xmx512m
+   -XX:ReservedCodeCacheSize=128m và spring.test.context.cache.maxSize=4.
+   Full command ./backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml
+   với các -D arguments trên và clean verify; các focused/CI commands dùng test.
+
+TEMP C:/Users/Hi/AppData/Local/Temp/BE-ASMT-002-20261024 giữ immutable full run
+logs/full-reports (74XML469, phân biệt focused/CI outputs) và source-freeze.json
+8Java SHA256. Sau full build đã revalidate8/8source hashes và corresponding class
+compile timestamps. Không dùng current target XML sau reviewer rerun để claim
+full469; dùng isolated full-reports + full-maven.log.
+
+Baseline/CIworkflow/secret audits PASS; Python regression46PASS1.230s và compileall
+PASS. Diff/cached-diff/scope10/newfile7 UTF8/noBOM/singleEOF/whitespace/conflict/
+generated guards PASS; final cheap gates chạy lại sau evidence append. Cả hai
+immutable local/remote tag objects/peeled unchanged như admission; HEAD/origin
+vẫn3903a1a0d52ebae8df69f70114aeb4910549a5d4. Không index/commit/push.
+
+Change impact: mapping/persistence bảo đảm snapshot/atomicity cho task API sau;
+planning evidence cập nhật, baseline contract/API/OpenAPI/client unchanged.
+Database schema/migration NONE; backward compatibility additive beans, no HTTP
+route mới, existing regression PASS. Không provider/billable service/credential/
+system proxy/global-env/OS-trust change. Không claim Android assessment/device
+flow, assessment HTTP endpoints hoặc M4 exit PASS.
+
+STOP sau TEST, task BE-ASMT-002 giữ IN_PROGRESS; M4 vẫn1/14DONE. Required
+independent DBR/QAR chưa review, không self-review hoặc fabricated PASS/findings
+resolution. Current uncommitted-task remote CI NOT RUN/NOT CLAIMED; admission
+RequiredCI39948138095/job120395737536 exact3903a1a PASS/HEALTHY giữ nguyên.
+
+## BE-ASMT-002 — Independent review synchronization / FINALIZE — 2026-10-24
+
+Command finalize BE-ASMT-002 theo backend skill; đồng bộ authoritative independent
+reports do orchestrator chuyển giao rồi chuyển lifecycle khi fresh gates PASS.
+Không separate synchronization subcommand hoặc tự cấp reviewer gate.
+
+| Independent reviewer / owning authority | Initial / final result | Findings |
+|---|---|---|
+| Database Reviewer /root/asmt002_dbr | PASS / APPROVE | NONE;0resolved/0open |
+| QA Reviewer /root/asmt002_qar | PASS / APPROVE | NONE;0resolved/0open |
+
+DBR kiểm tra toàn bộ tracked/untracked task scope, schema/JPA/partial-index
+ON CONFLICT/mandatory caller transaction/JSONB/order/atomicity/row locking.
+Own fresh PG focused13PASS, suite22.78s, BUILD30.145s, PostgreSQL/Flyway8/JPA
+validate; baseline/py_compile/diff PASS. Source freeze8/8 và isolated full archive
+74XML469 verified. DBR xác nhận flush không phải commit; future application
+service phải commit trước HTTP response. Không thêm DB migration hoặc policy.
+
+QAR độc lập với implementer và DBR, own PG focused13PASS, suite17.29s,
+BUILD21.514s; exact CI negative unit selector PASS221discovered/220executed/
+0failure/error/1skip BUILD28.304s. Only AndroidLearningE2eScenario thiếu serial
+là NOT RUN, không E2E PASS. Own baseline/CIworkflow/secret/py_compile/diff/new7
+source8/8/isolated full74XML469 verification PASS. Snapshot QAR về DBR trước
+khi nhận actual verdict chỉ là stale subordinate snapshot; owning DBR actual
+PASS report ở trên authoritative, không giả định QAR tự cấp DBR gate.
+
+Initial reviewer FAIL/finding/remediation NONE; resolved0/unresolvedNONE.
+Bảo toàn ba TEST failure chronology (AssertJ compile ambiguity, Spring exception
+translation assertion và no-DB smoke context thiếu2 repository mocks), fixes và
+final rerun PASS trong IMPLEMENT/TEST section; không biến failure thành PASS
+hồi tố hoặc reviewer findings tự resolve. Source không đổi sau final owner
+469run/CI221 và independent DBR/QAR tests. Required DBR/QAR đủ cho existing
+module persistence scope; không architecture/security/API contract change để
+thêm reviewer gate ngoài canonical mapping.
+
+| BE-ASMT-002 closure gate | Final result |
+|---|---|
+| Dependencies BE-FND-004 / BE-ASMT-001 | DONE / DONE |
+| Aggregate/items mappings + one IN_PROGRESS/user + persisted ordered snapshot | PASS |
+| Atomic rollback/concurrent create/caller transaction/owned reads/row lock | PASS |
+| Owner final full Maven / CI unit / PG focused | PASS469 / PASS221discovered220executed1NOTRUN / PASS13 |
+| Independent Database Reviewer / QA Reviewer | PASS / PASS |
+| Independent DBR PG / QAR PG / QAR exact CI unit | PASS13 / PASS13 / PASS221discovered220executed1NOTRUN |
+| Resolved / unresolved findings |0 / NONE |
+| Fresh baseline/CIworkflow/secret/Python46/compileall/diff/cached/newfile/scope/generated | PASS |
+| Final source freeze8/8 + isolated full74XML469 | PASS |
+| Local/remote immutable baseline tag object→peeled integrity | PASS |
+| CI mode / failed-check waiver | ACTUAL_CI_REPOSITORY_HEALTH / NOT USED |
+| Admission Required CI | PASS39948138095/job120395737536 exact3903a1a0d52ebae8df69f70114aeb4910549a5d4 |
+| Current-task remote Required CI | NOT RUN / NOT CLAIMED before publication |
+| Final task status | DONE |
+
+Fresh finalize baseline/CIworkflow/secret PASS; Python46PASS0.539s/compileallPASS;
+diff/cached-diff/UTF8/noBOM/singleEOF/new7/scope10/conflict/generated checks PASS.
+Revalidated source8/8 SHA and full archive74XML469zero failure/error/skip; main
+and origin remain3903a1a, baseline tags local/remote unchanged. Backend helper
+finalize là advisory, không tự chứng minh external reviewer/test gates; actual
+reports/artifacts ở trên cung cấp evidence, không dùng helper như failed-check
+waiver. Không optional Maven/Gradle rerun hoặc product patch sau independent PASS.
+
+Canonical BE-ASMT-002 row IN_PROGRESS→DONE; M4 checklist[x]. Canonical #M4
+executable table2/14DONE, còn12tasks; milestone exit assessment/quiz/Android flow
+chưa PASS. Readback xác nhận đúng row, checklist và canonical table count trước
+handoff Git. Không thay baseline contract/API/OpenAPI/schema/migrations/clients,
+proxy/global environment/OS trust. Không index/commit/push hoặc tag mutation.
+
+STOP FINALIZE: task DONE, worktree còn uncommitted task-scoped changes. Git
+publish BE-ASMT-002 là bước riêng; sau push repository CI_PENDING và phải kiểm
+Required CI exact published SHA. Không tự bắt đầu NEXT hoặc claim remote CI PASS.

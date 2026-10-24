@@ -33,6 +33,12 @@ class EnglishAiCoachBackendApplicationTests {
     @MockitoBean
     private com.example.englishaicoach.learning.LearningAttemptRepository learningAttemptRepository;
 
+    @MockitoBean
+    private com.example.englishaicoach.assessment.UserLevelAssessmentRepository userLevelAssessmentRepository;
+
+    @MockitoBean
+    private com.example.englishaicoach.assessment.AssessmentItemRepository assessmentItemRepository;
+
     @Test
     void contextLoads() {
     }
