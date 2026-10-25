@@ -52,6 +52,9 @@ public class SecurityConfiguration {
                                 "/api/v1/vocabulary", "/api/v1/vocabulary/{vocabularyId}",
                                 "/api/v1/vocabulary/{vocabularyId}/examples").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/assessments").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/assessments/{assessmentId}",
+                                "/api/v1/assessments/{assessmentId}/next-question").hasRole("USER")
                         .requestMatchers("/api/v1/vocabulary/{vocabularyId}/progress", "/api/v1/learning/reviews", "/api/v1/learning/sessions", "/api/v1/learning/sessions/{sessionId}",
                                 "/api/v1/learning/sessions/{sessionId}/complete", "/api/v1/learning/attempts")
                         .hasRole("USER")

@@ -5649,3 +5649,15 @@ BE-ASMT-001 cung cấp properties/core/selector thuần và typed failure; khôn
 triển khai aggregate, HTTP route, database migration hoặc client assessment flow.
 Các API assessment và mapping 503 được triển khai ở task BE-ASMT-002..004,
 không được coi là đã có endpoint runtime sau task này. Không thay field/path.
+
+## Hợp đồng start/get/next assessment — BE-ASMT-003 (owner duyệt 2026-10-24)
+
+Áp dụng đầy đủ hợp đồng BE-ASMT-003 trong SRS/API Specification, approval
+call_9933de974f9840e8a437d43d093474e1: USER-only, ba canonical types không thêm
+eligibility; strict input/query và errors400/401/403/404/409/503. Start atomically
+persist aggregate/first question/options/order/201 replay snapshot, replay trước
+mutable guards, content failure rollback. GET result chỉ đọc stored nullable score,
+answered counts/createdAt, final CEFR chỉ COMPLETED. GET next chỉ đọc persisted
+first unanswered, closed404 và IN_PROGRESS thiếu item503; không regenerate/write,
+không recheck active catalog hoặc expose đáp án. HTTP commit thuộc application
+service transaction; không thêm answer/grading/completion, schema hoặc client flow.

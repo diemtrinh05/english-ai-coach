@@ -365,6 +365,12 @@ paths:
       tags:
       - Assessments
       summary: Start assessment
+      description: |
+        Role USER only; INITIAL, PERIODIC and MANUAL require no extra eligibility.
+        Body accepts only type and eventId UUID string; no query parameters.
+        After user validation, replay precedes active-assessment and content guards.
+        Start persists aggregate, first question/options/order and 201 replay snapshot
+        in one transaction before response. Content shortage rolls back all effects.
       operationId: startAssessment
       requestBody:
         required: true
@@ -379,6 +385,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssessmentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          description: ASSESSMENT_CONTENT_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: Assessment conflict (including already in progress / already answered) or idempotency reuse
           content:
@@ -390,6 +408,11 @@ paths:
       tags:
       - Assessments
       summary: Get assessment
+      description: |
+        Role USER; owned persisted result only. No query parameters or writes.
+        score is the stored nullable value; totalQuestions is questions_answered,
+        correctAnswers is correct_answers, createdAt is created_at. cefrLevel is
+        omitted unless COMPLETED with a stored final_cefr_level_id.
       operationId: getAssessment
       parameters:
       - $ref: '#/components/parameters/AssessmentId'
@@ -400,6 +423,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssessmentResultResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
   /assessments/{assessmentId}/next-question:
@@ -407,6 +436,12 @@ paths:
       tags:
       - Assessments
       summary: Get next adaptive question
+      description: |
+        Role USER; reads the first persisted unanswered item in sequence order.
+        It never generates, writes or rechecks active catalog content.
+        Missing/foreign assessment and COMPLETED/CANCELLED return 404 NOT_FOUND.
+        IN_PROGRESS without a saved unanswered item returns 503 ASSESSMENT_CONTENT_UNAVAILABLE.
+        No query parameters; correctAnswer is never exposed.
       operationId: getNextAssessmentQuestion
       parameters:
       - $ref: '#/components/parameters/AssessmentId'
@@ -417,6 +452,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssessmentQuestionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '503':
@@ -2290,7 +2331,9 @@ components:
           - COMPLETED
           - CANCELLED
         score:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
         totalQuestions:
           type: integer
@@ -3884,3 +3927,15 @@ BE-ASMT-001 cung cấp properties/core/selector thuần và typed failure; khôn
 triển khai aggregate, HTTP route, database migration hoặc client assessment flow.
 Các API assessment và mapping 503 được triển khai ở task BE-ASMT-002..004,
 không được coi là đã có endpoint runtime sau task này. Không thay field/path.
+
+## Hợp đồng start/get/next assessment — BE-ASMT-003 (owner duyệt 2026-10-24)
+
+Áp dụng đầy đủ hợp đồng BE-ASMT-003 trong SRS/API Specification, approval
+call_9933de974f9840e8a437d43d093474e1: USER-only, ba canonical types không thêm
+eligibility; strict input/query và errors400/401/403/404/409/503. Start atomically
+persist aggregate/first question/options/order/201 replay snapshot, replay trước
+mutable guards, content failure rollback. GET result chỉ đọc stored nullable score,
+answered counts/createdAt, final CEFR chỉ COMPLETED. GET next chỉ đọc persisted
+first unanswered, closed404 và IN_PROGRESS thiếu item503; không regenerate/write,
+không recheck active catalog hoặc expose đáp án. HTTP commit thuộc application
+service transaction; không thêm answer/grading/completion, schema hoặc client flow.

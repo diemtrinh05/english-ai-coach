@@ -15,6 +15,8 @@ public final class ApiErrorCodes {
     public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
     public static final String CONCURRENT_UPDATE = "CONCURRENT_UPDATE";
     public static final String IDEMPOTENCY_KEY_REUSE = "IDEMPOTENCY_KEY_REUSE";
+    public static final String ASSESSMENT_ALREADY_IN_PROGRESS = "ASSESSMENT_ALREADY_IN_PROGRESS";
+    public static final String ASSESSMENT_CONTENT_UNAVAILABLE = "ASSESSMENT_CONTENT_UNAVAILABLE";
 
     private ApiErrorCodes() {
     }

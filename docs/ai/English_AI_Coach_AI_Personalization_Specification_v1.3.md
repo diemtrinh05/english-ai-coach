@@ -2907,3 +2907,15 @@ hoặc thiếu ba distinct distractor meanings: ASSESSMENT_CONTENT_UNAVAILABLE,
 không reuse target, không fallback target sang CEFR khác, không hạ readiness.
 BE-ASMT-001 chỉ cung cấp core thuần/typed failure, không DB/HTTP/aggregate hay
 start/answer mutation; HTTP 503 và transaction persistence thuộc BE-ASMT-002..004.
+
+## Hợp đồng start/get/next assessment — BE-ASMT-003 (owner duyệt 2026-10-24)
+
+Áp dụng đầy đủ hợp đồng BE-ASMT-003 trong SRS/API Specification, approval
+call_9933de974f9840e8a437d43d093474e1: USER-only, ba canonical types không thêm
+eligibility; strict input/query và errors400/401/403/404/409/503. Start atomically
+persist aggregate/first question/options/order/201 replay snapshot, replay trước
+mutable guards, content failure rollback. GET result chỉ đọc stored nullable score,
+answered counts/createdAt, final CEFR chỉ COMPLETED. GET next chỉ đọc persisted
+first unanswered, closed404 và IN_PROGRESS thiếu item503; không regenerate/write,
+không recheck active catalog hoặc expose đáp án. HTTP commit thuộc application
+service transaction; không thêm answer/grading/completion, schema hoặc client flow.

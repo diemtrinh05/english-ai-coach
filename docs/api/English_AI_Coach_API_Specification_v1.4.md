@@ -2927,3 +2927,35 @@ BE-ASMT-001 cung cấp properties/core/selector thuần và typed failure; khôn
 triển khai aggregate, HTTP route, database migration hoặc client assessment flow.
 Các API assessment và mapping 503 được triển khai ở task BE-ASMT-002..004,
 không được coi là đã có endpoint runtime sau task này. Không thay field/path.
+
+## Hợp đồng start/get/next assessment — BE-ASMT-003 (owner duyệt 2026-10-24)
+
+Owner phê duyệt call_9933de974f9840e8a437d43d093474e1. Ba API chỉ cho USER;
+ADMIN trả403 FORBIDDEN, thiếu/không hợp lệ JWT hoặc user không còn tồn tại trả401
+UNAUTHORIZED. INITIAL/PERIODIC/MANUAL đều được bắt đầu, không thêm prerequisite
+profile, prior CEFR hoặc cooldown. POST chỉ nhận đúng type enum và eventId UUID
+string; field lạ/null/sai kiểu/UUID sai hoặc query ngoài hợp đồng (kể cả lặp)
+trả400 VALIDATION_ERROR. Hai GET không nhận query; UUID path sai trả400.
+
+POST sau auth/user validation phải replay cùng logical event trước mutable guards.
+Event khác khi có IN_PROGRESS trả409 ASSESSMENT_ALREADY_IN_PROGRESS; cùng event
+khác payload/user/endpoint trả409 IDEMPOTENCY_KEY_REUSE. Start mới tạo aggregate
+A1/IN_PROGRESS, first question/options/order và201 response snapshot trong cùng
+transaction, dùng server Clock; commit trước response. Content shortage trả503
+ASSESSMENT_CONTENT_UNAVAILABLE và rollback claim/aggregate/item, không cache lỗi.
+Retry cùng event vẫn replay201 cũ sau khi assessment đóng hoặc catalog thay đổi.
+Concurrent khác event chỉ một201, còn lại409, không duplicate hoặc HTTP500 dự kiến.
+
+GET /assessments/{id} chỉ đọc stored result: assessmentId/status/score (explicit
+null khi DB null), totalQuestions=questions_answered, correctAnswers=correct_answers,
+createdAt=created_at. Không tính score trong GET. cefrLevel dùng CefrLevelResponse
+chỉ khi COMPLETED và final_cefr_level_id khác null, trường hợp khác bỏ field;
+không thêm currentDifficulty/type vào result. Missing/foreign assessment trả404.
+
+GET next-question chỉ đọc persisted first unanswered theo sequence_no ASC khi
+IN_PROGRESS, giữ nguyên questionId/questionText/four options/cefrLevel; không
+expose correctAnswer, không đọc lại active catalog, không generate hoặc ghi DB.
+COMPLETED/CANCELLED trả404 NOT_FOUND; IN_PROGRESS thiếu saved unanswered trả503
+ASSESSMENT_CONTENT_UNAVAILABLE; missing/foreign trả404. Response không suy diễn
+câu tiếp theo. BE-ASMT-003 không triển khai submit answer/grading/completion,
+CEFR profile, XP/streak hoặc client assessment flow của task sau.
