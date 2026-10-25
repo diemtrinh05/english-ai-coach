@@ -224,7 +224,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | `BE-ASMT-001` | AssessmentProperties + deterministic question selector | CBL | `DB-CONTENT-001`<br>`BE-FND-010` | P0 | AR,QAR | `assessment-block-v1`: A1 start, 4/block, 3 promote, 1 demote, 2 hold, 20/50 limits, stable blocks=2. | Theo global DoD + acceptance. | DONE |
 | `BE-ASMT-002` | Assessment aggregate/repositories | CBL | `BE-FND-004`<br>`BE-ASMT-001` | P0 | DBR,QAR | `user_level_assessments` + `assessment_items`; one IN_PROGRESS/user; question/options/order persisted before response. | Theo global DoD + acceptance. | DONE |
 | `BE-ASMT-003` | Start/get/next assessment APIs | CBL | `BE-ASMT-002`<br>`BE-FND-008` | P0 | DBR,SR,QAR | `POST /assessments`, `GET /{id}`, `GET /{id}/next-question`; start uses eventId; next GET only reads persisted unanswered item. | Theo global DoD + acceptance. | DONE |
-| `BE-ASMT-004` | Submit assessment answer | CBL | `BE-ASMT-003` | P0 | AR,DBR,SR,QAR | Answer eventId; score/state update atomic; no duplicate question; final CEFR=current difficulty; errors canonical. | Theo global DoD + acceptance. | TODO |
+| `BE-ASMT-004` | Submit assessment answer | CBL | `BE-ASMT-003` | P0 | AR,DBR,SR,QAR | Answer eventId; score/state update atomic; no duplicate question; final CEFR=current difficulty; errors canonical. | Theo global DoD + acceptance. | DONE |
 | `QA-ASMT-001` | Assessment algorithm + integration tests | QAR | `BE-ASMT-004` | P0 | AR,DBR,QAR | Promote/demote/hold/boundary/stop/content unavailable/idempotency/concurrent answer; >=30 content guard. | Theo global DoD + acceptance. | TODO |
 
 ## Android Assessment
@@ -783,7 +783,7 @@ P0 tasks:
 [x] BE-ASMT-001
 [x] BE-ASMT-002
 [x] BE-ASMT-003
-[ ] BE-ASMT-004
+[x] BE-ASMT-004
 [ ] QA-ASMT-001
 [ ] AND-ASMT-001
 [ ] AND-ASMT-002

@@ -3,6 +3,8 @@ package com.example.englishaicoach.assessment;
 import com.example.englishaicoach.onboarding.dto.CefrLevelResponse;
 import java.util.List;
 import java.util.UUID;
+import java.time.Instant;
+import java.sql.Timestamp;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -37,5 +39,15 @@ public class AssessmentLookupRepository {
         return jdbc.queryForObject("SELECT id,code,name,sort_order FROM cefr_levels WHERE id=?",
                 (rs, row) -> new CefrLevelResponse(rs.getObject("id", UUID.class),
                         rs.getString("code"), rs.getString("name"), rs.getInt("sort_order")), id);
+    }
+
+    public UUID levelId(CefrDifficulty difficulty) {
+        return jdbc.queryForObject("SELECT id FROM cefr_levels WHERE code=?", UUID.class, difficulty.name());
+    }
+
+    /** Chỉ cập nhật profile hiện hữu; không tự tạo thời gian học hoặc timezone mặc định. */
+    public void updateExistingProfileLevel(UUID userId, UUID levelId, Instant now) {
+        jdbc.update("UPDATE user_profiles SET current_cefr_level_id=?,updated_at=? WHERE user_id=?",
+                levelId, Timestamp.from(now), userId);
     }
 }

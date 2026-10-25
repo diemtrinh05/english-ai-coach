@@ -4,6 +4,8 @@ import com.example.englishaicoach.assessment.dto.AssessmentQuestionResponse;
 import com.example.englishaicoach.assessment.dto.AssessmentResponse;
 import com.example.englishaicoach.assessment.dto.AssessmentResultResponse;
 import com.example.englishaicoach.assessment.dto.StartAssessmentRequest;
+import com.example.englishaicoach.assessment.dto.SubmitAssessmentAnswerRequest;
+import com.example.englishaicoach.assessment.dto.AssessmentAnswerResponse;
 import com.example.englishaicoach.auth.AccessTokenIdentity;
 import com.example.englishaicoach.common.exception.ApiErrorCodes;
 import com.example.englishaicoach.common.exception.ApiException;
@@ -61,6 +63,33 @@ public class AssessmentController {
             @PathVariable String assessmentId, HttpServletRequest request) {
         rejectQuery(request);
         return assessments.get(identity.userId(), uuid(assessmentId));
+    }
+
+    @PostMapping("/{assessmentId}/answers")
+    public ResponseEntity<AssessmentAnswerResponse> answer(@AuthenticationPrincipal AccessTokenIdentity identity,
+            @PathVariable String assessmentId, @RequestBody String rawBody, HttpServletRequest request) {
+        rejectQuery(request);
+        UUID id = uuid(assessmentId);
+        SubmitAssessmentAnswerRequest body;
+        try {
+            ObjectNode node = mapper.readerFor(ObjectNode.class)
+                    .with(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
+                            DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readValue(rawBody);
+            if (node == null || node.size() != 4
+                    || node.get("questionId") == null || !node.get("questionId").isTextual()
+                    || node.get("eventId") == null || !node.get("eventId").isTextual()
+                    || node.get("answer") == null || !node.get("answer").isTextual()
+                    || node.get("responseTimeMs") == null || !node.get("responseTimeMs").isIntegralNumber()
+                    || !node.get("responseTimeMs").canConvertToInt()
+                    || node.get("responseTimeMs").intValue() < 0) throw invalid();
+            body = new SubmitAssessmentAnswerRequest(uuid(node.get("questionId").asText()),
+                    node.get("answer").asText(), node.get("responseTimeMs").intValue(),
+                    uuid(node.get("eventId").asText()));
+        } catch (JacksonException | IllegalArgumentException exception) {
+            throw invalid();
+        }
+        var result = assessments.answer(identity.userId(), id, body);
+        return ResponseEntity.status(result.status()).body(result.body());
     }
 
     @GetMapping("/{assessmentId}/next-question")

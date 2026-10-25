@@ -53,6 +53,23 @@ public class UserLevelAssessment {
 
     protected UserLevelAssessment() { }
 
+    /** Áp dụng kết quả calculator dưới khóa aggregate; không tự tính thuật toán CEFR. */
+    public void applyState(AssessmentBlockState state, UUID difficultyId, BigDecimal score, Instant now) {
+        currentCefrLevelId = difficultyId;
+        questionsAnswered = state.questionsAnswered();
+        correctAnswers = state.correctAnswers();
+        blockQuestions = state.blockQuestions();
+        blockCorrect = state.blockCorrect();
+        stableBlockCount = state.stableBlockCount();
+        this.score = score;
+        updatedAt = now;
+        if (state.completed()) {
+            status = AssessmentStatus.COMPLETED;
+            finalCefrLevelId = difficultyId;
+            completedAt = now;
+        }
+    }
+
     public UUID getId() { return id; }
     public UUID getUserId() { return userId; }
     public AssessmentType getAssessmentType() { return assessmentType; }

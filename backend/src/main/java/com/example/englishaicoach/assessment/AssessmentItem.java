@@ -69,6 +69,14 @@ public class AssessmentItem {
     }
 
     public UUID getId() { return id; }
+
+    /** Chỉ gọi sau khi application service đã khóa aggregate và kiểm tra câu đang chờ. */
+    public void recordAnswer(String answer, boolean correct, int responseTimeMs, Instant now) {
+        this.selectedAnswer = Objects.requireNonNull(answer, "answer");
+        this.correct = correct;
+        this.responseTimeMs = responseTimeMs;
+        this.answeredAt = Objects.requireNonNull(now, "now");
+    }
     public UUID getAssessmentId() { return assessmentId; }
     public int getSequenceNo() { return sequenceNo; }
     public UUID getVocabularyId() { return vocabularyId; }

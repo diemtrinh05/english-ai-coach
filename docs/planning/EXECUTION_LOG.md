@@ -13736,3 +13736,213 @@ Không index/commit/push/tag/proxy/global-env/OS-trust mutation bởi implemente
 STOP FINALIZE: BE-ASMT-003 DONE với uncommitted task-scoped changes. Git publish
 BE-ASMT-003 là bước riêng; sau push repository CI_PENDING cho đến Required CI
 exact published SHA kết thúc. Không claim current-task remote PASS hoặc NEXT.
+
+## BE-ASMT-004 — PLAN — 2026-10-25
+
+Mode GOV009_DIRECT_MAIN; task M4/P0/CBL, dependency BE-ASMT-003 DONE; reviewers
+bắt buộc AR,DBR,SR,QAR. Git pre-task /root/next_git_after_asmt003 xác nhận READY:
+main sạch, HEAD=origin/main=live remote 3b74b37fe8b1dea06907cec34b0f795b325484d6,
+không Git operation hoặc task khác active. Required CI40173730519/job121109876003
+completed/success, HEALTHY, ACTUAL_CI_REPOSITORY_HEALTH. Đã xác minh lại live main,
+worktree và hai immutable tag objects/peeled trước transition; waiver NOT USED.
+
+Đã đọc PROJECT_RULES/AGENTS, implementation plan/backlog/log, CBL/AR/DBR/SR/QAR
+roles và approved SRS/DB/Architecture/AI/API/OpenAPI/Technical/Backend/client docs.
+Tái sử dụng hợp đồng block/selector BE-ASMT-001 và persistence/start/read của
+BE-ASMT-002/003. Owner phê duyệt call_e0deb41f98464dbdab0dfa80bfe551e7 trước PLAN:
+exact raw option answer/guards; locked atomic answer/state/next/snapshot với
+rollback toàn bộ khi content503; bốn field response, terminal vẫn nextDifficulty;
+score mỗi accepted answer HALF_UP scale2; completion cập nhật profile hiện hữu
+cho cả ba types, kể cả hạ CEFR. Thiếu profile không chặn completion và không tạo
+profile/defaults/backfill; PUT profile sau này giữ nguyên semantics hiện hành.
+
+Phạm vi: POST /assessments/{assessmentId}/answers, strict body/query/USER/ownership,
+existing idempotency, row lock, persisted answer và block transition, deterministic
+next snapshot hoặc terminal CEFR/completion; cập nhật existing profile và đồng bộ
+baseline được duyệt. Không schema/migration/dependency/client flow, XP/streak/SRS,
+onboarding flag, profile defaults hoặc task khác.
+
+Kiểm thử bắt buộc: PostgreSQL/Flyway/JPA thật; correctness/raw options/errors,
+replay/reuse/concurrent same/different events; next/rollback/content; completion
+20/50, score/profile; regression ba API cũ; OpenAPI, CI negative unit selector,
+full bounded clean verify; baseline/CIworkflow/secret/Python/compile/diff/new-file/
+scope/generated/tag guards. PLAN TODO→IN_PROGRESS đã persist và đọc lại đúng row
+trước source/test patch. Bản prose PLAN được diễn đạt lại bằng tiếng Việt ngay
+trong task hiện tại; không thay timestamp, admission, approval hay chronology.
+Không index/commit/push/proxy/global-env/OS-trust mutation.
+
+## BE-ASMT-004 — IMPLEMENT / TEST — 2026-10-25
+
+PLAN, ba owner approvals và exact row IN_PROGRESS readback có trước source/test
+patch. Tái sử dụng calculator/selector assessment-block-v1 và persistence đã có;
+thêm SubmitAssessmentAnswerRequest/AssessmentAnswerResponse, POST answers và
+orchestration trong AssessmentService. Controller kiểm đúng bốn field, UUID/string,
+responseTimeMs int32 từ0 đến2147483647, duplicate keys/trailing JSON/query ngoài
+hợp đồng; security bảo vệ route bằng USER như ba operation đã triển khai.
+
+Transaction gồm user validation/FOR KEY SHARE, idempotency claim/replay, owned
+aggregate FOR UPDATE, guards theo thứ tự được duyệt, persisted raw answer/timing/
+correctness, block/counters/score và next snapshot hoặc completion/profile.
+Replay trước mutable guards; event mới cho item đã answered trả409 kể cả closed.
+Chưa complete thì persist đúng một next question, target không lặp; content503
+hoặc persistence failure rollback cả answer/state/next/claim. Completion lưu final
+CEFR=current difficulty, timestamps cùng Clock, không tạo next; response luôn đủ
+correct/nextDifficulty/questionsAnswered/isCompleted, kể cả terminal.
+
+Score lưu mỗi accepted answer với BigDecimal scale2 HALF_UP, analytics-only.
+Completion chỉ update CEFR/updated_at của profile đang tồn tại cho cả ba types,
+kể cả hạ mức. Thiếu profile vẫn complete, không tạo default/timezone/daily time;
+profile PUT sau đó không tự backfill CEFR. Không side effect XP/streak/SRS hoặc
+onboarding flag. Không schema/migration/dependency/client implementation mới.
+Đồng bộ11 baseline documents, gồm Database cho profile policy, theo approval
+call_e0deb41f98464dbdab0dfa80bfe551e7. OpenAPI khai báo errors/auth và response
+nextDifficulty required cả terminal. Nội dung baseline trước task được bảo toàn.
+
+Actual TEST và chronology:
+- Focused đầu AssessmentAnswerIntegrationTests + AssessmentOpenApiContractTests
+  PASS26/0failure/error/skip, BUILD1:07; PG23suite44.93s và contract3suite2.039s.
+- Exact CI negative Unit selector đầu PASS224discovered/223executed/0failure/
+  error/1skip, BUILD28.843s. Only AndroidLearningE2eScenario thiếu explicit serial
+  là NOT RUN, không E2E PASS. Không có initial test failure hoặc finding.
+- Full bounded Maven clean verify PASS525/77cleanXML/0failure/error/skip,
+  BUILD5:21; baseline501 +23new PG +1new contract test. PostgreSQL16.15,
+  Flyway8/JPAvalidate/OpenAPI và jar/repackage PASS. Full XML được archive riêng
+  tại TEMP/BE-ASMT-004-20261025/full-reports cùng full-source-freeze.json trước
+  refinement/reviewer rerun; không dùng current target XML để claim full525.
+- Sau full run, orchestrator nhận diện runtime int32 đã đúng nhưng schema chưa
+  explicit upper bound. Bổ sung format:int32/maximum2147483647 đúng request
+  responseTimeMs và assertions trong existing contract test để đồng bộ approved
+  contract. Không sửa production code hoặc PG test; full-source-freeze và final
+  source-freeze.json khác đúng một hash AssessmentOpenApiContractTests.java.
+  Production9/9 và PG test giữ nguyên. Full525 là run trước refinement doc/assertion,
+  không claim full run dùng final contract-test hash.
+- Final affected focused sau refinement PASS26/0failure/error/skip,
+  BUILD53.647s, PG23suite36.18s +contract3suite1.004s; focused-final.log.
+- Final exact CI selector -Dtest=!*IntegrationTests,!OpenApiContractHarnessTests
+  PASS224discovered/223executed/0failure/error/1skip, BUILD30.090s;
+  ci-unit-final.log. Only Scenario thiếu serial là NOT RUN. Final source11/11
+  SHA256 và source-to-class timestamps PASS. Không full rerun vì refinement chỉ
+  schema/assertion và mọi affected test đã chạy lại trên source cuối.
+
+Lệnh dùng ./backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml, JDK21,
+process-only MAVEN_OPTS=-Xmx384m, argLine=-Xmx512m
+-XX:ReservedCodeCacheSize=128m và spring.test.context.cache.maxSize=4.
+Focused/CI dùng test cùng selectors nêu trên; full dùng clean verify.
+
+Coverage PG gồm raw options/correctness/timing, strict input và auth/ownership,
+replay/reuse/cross-user/path, concurrent bốn same-event và bốn different-event,
+rollback khi thiếu content hoặc injected next/profile persistence failure,
+completion20/28/50 với partial block cuối, không lặp target, score HALF_UP3.13,
+profile cả ba types/demotion/missing và later PUT không backfill, terminal không
+cần active catalog, không XP/streak/progress. Contract tests kiểm field/error/
+required nextDifficulty và int32 bounds. Full regression giữ ba API hiện hữu;
+không mượn historical client/device evidence.
+
+Implementation authority cũ /root/asmt004_impl bị usage interruption sau khi
+khởi chạy final CI và trước khi append TEST evidence; chưa có TEST STOP/review
+verdict ở thời điểm đó. Resume /root/asmt004_impl_resume đọc actual logs/manifest/
+XML, xác nhận final CI đã SUCCESS; không chạy lại Maven hoặc sửa product.
+Không đổi sự gián đoạn thành review PASS giả định. Lần append evidence đầu của
+resume bị apply_patch anchor mismatch, không ghi file; sửa anchor đúng rồi append,
+không thay source/test hoặc test result để vượt kiểm tra.
+
+Fresh resume gates: baseline/CIworkflow/secret PASS; Python46PASS10.680s và
+compileall PASS; diff/cached-diff/scope24(21tracked3new)/new3UTF8/noBOM/singleEOF/
+whitespace/conflict/generated/preserved-prefix/index-empty guards PASS.
+Final source11/11 và isolated full77XML525zero failure/error/skip verified.
+Hai immutable baseline tags local/remote object và peeled targets giữ nguyên;
+HEAD=origin/main=live remote 3b74b37fe8b1dea06907cec34b0f795b325484d6.
+Artifacts tại TEMP/BE-ASMT-004-20261025 gồm focused.log/ci-unit.log/full-maven.log,
+full-reports/full-source-freeze.json, focused-final.log/ci-unit-final.log,
+source-freeze.json/scope.json. Không đưa logs/build/generated/secrets vào repo.
+
+STOP sau TEST: task BE-ASMT-004 IN_PROGRESS, Maven writer đã release;
+required independent AR/DBR/SR/QAR chưa có review verdict. Implementer không tự
+cấp reviewer PASS/findings hoặc finalize. M4 vẫn3/14DONE. Current-task remote CI
+NOT RUN/NOT CLAIMED; admission RequiredCI40173730519/job121109876003 PASS thuộc
+base3b74b37, không phải uncommitted patch. Không index/commit/push/tag/proxy/
+global-env/OS-trust mutation. Bước tiếp theo là independent review bốn gate.
+
+## BE-ASMT-004 — Independent review synchronization / FINALIZE — 2026-10-25
+
+Command finalize BE-ASMT-004 theo backend skill; đồng bộ authoritative reports
+độc lập do orchestrator chuyển giao, không separate synchronization subcommand.
+Implementation authority /root/asmt004_impl_resume không tự cấp reviewer gate
+hoặc resolve finding. Bốn báo cáo bên dưới là initial review thực tế; mọi gate
+phụ thuộc phải lấy verdict của reviewer sở hữu, không suy từ snapshot của người khác.
+
+| Independent reviewer / owning authority | Initial / final result | Findings |
+|---|---|---|
+| Architecture Reviewer /root/asmt004_ar_resume | PASS / APPROVE | NONE;0resolved/0open |
+| Database Reviewer /root/asmt004_dbr_resume | PASS / APPROVE | NONE;0resolved/0open |
+| Security Reviewer /root/asmt004_sr_resume | PASS / APPROVE | NONE;0resolved/0open |
+| QA Reviewer /root/asmt004_qar_resume | PASS / APPROVE | NONE;0resolved/0open |
+
+AR/SR kiểm tra source, toàn bộ tracked/untracked scope, approved cross-layer
+contract và các audit liên quan; source11/11, hai manifests và full/final artifact
+attribution được kiểm chứng. AR xác nhận backend authority/layering/atomic state
+và không task sau; SR xác nhận auth/ownership/strict raw input/replay isolation,
+guard precedence, no answer leak và không side effect ngoài scope. Hai reviewer
+không claim tự chạy Maven hoặc cấp gate của DBR/QAR.
+
+DBR tự chạy PostgreSQL focused23PASS, suite XML61.415s (log làm tròn61.42s),
+BUILD1:43; kiểm atomic claim/answer/state/next/profile, locking, rollback,
+concurrency, schema/uniqueness và không migration. Hash11/11, full/final test
+attribution và10 baseline prefix preservation verified. QAR tự chạy focused26PASS,
+BUILD50.178s: PG23suite42.10s +contract3suite2.021s. Exact CI negative selector
+PASS224discovered/223executed/0failure/error/1skip BUILD31.590s; only Scenario thiếu
+explicit serial là NOT RUN, không E2E PASS. QAR cũng kiểm source11/11, full/final
+attribution, baseline/prefix/audit/scope; không dựa vào count current target XML
+để claim full525. Logs độc lập tại task TEMP: dbr-resume-focused.log,
+qar-resume-focused.log và qar-resume-ci-unit.log.
+
+Full clean verify525/77XML BUILD5:21 xảy ra trước refinement chỉ OpenAPI int32
+schema và existing contract-test assertion. Production9/9 và PG test không đổi;
+only AssessmentOpenApiContractTests hash khác giữa full-source-freeze.json và
+source-freeze.json. Final affected owner focused26/CI224 và independent DBR/QAR
+runs đã kiểm bản cuối; không claim full525 dùng hash contract test cuối. Bảo toàn
+usage interruption của implementer trước TEST evidence và apply_patch anchor
+diagnostic trong TEST section; không biến chúng thành test/reviewer failure.
+Initial TEST FAIL, reviewer FAIL/finding/remediation đều NONE; resolved0 và
+unresolvedNONE. Các snapshot reviewer khác trong report QAR không ghi đè actual
+AR/DBR/SR verdict authoritative ở trên.
+
+| BE-ASMT-004 closure gate | Final result |
+|---|---|
+| Dependency BE-ASMT-003 | DONE |
+| Answer correctness/guards/raw persisted options/strict input | PASS |
+| Atomic answer/block/score/next/result/profile + replay/concurrency/rollback | PASS |
+| Completion20/28/50, final CEFR=current difficulty, HALF_UP analytics score | PASS |
+| Existing profile update/missing profile no defaults or later backfill | PASS |
+| Owner full before schema/assert refinement / final focused / final CI Unit | PASS525/77XML / PASS26 / PASS224discovered223executed1NOTRUN |
+| Independent AR / DBR / SR / QAR | PASS / PASS / PASS / PASS |
+| Independent DBR focused / QAR focused / QAR CI Unit | PASS23 / PASS26 / PASS224discovered223executed1NOTRUN |
+| Resolved / unresolved findings |0 / NONE |
+| Fresh baseline/CIworkflow/secret/Python46/compileall/diff/cached/newfile/scope/generated | PASS |
+| Final source11/11 + production9/9 and PG test unchanged since full | PASS |
+| Isolated full77XML525 zero failure/error/skip + final affected artifacts | PASS |
+| Local/remote immutable baseline tag object and peeled integrity | PASS |
+| CI mode / failed-check waiver | ACTUAL_CI_REPOSITORY_HEALTH / NOT USED |
+| Admission Required CI | PASS40173730519/job121109876003 exact3b74b37fe8b1dea06907cec34b0f795b325484d6 |
+| Current-task remote Required CI | NOT RUN / NOT CLAIMED before publication |
+| Final task status | DONE |
+
+Fresh finalize baseline/CIworkflow/secret PASS, Python46PASS0.878s/compileallPASS;
+diff/cached/new3UTF8/noBOM/singleEOF/whitespace/conflict/generated/scope24/index
+empty và10 preserved baseline prefixes PASS. Revalidated final source11/11,
+full-source/final-source difference attribution và77XML525zero failure/error/skip.
+HEAD/main/origin/live remote vẫn3b74b37fe8b1dea06907cec34b0f795b325484d6; local và
+remote immutable tag objects/peeled không đổi. Helper chỉ advisory; actual
+reports/artifacts chứng minh external gates, không dùng như failed-check waiver.
+Không optional Maven hoặc product patch sau independent reviews.
+
+Canonical BE-ASMT-004 row IN_PROGRESS→DONE và M4 checklist[x]. Canonical #M4
+executable table4/14DONE, còn10tasks; assessment/quiz/Android milestone exit còn
+pending. Readback phải xác nhận đúng row/checklist/count trước Git handoff.
+Không schema/migration/client implementation, XP/streak/SRS/default profile hoặc
+task khác; chỉ planning evidence/lifecycle cập nhật sau reviews.
+
+STOP FINALIZE: BE-ASMT-004 DONE với uncommitted task-scoped changes; không
+index/commit/push/tag/proxy/global-env/OS-trust mutation. Git publish là bước riêng;
+sau push repository CI_PENDING cho đến Required CI exact published SHA kết thúc.
+Không claim current-task remote CI PASS hoặc tự bắt đầu NEXT.

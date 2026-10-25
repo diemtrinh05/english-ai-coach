@@ -2959,3 +2959,28 @@ COMPLETED/CANCELLED trả404 NOT_FOUND; IN_PROGRESS thiếu saved unanswered tr�
 ASSESSMENT_CONTENT_UNAVAILABLE; missing/foreign trả404. Response không suy diễn
 câu tiếp theo. BE-ASMT-003 không triển khai submit answer/grading/completion,
 CEFR profile, XP/streak hoặc client assessment flow của task sau.
+
+## Hợp đồng submit assessment answer — BE-ASMT-004 (owner duyệt 2026-10-25)
+
+Áp dụng quyết định owner call_e0deb41f98464dbdab0dfa80bfe551e7 và toàn bộ hợp đồng
+submit-answer trong SRS/API. USER-only, body đúng questionId/answer/responseTimeMs/
+eventId; answer exact raw String thuộc persisted options và so sánh raw với đáp án
+snapshot, không trim/casefold hoặc kiểm lại active catalog. Replay sau xác thực user
+và trước mutable guards. Missing/foreign assessment hoặc question404; event mới
+cho câu đã trả lời409 ASSESSMENT_QUESTION_ALREADY_ANSWERED kể cả phiên đóng;
+closed unanswered hoặc không phải first unanswered400 VALIDATION_ERROR.
+
+Khóa aggregate FOR UPDATE; answer, counters/block, score, next question hoặc final
+CEFR/profile và snapshot200 cùng transaction. Chưa hoàn tất thì persist một next
+question ở difficulty mới, không lặp target; thiếu content503 rollback cả câu hiện
+tại/next/state/claim. Hoàn tất thì không tạo next, final CEFR=current difficulty,
+completed_at/updated_at lấy cùng Clock. Response luôn đủ correct/nextDifficulty/
+questionsAnswered/isCompleted; nextDifficulty cả terminal là final difficulty.
+
+Score được lưu sau mỗi accepted answer: correct_answers*100/questions_answered,
+scale2 HALF_UP, analytics-only. Completion cập nhật current_cefr_level_id/updated_at
+của profile đã tồn tại cho cả INITIAL/PERIODIC/MANUAL, kể cả hạ level; không đổi
+avatar/timezone/daily minutes. Thiếu profile vẫn hoàn tất và lưu assessment result,
+không tạo profile/defaults; PUT profile về sau không tự backfill CEFR. Không XP,
+streak, SRS, completion flag hoặc client algorithm mới. Existing profile PUT tiếp
+tục bảo toàn CEFR đã có. Không thay schema/migration.
