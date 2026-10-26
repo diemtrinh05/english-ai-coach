@@ -13946,3 +13946,182 @@ STOP FINALIZE: BE-ASMT-004 DONE với uncommitted task-scoped changes; không
 index/commit/push/tag/proxy/global-env/OS-trust mutation. Git publish là bước riêng;
 sau push repository CI_PENDING cho đến Required CI exact published SHA kết thúc.
 Không claim current-task remote CI PASS hoặc tự bắt đầu NEXT.
+
+
+## QA-ASMT-001 — PLAN — 2026-10-26
+
+Mode GOV009_DIRECT_MAIN; task M4/P0, Owner QAR, dependency BE-ASMT-004 DONE;
+required reviewers AR,DBR,QAR. Git authority /root/next_git_1026 xác nhận
+PLAN ADMISSION READY: main sạch và HEAD/main/origin/main/live remote
+e7f4cc1fcfc3392e92cec106682b8fcc5f6c96d3, không Git operation/task khác active;
+Required CI40194681754/job121172865621 exact SHA completed/success, HEALTHY,
+ACTUAL_CI_REPOSITORY_HEALTH. Hai baseline tag object/peeled local và remote
+giữ nguyên; failed-check waiver NOT USED. Revalidate Git sạch/remote trước PLAN.
+
+Đã đọc PROJECT_RULES/AGENTS, implementation plan/master backlog/execution log,
+QA role và installed QA task skill/references; approved SRS/AI assessment-block-v1,
+DB assessment/items/profile, Architecture/Technical/Backend, API/OpenAPI và các
+clarifications BE-ASMT-001/003/004. Không có gap contract mới; giữ nguyên ba
+nhóm owner approvals trước đây, không tự thay business/API/schema behavior.
+
+Phạm vi: bổ sung test matrix độc lập cho mọi thứ tự đúng/sai trong block tại
+sáu CEFR; golden mixed promote/demote/hold path qua API và persisted SQL state;
+guard >=30 usable từng CEFR qua PostgreSQL, rollback khi nội dung mất giữa
+block và concurrent terminal answers. Test fixtures chạy isolated PostgreSQL/
+Flyway/JPA, fixed Clock; expected table/trajectory literal, không dùng production
+calculator làm oracle. Bảo toàn existing tests và lập coverage matrix để phân
+biệt coverage đã có với phần QA mới. Không product code, migration/seed, API/
+OpenAPI hoặc client change; không thuật toán hay scope của task sau.
+
+Required TEST: focused pure/real PostgreSQL suites, repeatability; CI exact
+negative Unit selector; full bounded Maven clean verify, baseline/CIworkflow/
+secret audits, Python regression/compile, diff/cached/newfile/scope/generated/
+secret/tag guards. Chỉ QA implementer giữ Maven writer trong IMPLEMENT/TEST.
+Independent QAR reviewer phải là authority/session khác implementer này; helper
+SELF_REVIEW_CONFLICT là cấm tự review, không phải admission blocker khi root
+đã cung cấp independent reviewer route. Không reviewer gate claim tại PLAN.
+
+PLAN TODO→IN_PROGRESS được persist và readback exact row trước mọi test patch.
+Không index/commit/push, proxy/global-env/OS-trust mutation. Diagnostic chỉ đọc:
+backend/README.md không tồn tại; dùng build/test instructions thực tế trong repo.
+
+
+## QA-ASMT-001 — IMPLEMENT / TEST — 2026-10-26
+
+PLAN/readback exact row228 IN_PROGRESS có trước mọi test patch. Phạm vi đúng5
+files: hai QA Java suites mới, docs/testing/QA-ASMT-001.md và hai planning docs.
+Không sửa existing tests, production/config/CI/pom, API/OpenAPI, baseline contract,
+schema/migration/seed hoặc client. Coverage document phân biệt coverage hiện hữu
+và QA bổ sung, không claim Android assessment/device E2E hoặc M4 exit.
+
+AssessmentQaBlockMatrixTests chạy96 literal matrix cases: sáu CEFR và16 permutations
+đúng/sai trong block. Oracle là bảng level/stable literal; prefix1–3 không đổi
+difficulty, câu4 reset counters. Không chép production transition formula làm
+oracle; calculator là system under test. AssessmentQaScenarioIntegrationTests có
+14 invocations trên fresh PostgreSQL16.15/Flyway8/Hibernate validate, controller
+qua MockMvc, không outer test transaction. Golden path mixed28 xác nhận promote/
+demote/hold/reset stable, score57.14 và finalB1; path50 tạiC1 xác nhận hai câu sai
+partial không gây demote, score56.00, không next và không lặp target. Sáu cases
+readiness giữ29 usable ở từng CEFR kể cả off-target,503 không claim/aggregate,
+restore rồi cùng event start/replay201. Ba cases blank word/POS/meaning ở C2
+phân biệt30active với29usable. Fourth-answer content loss rollback state/claim
+trước khi retry promoteA2 đúng một lần. Hai terminal races same/different event
+qua bốn worker chỉ một completion/profile update, loser409/không claim hoặc same
+event replay;20 distinct items, không extra next/XP/streak/SRS.
+
+Expected trajectory và score là literal từ approved contract, không gọi
+calculator/selector để tính expected integration outcome. Correct/wrong answer
+được chọn từ persisted options của câu hiện tại. Test fixtures chỉ sửa isolated
+PostgreSQL; mọi catalog mutation được restore finally. Clock fixed
+2026-10-26T08:00:00Z, JWT secret ngẫu nhiên trong process; không credential thật
+hoặc secret value trong evidence. Unique user/event IDs không cần shared DB
+cleanup hoặc schema production mutation.
+
+Actual commands JDK21/process-only MAVEN_OPTS=-Xmx384m, argLine=-Xmx512m
+-XX:ReservedCodeCacheSize=128m, spring.test.context.cache.maxSize=4; wrapper
+./backend/mvnw.cmd --no-transfer-progress -f backend/pom.xml:
+- Focused -Dtest=AssessmentQaBlockMatrixTests,AssessmentQaScenarioIntegrationTests
+  test PASS110/0failure/error/skip BUILD48.393s; pure96 và PG14suite33.96s.
+- CI exact negative Unit selector
+  -Dtest=!*IntegrationTests,!OpenApiContractHarnessTests test PASS320discovered/
+  319executed/0failure/error/1skip BUILD21.357s. Only AndroidLearningE2eScenario
+  thiếu explicit eac.e2e.serial là NOT RUN, không E2E PASS. Không sửa CI selector.
+- Full clean verify PASS635/79cleanXML/0failure/error/skip BUILD5:30, gồm existing
+  525 và QA110; Flyway8/JPAvalidate, OpenAPI, jar/repackage PASS. Same frozen QA
+  source chạy lại: pure96suite0.287s và PG14suite11.511s, chứng minh repeatability
+  trên fresh context. Không optional broad rerun sau full PASS.
+
+Không có initial TEST FAIL hoặc product defect được phát hiện trong scope.
+Diagnostic chỉ đọc backend/README.md missing được ghi tại PLAN; sau đó đọc đúng
+README.md. Không biến diagnostic thành test failure hoặc xóa chronology.
+
+Artifacts ngoài repo TEMP/QA-ASMT-001-20261026/{focused.log,ci-unit.log,full-maven.log,
+full-reports,source-freeze.json,scope.json,python-tests.log}. Full-reports archive
+sạch79XML635zero f/e/skip được copy trước reviewer rerun, không dùng current
+target XML sau focused/CI overwrite để claim full635. Source2/2 SHA256 và compiled
+class timestamps khớp final clean build. Production/config/CI/pom diff NONE;
+baseline tags local/remote object và peeled nguyên vẹn như admission.
+
+Baseline/CIworkflow/secret audits PASS; Python46PASS1.107s/compileallPASS. Diff/
+cached/new3UTF8/noBOM/singleEOF/whitespace/conflict/generated/scope5 PASS; fresh
+cheap guards chạy lại sau evidence. Không index/commit/push/proxy/global-env/
+OS-trust mutation. Không thay business/API/database/client contract hoặc migration;
+backward compatibility không đổi. Scope chỉ QA tests, fixture và evidence.
+
+STOP sau TEST, QA-ASMT-001 giữ IN_PROGRESS; independent AR/DBR/QAR chưa review.
+QA implementer /root/qa_asmt001_impl không tự cấp gate QAR, không tự resolve
+finding; root cung cấp independent QAR khác session để thỏa gate đúng mapping.
+Current uncommitted-task remote CI NOT RUN/NOT CLAIMED; admission CI40194681754/
+job121172865621 exacte7f4cc1 PASS/HEALTHY là base evidence. Không finalize hoặc
+claim DONE. Bước tiếp theo: independent AR/DBR/QAR trên tracked và untracked.
+
+Fresh post-evidence guards PASS: baseline/CIworkflow/secret, Python46PASS1.312s,
+compileall/diff/cached, source2/2/full79XML635/new3/scope5/UTF8/noBOM/singleEOF/
+whitespace/conflict/generated/index-empty và exact row IN_PROGRESS. Both local/
+remote immutable tag objects/peeled giữ nguyên. Maven writer đã RELEASED; không
+command/test process của implementer còn chạy. Sẵn sàng independent review.
+
+
+## QA-ASMT-001 — REVIEW evidence / FINALIZE — 2026-10-26
+
+Command finalize theo english-ai-coach-qa-task; root chuyển actual verdict từ
+ba authority độc lập. Đây là đồng bộ external reports, không phải implementer
+tự review hoặc cấp PASS. Scope test-only vẫn đúng5files, source2/2 SHA256 frozen.
+
+| Required gate | Actual reviewer authority | Verdict / decision | Findings resolved / open |
+|---|---|---|---|
+| AR | /root/qa_asmt001_ar | Initial PASS / APPROVE |0 /0; NONE |
+| DBR | /root/qa_asmt001_dbr | Initial PASS / APPROVE |0 /0; NONE |
+| QAR | /root/qa_asmt001_qar | Initial PASS / APPROVE |0 /0; NONE |
+
+Independent QAR session /root/qa_asmt001_qar khác implementation authority
+/root/qa_asmt001_impl; independence SATISFIED, không dùng helper để tự thỏa QAR.
+Root đã nhận formal QAR report cùng authority và xác nhận không finding mới.
+DBR own PostgreSQL14 invocations PASS, suite29.018s (log29.02), BUILD1:01.
+QAR own focused110 PASS BUILD32.214s, PostgreSQL14suite28.01s; own exact CI
+negative selector320discovered/319executed/1ScenarioNOTRUN PASS BUILD24.297s.
+QAR đã đọc cả5files, xác minh frozen source2/2 và archived full79XML635.
+Không initial Reviewer FAIL, không finding/remediation/re-review bị lược bỏ.
+
+Owner TEST evidence giữ nguyên: focused110 PASS48.393s, CI Unit320discovered/
+319executed/1optional device ScenarioNOTRUN PASS21.357s; full clean verify635/
+79XML/0failure-error-skip PASS5:30. Android device Scenario NOT RUN không được
+biến thành E2E PASS; task này không chứng minh Android assessment hoặc M4 exit.
+Transient capacity retry không đổi model/authority hoặc tạo duplicate Maven
+writer; read-only backend/README diagnostic đã giữ ở PLAN/TEST.
+
+Fresh finalize guards: baseline audit PASS; CI workflow audit PASS; secret
+audit PASS; Python46 PASS0.674s; compileall PASS; diff/cached PASS. Immutable
+local/remote tags giữ nguyên object/peeled như admission. Frozen source2/2 và
+isolated full archive79XML635zero failure/error/skip PASS. Scope5/index-empty/
+production-config-CI-pom diffNONE/new3UTF8-noBOM-singleEOF-whitespace-conflict/
+generated PASS. Guard thử toàn bộ historical Markdown gặp trailing spaces
+đã tồn tại trong MASTER_BACKLOG; đây là read-only diagnostic, không TEST hay
+reviewer failure. Sửa phạm vi guard về new3 và changed tracked lines; PASS,
+giữ nguyên approved Markdown ngoài task. Không product patch hoặc Maven rerun.
+
+| Final acceptance / closure gate | Result |
+|---|---|
+| Promote/demote/hold/floor/ceiling/stability/20-50 stop | PASS |
+| Deterministic snapshot/content readiness >=30 usable/rollback | PASS |
+| Idempotency and terminal same/different-event concurrency | PASS |
+| Owner focused / full clean verify | PASS110 / PASS635 |
+| Independent AR / DBR / QAR | PASS / PASS / PASS |
+| QAR independence | SATISFIED |
+| Unresolved findings | NONE |
+| CI mode / failed-check waiver | ACTUAL_CI_REPOSITORY_HEALTH / NOT USED |
+| Admission Required CI | PASS40194681754/job121172865621 exact e7f4cc1fcfc3392e92cec106682b8fcc5f6c96d3 |
+| Current-task remote Required CI | NOT RUN / NOT CLAIMED before publication |
+| Final task status | DONE |
+
+Canonical row228 QA-ASMT-001 IN_PROGRESS→DONE, checklist[x]. Canonical #M4
+executable table5/14DONE, còn9tasks; M4 assessment/quiz/Android exit vẫn pending.
+Không đổi priority-summary table vì đó là số lượng P0/P1/P2, không progress.
+Change: QA tests và evidence; Why: acceptance assessment; affected documents:
+planning và test evidence; API/DB/clients/migration NONE; compatibility không đổi.
+
+STOP FINALIZE: chỉ metadata/evidence lifecycle sau actual external gates; không
+index/commit/push/tag/proxy/global-env/OS-trust mutation. Maven writer RELEASED.
+Git publication là bước riêng; sau push repository CI_PENDING cho đến actual
+Required CI exact published SHA kết thúc. Không claim published CI PASS hoặc
+bắt đầu NEXT. Root nhận handoff DONE với uncommitted task-scoped changes.
