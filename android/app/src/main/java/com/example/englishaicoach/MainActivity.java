@@ -21,6 +21,7 @@ public final class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private MainNavigationViewModel navigationViewModel;
     private boolean openingLearning;
+    private boolean openingAssessment;
     private com.example.englishaicoach.feature.auth.AuthSessionViewModel authViewModel;
 
     @Override
@@ -55,6 +56,8 @@ public final class MainActivity extends AppCompatActivity {
                 renderDestination(destination);
         });
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            openingAssessment = getSupportFragmentManager().findFragmentById(R.id.main_content)
+                    instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment;
             openingLearning = getSupportFragmentManager().findFragmentById(R.id.main_content)
                     instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment;
             if (binding != null) binding.mainNavigation.setVisibility(
@@ -68,7 +71,8 @@ public final class MainActivity extends AppCompatActivity {
             binding.mainNavigation.setVisibility(authenticated
                     && getSupportFragmentManager().getBackStackEntryCount() == 0 ? View.VISIBLE : View.GONE);
             Fragment preserved = getSupportFragmentManager().findFragmentById(R.id.main_content);
-            if (!authenticated && preserved instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
+            if (!authenticated && (preserved instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
+                    || preserved instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment)
                     && (state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.UNKNOWN
                     || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.LOADING
                     || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.ERROR)) {
@@ -101,6 +105,8 @@ public final class MainActivity extends AppCompatActivity {
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
         if (current instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
                 && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
+        if (current instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment
+                && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         // Observer HOME khi recreate không được thay thế flow thiết lập đang mở.
         if (destination == MainDestination.HOME
                 && current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment
@@ -117,6 +123,16 @@ public final class MainActivity extends AppCompatActivity {
                             destination.name())
                     .commit();
         }
+    }
+
+    public void openAssessment() {
+        if (openingAssessment || getSupportFragmentManager().isStateSaved()
+                || authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED
+                || getSupportFragmentManager().findFragmentById(R.id.main_content) instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment) return;
+        openingAssessment = true;
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, new com.example.englishaicoach.feature.assessment.AssessmentFragment(), "ASSESSMENT")
+                .addToBackStack("ASSESSMENT").commit();
     }
 
     public void openOnboarding() {

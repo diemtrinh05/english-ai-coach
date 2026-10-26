@@ -759,3 +759,44 @@ IDEMPOTENCY_KEY_REUSE là terminal, không thay event để vượt lỗi. Logou
 switch clear private state và bỏ callback cũ. Review chỉ giữ snapshot riêng trong
 RAM theo auth owner, không lưu private queue vào disk/SavedState. Online-first;
 không offline mutation/sync. API/backend/schema/migration không đổi.
+
+## AND-ASMT-001 — Placement trực tuyến và phục hồi (owner duyệt 2026-10-26)
+
+Quyết định call_157ac707b41d43f3b518cac5c4df9ad4 áp dụng cho task001. Splash/auth và
+save hồ sơ/mục tiêu giữ Main tạm; Main có entry Kiểm tra trình độ → Intro → người
+dùng bắt đầu INITIAL explicit. Câu hỏi/bốn options/raw order và số câu đã trả lời
+lấy từ server, không suy diễn tổng25 hoặc phần trăm hoàn tất, không adaptive logic.
+Chọn đáp án rồi nhấn Gửi đáp án explicit. Accepted nonterminal đọc GET assessment/
+next; terminal chỉ xác nhận đã hoàn tất và về Main. Result CEFR, completion flag,
+onboarding predicate và personalized Home thuộc AND-ASMT-002/task tương ứng.
+
+Checkpoint tối thiểu được mã hóa AES-GCM bằng Android Keystore trong private
+storage, backup bị tắt; chỉ giữ stable auth-session UUID/start event/type INITIAL/
+assessmentId/pending request (questionId/raw answer/responseTimeMs/eventId). Không
+lưu token, nội dung câu hỏi/options hoặc thuật toán; không log payload. Ghi atomic
+trước POST; nếu ghi thất bại thì block gửi. Checkpoint sống qua thoát local/cold
+restart; logout/đổi owner xóa kể cả không mở Placement. Sau GET users/me thành
+công và owner khớp mới GET phục hồi hoặc retry. Không tái dùng checkpoint phiên A
+trong phiên B; refresh token pair giữ stable owner UUID. Corrupt/key unavailable
+loại checkpoint an toàn; không giả định biết ID phiên server khi mất checkpoint.
+
+Có ID và không pending thì GET assessment; IN_PROGRESS đọc persisted next, không
+tạo câu mới trong GET. Pending start/answer chỉ explicit retry đúng event/body,
+kể cả assessment đã đóng để backend replay. Không autoPOST khi resume/reconnect/
+recreation; offline không tạo/gửi mutation, checkpoint không phải offline queue.
+Start409 ASSESSMENT_ALREADY_IN_PROGRESS mà không có ID: báo giới hạn không khám
+phá/hủy được phiên, không loop start hoặc thêm API. Hardware/toolbar Back cùng
+hỏi xác nhận, chỉ hủy local call/đóng local; giữ checkpoint chưa hoàn tất. Không
+cancel phiên backend. COMPLETED/CANCELLED được xác nhận thì xóa checkpoint khi
+người dùng rời màn hình; không xóa pending chưa được xác nhận.
+
+Timer monotonic chỉ chạy khi câu đã hiển thị, RESUMED, online và phiên xác nhận
+open; pause background/offline/revalidation/rotation. Rotation giữ elapsed trong
+ViewModel; process recreation timer0 nếu chưa pending. Nhấn Gửi đóng băng exact
+raw answer/questionId/responseTimeMs/eventId và khóa lựa chọn; vượt int32 báo lỗi,
+không clamp/wrap. Pending đã persist được retry nguyên vẹn; không GET closed guard
+trước POST replay. ASSESSMENT_QUESTION_ALREADY_ANSWERED409 refresh assessment/next,
+không gửi câu cũ bằng event mới; IDEMPOTENCY_KEY_REUSE409 kết thúc flow, không bypass
+bằng event khác. 503 giữ pending và retry explicit; read lỗi chỉ retry read. Callback
+phiên cũ không đổi UI hoặc gửi dưới tài khoản mới. Chỉ hiển thị số đã trả lời server,
+không tự CEFR/score/XP/streak. API/backend/schema/migration không đổi.

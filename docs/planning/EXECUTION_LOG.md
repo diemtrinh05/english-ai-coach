@@ -14125,3 +14125,217 @@ index/commit/push/tag/proxy/global-env/OS-trust mutation. Maven writer RELEASED.
 Git publication là bước riêng; sau push repository CI_PENDING cho đến actual
 Required CI exact published SHA kết thúc. Không claim published CI PASS hoặc
 bắt đầu NEXT. Root nhận handoff DONE với uncommitted task-scoped changes.
+
+
+## AND-ASMT-001 — PLAN — 2026-10-26
+
+Mode GOV009_DIRECT_MAIN; M4/P0/AFL, dependencies AND-ONB-001 và BE-ASMT-004 DONE; reviewer canonical QAR. Git authority /root/next_git_1026b xác nhận READY hai lần, HEAD/main/origin/live remote500398d2f72a237e1df64ebd27068c467ffcf0bd sạch, không Git operation/task active; Required CI40258639847/job121365901021 completed/success, HEALTHY, ACTUAL_CI_REPOSITORY_HEALTH; baseline tags local/remote object/peeled nguyên vẹn. Failed-check waiver NOT USED.
+
+Đã đọc PROJECT_RULES/AGENTS/planning/log/Android skill và role, SRS/Architecture/API/OpenAPI/Android Tech cùng bốn UX baseline liên quan. Owner duyệt ba nhóm call_157ac707b41d43f3b518cac5c4df9ad4 trước PLAN: Main explicit entry INITIAL, server questions/options/counters, terminal chỉ xác nhận/về Main; durable encrypted private checkpoint gắn stable auth-session UUID giữ start event/type/assessmentId và pending request (raw answer được phép), không token/question content, logout/đổi owner xóa; GET users/me + owner match trước phục hồi/read/retry, explicit retry even closed, không autoPOST/offline queue; unknown-ID409 báo giới hạn. Timer monotonic RESUMED/online/open, pause background/revalidation/rotation, rotation giữ elapsed, process recreation0 nếu chưa pending; pending đóng băng exact body/event/time, int32 overflow lỗi; answered409 refresh state/next, reuse409 kết thúc,503 explicit retry cùng request.
+
+Scope: Android typed models/API/repository/usecase/ViewModel/Fragment, encrypted checkpoint/session invalidation, Main entry, resource Việt; tests HTTP/state/lifecycle/checkpoint/device; đồng bộ Android Tech và bốn UX docs, README/evidence. Không đổi backend/API/schema/migration; không task002 result/onboarding flag/CEFR algorithm, offline sync hoặc V2. Validation: Gradle wrapper clean lint/unit/debug/release/androidTest, focused device thực khi emulator có sẵn; baseline/CIworkflow/secret/Python regression/compile/diff/newfile/scope/generated/tag guards. Chỉ implementer giữ Gradle writer.
+
+PLAN TODO→IN_PROGRESS persist và readback exact row trước mọi product/test/spec patch. Task còn IN_PROGRESS, không reviewer claim/finalize/index/commit/push/proxy/global-env/OS-trust mutation; current-task remote CI NOT RUN / NOT CLAIMED.
+
+
+## AND-ASMT-001 — IMPLEMENT / TEST — 2026-10-26
+
+PLAN exact row IN_PROGRESS/readback có trước mọi patch. Scope27files (14tracked,
+13new): Android typed Assessment models/API/repository/usecase/ViewModel/Fragment,
+Keystore checkpoint và shared dependency listener/Main entry; resources Việt,
+18state tests +11HTTP tests +6device tests; Android README và5mobile baseline
+docs cùng2planning docs. Không backend/API/OpenAPI/schema/Flyway/CI/dependency
+change. Java17, Gradle wrapper8.13/AGP8.13.2, JDK21 Temurin21.0.12.1+1, SDKcompile/
+target36/min26; Android SDK C:/Users/Hi/AppData/Local/Android/Sdk, process-only env.
+
+Main explicit entry INITIAL, server question/options raw order/counters; terminal
+chỉ xác nhận/về Main. Không result/onboarding flag hoặc task002. Mọi assessment
+operation qua usecase/repository, GET users/me + stable owner check trước HTTP;
+callback cũ không request/publish dưới owner mới. API explicit client chặn blind
+mutation retry; pending replay không GET closed guard trước POST. Backend là
+authority correctness/difficulty/counts/completion, không client algorithm.
+
+Durable checkpoint private AES256-GCM/Android Keystore key riêng, IV mới, atomic
+SharedPreferences commit trước POST. Chỉ stable auth-session UUID/start event/type/
+assessmentId/pending raw request; không token/prompt/options. Write fail block
+mutation; corrupt/key unavailable loại checkpoint an toàn. Global dependency bind
+xóa khi logout/owner đổi kể cả chưa mở Placement. Checkpoint qua local exit/cold
+recreation; pending chỉ explicit same-event/body retry, offline không tạo/gửi,
+không queue/sync. Timer monotonic active-only, pause/revalidate, rotation giữ trong
+ViewModel, new process chưa pending0; pending int32 overflow không wrap/clamp.
+
+Actual Gradle wrapper --no-daemon tại android với JAVA_HOME JDK21/ANDROID_HOME SDK:
+- Focused state18PASS/0f-e-skip, BUILD58s, focused-state.log.
+- Focused *Assessment*29PASS (18state+11HTTP), assembleDebugAndroidTest PASS,
+  BUILD1m12, focused.log; focused-reports giữ hai XML trước clean.
+- clean :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
+  :app:assembleRelease :app:assembleDebugAndroidTest PASS BUILD3m27, full.log.
+- Sau self-inspection, thêm local-exit request guard và owner-changed-during-
+  constructor guard; không phải reviewer finding. Rerun toàn bộ các gate trên
+  trừ clean PASS BUILD1m52, final.log; unit23XML191PASS/0failure-error-skip.
+  full-reports archive23XML191 từ final source trước reviewer overwrite.
+- Device ban đầu adb không có thiết bị; launch owned Pixel_8 headless, snapshot
+  startup giữ offline. Xác minh console đúng Pixel_8 rồi kill đúng owned emulator,
+  không wipe data. Relaunch -no-snapshot-load/-no-snapshot-save/-no-window/
+  -no-audio/-no-boot-anim/-gpu swiftshader_indirect PID21884, cold boot173676ms;
+  emulator-5554 online/sys.boot_completed1, Android17/API37. Chỉ reconnect adb
+  transport owned device, không OS proxy/network/global-env/trust mutation.
+- installDebug + connectedDebugAndroidTest explicit class
+  com.example.englishaicoach.feature.assessment.AssessmentInstrumentedTest:
+  initial6ran/5PASS/1FAIL BUILD2m16, device.log. HardwareBack test assertion
+  UiAutomation.getRootInActiveWindow null gây NPE line111; không production crash.
+  Không coi initial test này PASS; device-initial-reports giữ nguyên XML/log.
+  Thay bằng public WindowInspector đọc positive button trên dialog window thật,
+  API29 guard + accessibility fallback cho API cũ; không bỏ assertion/test hoặc
+  thay production Back. Làm rõ user copy, bỏ API/task implementation details.
+- Final rerun lint/unit/debug/release/install/connected explicit class PASS
+  BUILD2m28, final-device-rerun.log, device-final-reports:6/6/0f-e-skip. Runtime
+  Java và unit tests không đổi sau final.log; unit UP-TO-DATE đúng lineage, không
+  claim một lần191 tests mới. AndroidTest Java và resources đã compile/package
+  lại; six actual cases chứng minh real Keystore round-trip/ciphertext, corrupt
+  clear, logout/switch outside Placement, raw server options/terminal, recreated
+  encrypted pending explicit retry và real Back confirmation. Đây là client
+  fixtures trên emulator, không real-backend E2E hoặc M4 exit evidence.
+
+Final lint0errors/32warnings:30baseline và2task warnings ApplySharedPref (commit
+đồng bộ cần trước POST) / PluralsCandidate (tiếng Việt dùng cùng dạng “câu”).
+Không suppress hoặc coi warning bằng0. Required CI hiện có bao phủ Android
+lint/unit/debug/release; không sửa/làm yếu CI. Không Maven backend vì không
+backend impact. Không optional broad rerun sau final PASS.
+
+TEMP/AND-ASMT-001-20261026 lưu logs, focused/full/device archives, scope.json,
+source-freeze.json16Java và product-freeze.json19source/resources. Pre-device-
+remediation manifest được giữ riêng, chỉ AndroidTest file khác trong final
+Java manifest. Read-only lookup AppContainer/RemoteLearningAttemptRepository/
+LearningApi/SessionRequestContext không tồn tại và dumpsys activity instrumentation
+không hỗ trợ được nhận diện như diagnostic; sau đó dùng paths/commands thực,
+không biến diagnostic thành test result hoặc xóa history.
+
+Impact reviewer assessment sau IMPLEMENT/TEST, không viết lại PLAN: canonical
+QAR giữ nguyên; bổ sung SR do durable private checkpoint/auth-session invalidation
+và AR do shared Main composition/cross-layer routing. Căn cứ PROJECT_RULES
+independent impact-based review và GOV-004 security/personal-data review; root
+route riêng AR/SR/QAR. Không DBR vì không database change. Chưa reviewer verdict
+hoặc finding. Task giữ IN_PROGRESS, không tự REVIEW/synchronize/finalize/DONE.
+
+Change: Placement client orchestration và encrypted checkpoint; Why: AND-ASMT-001
+acceptance/owner approvals. Affected documents: Android Tech/4UX/README/planning;
+API/DB/migration NONE; affected client Android only. Existing auth/onboarding
+interim/Main, vocabulary/learning/review behavior giữ nguyên ngoài entry bảo vệ.
+Không CEFR/score/XP/streak authority hoặc V2/offline learning scope.
+
+STOP sau TEST: Gradle/device writer RELEASED; emulator giữ online cho independent
+reviewer tái lập. Không index/commit/push/tag/proxy/global-env/OS-trust mutation.
+Current-task remote CI NOT RUN / NOT CLAIMED; admission40258639847 exact500398d
+PASS/HEALTHY là base evidence. Tiếp theo independent AR/SR/QAR, không task002.
+
+Fresh post-evidence guards PASS: baseline/CIworkflow/secret audits, Python46
+PASS0.907s/compileall, diff/cached, new13UTF8/noBOM/whitespace/conflict, scope27/
+index empty/no generated leakage, source16/product19 hashes và archived full23XML
+191/device6 zero failure/error/skip. Sáu preserved mobile/README prefixes không
+đổi ngoài append clarification. HEAD/main/origin/live remote vẫn500398d; hai
+immutable baseline tags object/peeled local/remote giữ nguyên. Guard prefix đầu
+tiên so local CRLF bytes với normalized HEAD gặp assertion README; chuẩn hóa
+line endings khi so decoded text chứng minh prefix nguyên vẹn, không sửa source
+hoặc che gate fail. Đây là guard diagnostic, không product/test failure. Không
+test process còn chạy; Gradle writer RELEASED, emulator5554 online giữ cho reviewer.
+
+
+## AND-ASMT-001 — SYNCHRONIZE INDEPENDENT REVIEWER EVIDENCE — 2026-10-26
+
+Command synchronize independent reviewer evidence for AND-ASMT-001 theo installed
+Android skill. Root chuyển actual authoritative reports từ ba session độc lập;
+đây là đồng bộ external evidence, không phải implementation agent tự review.
+Canonical reviewer QAR giữ nguyên, AR/SR bổ sung theo impact assessment đã ghi
+sau IMPLEMENT/TEST; không thêm DBR hoặc sửa backlog reviewer mapping.
+
+| Gate | Authority độc lập | Initial / final verdict | Findings resolved / open |
+|---|---|---|---|
+| AR | /root/and_asmt001_ar | PASS / APPROVE |0 /0; NONE |
+| SR | /root/and_asmt001_sr | PASS / APPROVE |0 /0; NONE |
+| QAR | /root/and_asmt001_qar | PASS / APPROVE |0 /0; NONE |
+
+Root đã nhận đủ formal reports của AR/SR/QAR, QAR formal template xác nhận cùng
+verdict không finding mới. Các authority kiểm tra tracked/staged/untracked27
+files, frozen16Java/product19, scope và preservation6prefix. AR/SR initial PASS
+với unresolved NONE. QAR own focused29unit PASS BUILD43s trong qar-focused.log;
+own connected explicit AssessmentInstrumentedTest6/6PASS/0failure-error-skip,
+BUILD2m4 trên Pixel_8Android17/API37 trong qar-device.log. QAR xác minh full
+archive23XML191 từ owner final.log, runtime/product19hashes không đổi, own
+baseline/CIworkflow/secret/compile/diff/cached/new13/scope27/prefix6 gates PASS.
+Independent Gradle/device writer đã RELEASED. Không suy owner TEST thành gate.
+
+Chronology giữ nguyên: initial device6ran/5PASS/1FAIL do assertion accessibility
+root null/NPE, device.log/device-initial-reports; sửa test đọc dialog window
+observable (không production Back), owner affected rerun6/6PASS BUILD2m28; QAR
+independent rerun6/6PASS BUILD2m4. Không reviewer initial FAIL, không finding ID/
+severity/remediation/re-review bị xóa hoặc tự tạo. Resolved0, unresolved0/NONE.
+Không dùng older snapshot để ghi đè owner verdict.
+
+Owner tests giữ đúng lineage: final runtime/unit191PASS23XML BUILD1m52 final.log;
+resources/AndroidTest refinement sau đó có affected lint/debug/release/install/
+device6PASS BUILD2m28, unit UP-TO-DATE không claim chạy191 mới. Initial focused29
+và initial full clean evidence vẫn giữ; QAR own29 không thay thế archive191.
+Lint0errors32warnings với hai task warnings giải thích tại TEST. Không Android
+real-backend assessment E2E hoặc M4 exit claim.
+
+Readback trước sync: product19hashes/full23XML191, QAR two success logs, exact
+backlog row IN_PROGRESS và index empty đã xác minh. Chỉ append synchronization
+evidence; không source/product/test patch, reviewer-owned status mutation,
+finalize hoặc lifecycle change. Task vẫn IN_PROGRESS; current-task remote CI
+NOT RUN / NOT CLAIMED. Không index/commit/push/proxy/global-env/OS-trust mutation.
+STOP synchronization; next authorized command finalize AND-ASMT-001 khi root
+xác minh mọi final gate còn hiện hành.
+
+
+## AND-ASMT-001 — FINALIZE — 2026-10-26
+
+Command finalize theo installed Android task skill sau synchronization actual
+AR/SR/QAR reports và root readback. Không self-review; không product/test patch
+sau independent reviews. Scope27, source16/product19 frozen không đổi.
+
+| Closure gate | Actual result |
+|---|---|
+| Dependencies AND-ONB-001 / BE-ASMT-004 | DONE / DONE |
+| Owner-approved three contract groups | Satisfied; call_157ac707b41d43f3b518cac5c4df9ad4 |
+| Question/options/server counters, explicit mutation and replay | PASS |
+| Durable encrypted checkpoint/owner invalidation/timer/lifecycle | PASS |
+| Owner final unit / lint / debug / release |191PASS /0errors32warnings / PASS / PASS |
+| Owner final emulator fixtures |6PASS; initial device5PASS1FAIL preserved |
+| Independent AR / SR / QAR | Initial PASS / PASS / PASS, APPROVE |
+| QAR own unit / device |29PASS43s /6PASS2m4 |
+| Reviewer findings resolved / unresolved |0 /0; NONE |
+| Synchronization | Complete; chronological external evidence preserved |
+| Fresh baseline / CI workflow / secret audits | PASS / PASS / PASS |
+| Fresh Python audit regression / compileall |46PASS1.226s / PASS |
+| Fresh diff / cached / new13 guards | PASS / PASS / PASS |
+| Scope27 / index empty / generated-secret leakage | PASS / PASS / NONE |
+| Frozen source16 / product19 / full23XML191 / device6 | PASS |
+| Six approved document prefixes | Preserved |
+| Immutable local/remote baseline tag objects/peeled | Unchanged |
+| CI mode / failed-check waiver | ACTUAL_CI_REPOSITORY_HEALTH / NOT USED |
+| Admission CI40258639847/job121365901021 exact500398d | PASS / HEALTHY |
+| Current-task uncommitted remote CI | NOT RUN / NOT CLAIMED |
+| Final lifecycle | IN_PROGRESS → DONE |
+
+Fresh finalize gates đã chạy trước transition, source/runtime/test hashes còn
+hiện hành; owner full191 artifact và QAR focused29/device6 được phân biệt đúng
+lineage. Không optional broad test sau PASS. Initial device assertionNPE và
+read-only diagnostics/guardCRLF chronology giữ nguyên, không reviewer finding
+nào bị tự đóng/xóa. Canonical QAR và impact AR/SR mapping giữ nguyên, không DBR.
+
+Đã cleanup chỉ owned emulator sau QAR writer RELEASED: console xác nhận Pixel_8,
+PID21884 emulator.exe và child qemu1596 có đúng -avd Pixel_8/owned launch flags;
+adb -s emulator-5554 emu kill trả OK. Sau đó hai PIDs không còn và adb devices
+rỗng. Không wipe userdata/xóa AVD hoặc đổi máy/proxy/global env/OS trust.
+
+Exact row234 AND-ASMT-001 chuyển DONE, M4 checklist[x]. Canonical M4 table6/14
+DONE, còn8tasks; assessment result/quiz/Android full E2E exit vẫn pending.
+Change impact giữ Android-only client/evidence/baseline clarifications; API/DB/
+migration/CI/dependencies không đổi. Không task002 hoặc onboarding flag/result
+algorithm sớm. HEAD/main/origin/live vẫn500398d2f72a237e1df64ebd27068c467ffcf0bd.
+
+STOP FINALIZE: task DONE với uncommitted task-scoped changes, index empty; không
+commit/push/tag mutation. Git publication là operation riêng, đúng một final
+task commit trên main rồi fast-forward push. Sau push repository CI_PENDING
+cho tới actual Required CI exact published SHA; không claim CI PASS trước run.

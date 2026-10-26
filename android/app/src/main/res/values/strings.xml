@@ -160,4 +160,25 @@
     <string name="learning_status_learning">Đang học</string>
     <string name="learning_status_reviewing">Đang ôn</string>
     <string name="learning_status_mastered">Thành thạo</string>
+    <string name="assessment_open">Kiểm tra trình độ</string>
+    <string name="assessment_start">Bắt đầu kiểm tra</string>
+    <string name="assessment_submit">Gửi đáp án</string>
+    <string name="assessment_retry">Thử lại thao tác</string>
+    <string name="assessment_return">Về trang chính</string>
+    <string name="assessment_intro">Bài kiểm tra từ vựng điều chỉnh câu hỏi trên máy chủ. Hãy chọn một đáp án cho mỗi câu.</string>
+    <string name="assessment_question">Chọn đáp án rồi nhấn Gửi đáp án.</string>
+    <string name="assessment_count">Đã trả lời: %1$d câu</string>
+    <string name="assessment_pending">Chưa xác nhận thao tác. Bạn có thể thử lại đúng yêu cầu đã lưu khi trực tuyến.</string>
+    <string name="assessment_error">Chưa tải được trạng thái bài kiểm tra. Hãy thử tải lại.</string>
+    <string name="assessment_content">Nội dung kiểm tra chưa sẵn sàng. Hãy thử lại sau; câu trả lời chưa được xác nhận.</string>
+    <string name="assessment_offline">Cần kết nối mạng để tiếp tục bài kiểm tra.</string>
+    <string name="assessment_submitting">Đang gửi yêu cầu…</string>
+    <string name="assessment_completed">Bài kiểm tra đã hoàn tất. Bạn có thể trở về trang chính.</string>
+    <string name="assessment_closed">Phiên kiểm tra đã đóng hoặc không còn truy cập được.</string>
+    <string name="assessment_unknown">Đã có bài kiểm tra đang thực hiện nhưng thiết bị này không có thông tin để tiếp tục. Hãy quay lại thiết bị đã bắt đầu bài kiểm tra.</string>
+    <string name="assessment_reuse">Yêu cầu bị xung đột định danh. Hãy thoát luồng; không tạo yêu cầu thay thế.</string>
+    <string name="assessment_rejected">Yêu cầu không được chấp nhận. Hãy thoát bài kiểm tra.</string>
+    <string name="assessment_storage">Không lưu được trạng thái an toàn trên thiết bị. Thao tác gửi đã bị chặn.</string>
+    <string name="assessment_overflow">Thời gian trả lời vượt giới hạn. Không thể gửi đáp án này.</string>
+    <string name="assessment_exit_confirm">Thoát màn hình? Bạn có thể quay lại để tiếp tục bài kiểm tra. Thao tác chưa xác nhận chỉ được gửi lại khi bạn chọn thử lại.</string>
 </resources>

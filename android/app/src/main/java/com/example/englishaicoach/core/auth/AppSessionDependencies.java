@@ -13,6 +13,7 @@ public final class AppSessionDependencies {
     public final com.example.englishaicoach.domain.usecase.ConfigureOnboardingUseCase configureOnboarding;
     private AppSessionDependencies(Context context) {
         sessions = new SessionManager(new EncryptedTokenStore(context.getApplicationContext()));
+        new com.example.englishaicoach.data.local.EncryptedAssessmentCheckpointStore(context).bind(sessions);
         api = new ApiClient(BuildConfig.API_BASE_URL, sessions);
         restoreSession = new com.example.englishaicoach.domain.usecase.RestoreSessionUseCase(
                 new com.example.englishaicoach.data.repository.RetrofitAuthSessionRepository(sessions,

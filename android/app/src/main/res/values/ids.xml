@@ -18,4 +18,9 @@
     <item name="learning_complete_button" type="id" />
     <item name="learning_progress_status" type="id" />
     <item name="learning_progress_retry" type="id" />
+    <item type="id" name="assessment_status" />
+    <item type="id" name="assessment_prompt" />
+    <item type="id" name="assessment_start" />
+    <item type="id" name="assessment_submit" />
+    <item type="id" name="assessment_retry" />
 </resources>
