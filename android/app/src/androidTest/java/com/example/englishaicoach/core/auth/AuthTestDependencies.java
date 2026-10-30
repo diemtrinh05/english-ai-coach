@@ -10,10 +10,21 @@ public final class AuthTestDependencies implements AutoCloseable {
     public final SessionManager sessions;
     private final Field field;
     private final Object previous;
+    private final Field gateField;
+    private final Object previousGate;
     public AuthTestDependencies(boolean authenticated) throws Exception {
+        this(authenticated, null);
+    }
+    public AuthTestDependencies(boolean authenticated,
+            com.example.englishaicoach.domain.usecase.ConfigureOnboardingUseCase onboarding) throws Exception {
         field = AppSessionDependencies.class.getDeclaredField("instance");
         field.setAccessible(true);
         previous = field.get(null);
+        gateField = com.example.englishaicoach.feature.onboarding.OnboardingGateDependencies.class.getDeclaredField("useCase");
+        gateField.setAccessible(true); previousGate = gateField.get(null);
+        gateField.set(null, new com.example.englishaicoach.domain.usecase.ResolveOnboardingUseCase((owner, callback) -> {
+            callback.completed(com.example.englishaicoach.domain.model.OnboardingRoute.HOME, null); return () -> { };
+        }));
         sessions = new SessionManager(new TokenStore() {
             TokenSession value;
             public TokenSession read() { return value; }
@@ -25,8 +36,10 @@ public final class AuthTestDependencies implements AutoCloseable {
                     : AuthSessionRepository.Result.AUTHENTICATED);
             return () -> { };
         });
-        field.set(null, new AppSessionDependencies(sessions,
-                new ApiClient("https://example.invalid/api/v1/", sessions), restore));
+        ApiClient api = new ApiClient("https://example.invalid/api/v1/", sessions);
+        field.set(null, onboarding == null ? new AppSessionDependencies(sessions, api, restore)
+                : new AppSessionDependencies(sessions, api, restore,
+                    new com.example.englishaicoach.domain.usecase.SubmitAuthFormUseCase((register, name, email, password, callback) -> () -> { }), onboarding));
     }
-    @Override public void close() throws Exception { field.set(null, previous); }
+    @Override public void close() throws Exception { field.set(null, previous); gateField.set(null, previousGate); }
 }

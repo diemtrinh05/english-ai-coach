@@ -47,6 +47,7 @@ public final class OnboardingViewModel extends ViewModel {
         sessions.addListener(listener);
     }
     public LiveData<State> state() { return state; }
+    public String owner() { return sessionId; }
     private boolean current() { return sessionId != null && sessions.isCurrentSession(sessionId); }
     public void load() {
         State old = state.getValue();

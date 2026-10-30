@@ -17,6 +17,7 @@ public final class OnboardingFragment extends Fragment {
     private OnboardingViewModel model;
     private boolean online;
     private boolean rendering;
+    private boolean completedRouted;
     public OnboardingFragment() { super(R.layout.fragment_onboarding); }
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         FragmentOnboardingBinding binding = FragmentOnboardingBinding.bind(view);
@@ -44,7 +45,7 @@ public final class OnboardingFragment extends Fragment {
             else model.save(online);
         });
         binding.onboardingRetry.setOnClickListener(v -> model.load());
-        binding.onboardingDone.setOnClickListener(v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        binding.onboardingDone.setOnClickListener(v -> ((MainActivity) requireActivity()).recheckOnboarding(model.owner()));
         android.text.TextWatcher watcher = new android.text.TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             public void onTextChanged(CharSequence s, int start, int before, int count) { }
@@ -116,6 +117,10 @@ public final class OnboardingFragment extends Fragment {
             binding.onboardingMessage.setText(R.string.onboarding_empty);
         else binding.onboardingMessage.setText(online ? R.string.onboarding_intro : R.string.onboarding_offline);
         rendering = false;
+        if (state.phase == OnboardingViewModel.Phase.SUCCESS && !completedRouted) {
+            completedRouted = true;
+            ((MainActivity) requireActivity()).recheckOnboarding(model.owner());
+        }
     }
     private String goalName(String name) {
         switch (name) {

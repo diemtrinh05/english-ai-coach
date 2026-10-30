@@ -18,10 +18,14 @@ import com.example.englishaicoach.feature.vocabulary.VocabularyListFragment;
 
 public final class MainActivity extends AppCompatActivity {
     private static final String STATE_DESTINATION = "selected_destination";
+    private static final String STATE_NAVIGATION_OWNER = "navigation_auth_owner";
     private ActivityMainBinding binding;
     private MainNavigationViewModel navigationViewModel;
     private boolean openingLearning;
     private boolean openingAssessment;
+    private boolean onboardingNavigationPending;
+    private boolean routingOnboarding;
+    private String navigationOwner;
     private com.example.englishaicoach.feature.auth.AuthSessionViewModel authViewModel;
 
     @Override
@@ -32,6 +36,9 @@ public final class MainActivity extends AppCompatActivity {
 
         com.example.englishaicoach.core.auth.AppSessionDependencies dependencies =
                 com.example.englishaicoach.core.auth.AppSessionDependencies.get(this);
+        com.example.englishaicoach.core.auth.TokenSession initialToken = dependencies.sessions.current();
+        navigationOwner = savedInstanceState == null ? (initialToken == null ? null : initialToken.sessionId())
+                : savedInstanceState.getString(STATE_NAVIGATION_OWNER);
         authViewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
             @NonNull @Override public <T extends androidx.lifecycle.ViewModel> T create(@NonNull Class<T> type) {
                 return type.cast(new com.example.englishaicoach.feature.auth.AuthSessionViewModel(dependencies.sessions,
@@ -52,7 +59,7 @@ public final class MainActivity extends AppCompatActivity {
             return true;
         });
         navigationViewModel.getDestination().observe(this, destination -> {
-            if (authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED)
+            if (!routingOnboarding && authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED)
                 renderDestination(destination);
         });
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
@@ -62,17 +69,21 @@ public final class MainActivity extends AppCompatActivity {
                     instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment;
             if (binding != null) binding.mainNavigation.setVisibility(
                     authViewModel.state().getValue() == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED
-                    && getSupportFragmentManager().getBackStackEntryCount() == 0
+                    && navigationVisible()
                             ? View.VISIBLE : View.GONE);
         });
         binding.mainNavigation.setVisibility(View.GONE);
         authViewModel.state().observe(this, state -> {
-            boolean authenticated = state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED;
+            com.example.englishaicoach.core.auth.TokenSession currentToken = dependencies.sessions.current();
+            String currentOwner = currentToken == null ? null : currentToken.sessionId();
+            boolean sameOwner = currentOwner != null && currentOwner.equals(navigationOwner);
+            boolean authenticated = currentOwner != null && state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED;
             binding.mainNavigation.setVisibility(authenticated
-                    && getSupportFragmentManager().getBackStackEntryCount() == 0 ? View.VISIBLE : View.GONE);
+                    && navigationVisible() ? View.VISIBLE : View.GONE);
             Fragment preserved = getSupportFragmentManager().findFragmentById(R.id.main_content);
             if (!authenticated && (preserved instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
                     || preserved instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment)
+                    && sameOwner
                     && (state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.UNKNOWN
                     || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.LOADING
                     || state == com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.ERROR)) {
@@ -81,8 +92,9 @@ public final class MainActivity extends AppCompatActivity {
             }
             if (authenticated) {
                 Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
-                if (current == null || current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment)
-                    renderDestination(navigationViewModel.getDestination().getValue());
+                navigationOwner = currentOwner;
+                if (!sameOwner || current == null || current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment
+                        || current instanceof FoundationDestinationFragment) recheckOnboarding();
             } else {
                 Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
                 if (!(current instanceof com.example.englishaicoach.feature.auth.AuthBoundaryFragment)) {
@@ -103,14 +115,14 @@ public final class MainActivity extends AppCompatActivity {
             binding.mainNavigation.setSelectedItemId(destination.getMenuId());
         }
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+        if (current instanceof com.example.englishaicoach.feature.onboarding.OnboardingGateFragment) return;
         if (current instanceof com.example.englishaicoach.feature.learning.LearningSessionFragment
                 && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         if (current instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment
                 && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         // Observer HOME khi recreate không được thay thế flow thiết lập đang mở.
         if (destination == MainDestination.HOME
-                && current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment
-                && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
+                && current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment) return;
         if (destination == MainDestination.LEARN
                 && getSupportFragmentManager().getBackStackEntryCount() > 0) return;
         if (current == null || !destination.name().equals(current.getTag())) {
@@ -122,6 +134,70 @@ public final class MainActivity extends AppCompatActivity {
                                     : FoundationDestinationFragment.forDestination(destination),
                             destination.name())
                     .commit();
+        }
+    }
+
+    private boolean navigationVisible() {
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.main_content);
+        return getSupportFragmentManager().getBackStackEntryCount() == 0
+                && !(current instanceof com.example.englishaicoach.feature.onboarding.OnboardingGateFragment)
+                && !(current instanceof com.example.englishaicoach.feature.onboarding.OnboardingFragment)
+                && !(current instanceof com.example.englishaicoach.feature.assessment.AssessmentFragment);
+    }
+
+    public void recheckOnboarding() {
+        com.example.englishaicoach.core.auth.TokenSession token =
+                com.example.englishaicoach.core.auth.AppSessionDependencies.get(this).sessions.current();
+        if (token != null) recheckOnboarding(token.sessionId());
+    }
+
+    public void recheckOnboarding(String owner) {
+        if (getSupportFragmentManager().findFragmentById(R.id.main_content)
+                instanceof com.example.englishaicoach.feature.onboarding.OnboardingGateFragment) return;
+        scheduleOnboarding(new com.example.englishaicoach.feature.onboarding.OnboardingGateFragment(),
+                "ONBOARDING_GATE", owner, false, () -> { });
+    }
+
+    public boolean routeOnboarding(com.example.englishaicoach.domain.model.OnboardingRoute route,
+            String owner, Runnable consumed) {
+        if (route == null) return false;
+        Fragment target = route == com.example.englishaicoach.domain.model.OnboardingRoute.SETTINGS
+                ? new com.example.englishaicoach.feature.onboarding.OnboardingFragment()
+                : route == com.example.englishaicoach.domain.model.OnboardingRoute.PLACEMENT
+                ? new com.example.englishaicoach.feature.assessment.AssessmentFragment()
+                : FoundationDestinationFragment.forDestination(MainDestination.HOME);
+        return scheduleOnboarding(target, route == com.example.englishaicoach.domain.model.OnboardingRoute.HOME ? "HOME" : route.name(),
+                owner, route == com.example.englishaicoach.domain.model.OnboardingRoute.HOME, consumed);
+    }
+
+    private boolean scheduleOnboarding(Fragment target, String tag, String owner, boolean home, Runnable consumed) {
+        com.example.englishaicoach.core.auth.SessionManager sessions =
+                com.example.englishaicoach.core.auth.AppSessionDependencies.get(this).sessions;
+        synchronized (sessions) {
+            if (onboardingNavigationPending || !sessions.isCurrentSession(owner) || getSupportFragmentManager().isStateSaved()
+                    || authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED) return false;
+            Fragment source = getSupportFragmentManager().findFragmentById(R.id.main_content);
+            onboardingNavigationPending = true;
+            // Commit trên lượt main riêng; kiểm owner/source lần nữa ngay khi tiêu thụ để bỏ route cũ đã queue.
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                synchronized (sessions) {
+                    try {
+                        if (isFinishing() || isDestroyed() || !sessions.isCurrentSession(owner) || getSupportFragmentManager().isStateSaved()
+                                || authViewModel.state().getValue() != com.example.englishaicoach.feature.auth.AuthSessionViewModel.State.AUTHENTICATED
+                                || getSupportFragmentManager().findFragmentById(R.id.main_content) != source) return;
+                        routingOnboarding = true;
+                        getSupportFragmentManager().popBackStackImmediate(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        if (home) {
+                            navigationViewModel.select(MainDestination.HOME);
+                            binding.mainNavigation.setSelectedItemId(MainDestination.HOME.getMenuId());
+                        }
+                        getSupportFragmentManager().beginTransaction().replace(R.id.main_content, target, tag).commitNow();
+                        binding.mainNavigation.setVisibility(home ? View.VISIBLE : View.GONE);
+                        consumed.run();
+                    } finally { routingOnboarding = false; onboardingNavigationPending = false; }
+                }
+            });
+            return true;
         }
     }
 
@@ -173,6 +249,8 @@ public final class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        // Chỉ lưu UUID owner để không phục hồi private navigation của phiên trước dưới tài khoản mới.
+        outState.putString(STATE_NAVIGATION_OWNER, navigationOwner);
         MainDestination destination = navigationViewModel.getDestination().getValue();
         outState.putString(STATE_DESTINATION,
                 destination == null ? MainDestination.HOME.name() : destination.name());

@@ -32,13 +32,15 @@ public final class AssessmentViewModelTest {
         });
         sessions.start("access", "refresh"); store = new Store(); repository = new Fake(); model = create();
     }
-    AssessmentViewModel create() { return new AssessmentViewModel(sessions, store, new AssessmentUseCase(repository), Runnable::run, () -> now); }
+    AssessmentViewModel create() { return new AssessmentViewModel(sessions, store, new AssessmentUseCase(repository),
+            new com.example.englishaicoach.domain.usecase.ResolveOnboardingUseCase((owner, callback) -> () -> { }), Runnable::run, () -> now); }
     void activate() { model.setAuthenticated(true); model.setOnline(true); model.resume(); }
     void open() {
         activate(); model.start(); repository.start.completed(ID, null);
         result("IN_PROGRESS", 7); question(QUESTION);
     }
-    void result(String status, int count) { repository.result.completed(new Assessment.Result(ID, status, count), null); }
+    void result(String status, int count) { repository.result.completed(new Assessment.Result(ID, status, count, 0, null,
+            "COMPLETED".equals(status) ? new Assessment.Level("A1", "Cơ bản", null) : null), null); }
     void question(String id) { repository.question.completed(new Assessment.Question(id, "Raw prompt", List.of(" A ", "B", "C", "D"), "C2"), null); }
     void pending() { open(); model.select(" A "); now = 1234; model.submit(); }
     ApiError error(int status, String code) { return new ApiErrorParser().parse(status, ResponseBody.create(null, "{\"code\":\"" + code + "\"}")); }
@@ -93,12 +95,14 @@ public final class AssessmentViewModelTest {
         assertNull(store.value.pending); result("IN_PROGRESS", 31); question(UUID.randomUUID().toString());
         assertEquals(31, model.state().getValue().answered); assertEquals(AssessmentViewModel.Phase.QUESTION, model.state().getValue().phase);
     }
-    @Test public void terminalAckDoesNotLoadNextOrComputeResultAndClearsOnlyOnExit() {
+    @Test public void terminalAckReadsServerResultAndLocalExitKeepsResultBookmark() {
         pending(); int questions = repository.questions;
         repository.answer.completed(new Assessment.Ack(false, true, "A1", 20), null);
+        assertEquals(AssessmentViewModel.Phase.LOADING, model.state().getValue().phase);
+        result("COMPLETED", 20);
         assertEquals(AssessmentViewModel.Phase.COMPLETED, model.state().getValue().phase);
         model.retry(); assertEquals(questions, repository.questions); assertNotNull(store.value);
-        model.exit(); assertNull(store.value);
+        model.exit(); assertNotNull(store.value);
     }
     @Test public void answeredConflictRefreshesOnlyReadsWithoutReplacementMutation() {
         pending(); repository.answer.completed(null, error(409, "ASSESSMENT_QUESTION_ALREADY_ANSWERED"));

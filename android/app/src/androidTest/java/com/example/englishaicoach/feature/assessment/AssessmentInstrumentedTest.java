@@ -93,7 +93,9 @@ public final class AssessmentInstrumentedTest {
         assertNotNull(store.read().pending);
         ui(() -> activity.findViewById(R.id.assessment_submit).performClick()); assertEquals(1, fake.answers);
         ui(() -> fake.answer.completed(new Assessment.Ack(false, true, "B2", 20), null));
-        assertEquals(activity.getString(R.string.assessment_completed), ((TextView) activity.findViewById(R.id.assessment_status)).getText().toString());
+        ui(() -> fake.result.completed(new Assessment.Result(ID, "COMPLETED", 20, 14, new java.math.BigDecimal("70.00"),
+                new Assessment.Level("B2", "Trung cấp", "Mô tả từ máy chủ")), null));
+        assertEquals(activity.getString(R.string.assessment_result_title), ((TextView) activity.findViewById(R.id.assessment_status)).getText().toString());
         assertEquals(View.GONE, activity.findViewById(R.id.assessment_submit).getVisibility());
     }
     @Test public void newFragmentReadsEncryptedPendingWithoutAutoPostThenExplicitRetry() throws Exception {

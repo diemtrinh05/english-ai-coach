@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="onboarding_gate_loading">Đang kiểm tra thiết lập học tập…</string>
+    <string name="onboarding_gate_error">Chưa kiểm tra được thiết lập học tập. Vui lòng thử lại.</string>
+    <string name="assessment_result_title">Kết quả kiểm tra trình độ</string>
+    <string name="assessment_close">Đóng bài kiểm tra</string>
+    <string name="assessment_content_read">Nội dung kiểm tra chưa sẵn sàng. Hãy thử tải lại sau.</string>
+    <string name="assessment_result_continue">Tiếp tục</string>
+    <string name="assessment_result_level">%1$s — %2$s</string>
+    <string name="assessment_result_detail">%1$s\n%2$s</string>
+    <string name="assessment_result_score">%1$s%%</string>
+    <string name="assessment_result_score_missing">Chưa có</string>
+    <string name="assessment_result_counts">Điểm: %1$s\nTrả lời đúng: %2$d/%3$d</string>
     <string name="auth_register_title">Tạo tài khoản</string>
     <string name="auth_name">Họ tên</string>
     <string name="auth_email">Email</string>

@@ -232,7 +232,7 @@ blocker thực tế. Chỉ một direct-main task được phép active tại m�
 | ID | Task | Owner | Depends on | Pri | Review | Acceptance / evidence | Required tests | Status |
 |---|---|---|---|---|---|---|---|---|
 | `AND-ASMT-001` | Placement test UI + persisted question flow | AFL | `AND-ONB-001`<br>`BE-ASMT-004` | P0 | QAR | Question/options render from server; submit eventId; no client adaptive algorithm; resume IN_PROGRESS. | Theo global DoD + acceptance. | DONE |
-| `AND-ASMT-002` | Placement completion/result routing | AFL | `AND-ASMT-001` | P0 | QAR | Show server CEFR, complete onboarding, route Home; error/content-unavailable states. | Theo global DoD + acceptance. | TODO |
+| `AND-ASMT-002` | Placement completion/result routing | AFL | `AND-ASMT-001` | P0 | QAR | Show server CEFR, complete onboarding, route Home; error/content-unavailable states. | Theo global DoD + acceptance. | DONE |
 
 ## Quiz
 
@@ -786,7 +786,7 @@ P0 tasks:
 [x] BE-ASMT-004
 [x] QA-ASMT-001
 [x] AND-ASMT-001
-[ ] AND-ASMT-002
+[x] AND-ASMT-002
 [ ] BE-QUIZ-001
 [ ] BE-QUIZ-002
 [ ] BE-QUIZ-003

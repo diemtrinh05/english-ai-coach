@@ -81,7 +81,11 @@ public final class RetrofitAssessmentRepository implements AssessmentRepository 
                         || score.getAsBigDecimal().signum() < 0 || score.getAsBigDecimal().compareTo(java.math.BigDecimal.valueOf(100)) > 0)
                     throw new IllegalArgumentException();
             }
-            callback.completed(new Assessment.Result(id, status, answered), null);
+            Assessment.Level level = json.has("cefrLevel") && !json.get("cefrLevel").isJsonNull()
+                    ? AssessmentResponseParser.level(json.get("cefrLevel")) : null;
+            if ("COMPLETED".equals(status) && level == null) throw new IllegalArgumentException();
+            java.math.BigDecimal score = json.get("score").isJsonNull() ? null : json.get("score").getAsBigDecimal();
+            callback.completed(new Assessment.Result(id, status, answered, correct, score, level), null);
         })); return op;
     }
     public Cancelable question(String owner, String id, AssessmentRepository.Callback<Assessment.Question> callback) {

@@ -27,7 +27,17 @@ public final class Assessment {
     public static final class Result {
         public final String id, status;
         public final int answered;
-        public Result(String id, String status, int answered) { this.id = id; this.status = status; this.answered = answered; }
+        public final int correct;
+        public final java.math.BigDecimal score;
+        public final Level level;
+        public Result(String id, String status, int answered) { this(id, status, answered, 0, null, null); }
+        public Result(String id, String status, int answered, int correct, java.math.BigDecimal score, Level level) {
+            this.id = id; this.status = status; this.answered = answered; this.correct = correct; this.score = score; this.level = level;
+        }
+    }
+    public static final class Level {
+        public final String code, name, description;
+        public Level(String code, String name, String description) { this.code = code; this.name = name; this.description = description; }
     }
     public static final class Ack {
         public final boolean correct, completed;

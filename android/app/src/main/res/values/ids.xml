@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <item name="onboarding_gate_message" type="id" />
+    <item name="onboarding_gate_retry" type="id" />
+    <item name="assessment_result_continue" type="id" />
     <item name="learning_status" type="id" />
     <item name="learning_word" type="id" />
     <item name="learning_reveal_button" type="id" />

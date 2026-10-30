@@ -14339,3 +14339,248 @@ STOP FINALIZE: task DONE với uncommitted task-scoped changes, index empty; kh�
 commit/push/tag mutation. Git publication là operation riêng, đúng một final
 task commit trên main rồi fast-forward push. Sau push repository CI_PENDING
 cho tới actual Required CI exact published SHA; không claim CI PASS trước run.
+
+
+## AND-ASMT-002 — PLAN — 2026-10-27
+
+Mode GOV009_DIRECT_MAIN; M4/P0/AFL, dependency AND-ASMT-001 DONE; canonical QAR,
+impact AR cho shared auth/navigation composition và SR cho private checkpoint/
+auth-owner boundary theo PROJECT_RULES/GOV-004. Git authority next_git_1027 đã
+revalidate sau approval: HEAD/main/origin/live remote961b4a13b500def35465c03b6b274696de8751d1
+sạch, không Git operation/task active; Required CI40319306238/job121559834137
+completed/success, HEALTHY, ACTUAL_CI_REPOSITORY_HEALTH; immutable tags nguyên vẹn.
+
+Đã đọc PROJECT_RULES/AGENTS/plan/backlog/log/role Android/installed Android skill,
+SRS/Architecture/API/OpenAPI/Android Tech và bốn UX baseline. Owner duyệt ba nhóm
+call_8206079bb15e43a9b7dc11826f4f7821: predicate từ GET profile tồn tại, ít nhất một
+saved goal kể cả inactive và profile.currentCefrLevel; không local completion flag.
+Gate sau auth/Splash, settings save và explicit result Continue: thiếu profile/goals
+đến settings, thiếu CEFR đến Placement, đủ đến Home tab shell hiện có; offline/read
+fail chờ retry read. Không gọi Daily Plan hoặc tạo dữ liệu giả. Result đọc GET
+assessment COMPLETED với CEFR hợp lệ, score nullable/correct/total của server;
+không recommendation giả hoặc fallback nextDifficulty. Giữ encrypted assessment ID/
+owner qua Back/cold restart đến explicit Continue + gate thành công rồi clear và
+route bất kỳ destination hợp lệ. Thiếu profile vẫn show result nhưng cần settings;
+PUT profile không backfill CEFR, cần INITIAL mới explicit nếu vẫn thiếu CEFR.
+IN_PROGRESS tiếp flow001, CANCELLED/404 closed exit clear, read503 giữ ID chỉ GET
+retry; pending mutation giữ approval001 và callback/session isolation.
+
+Scope Android model/API read/repository/usecase/gate ViewModel + shared navigation,
+result UI/checkpoint lifecycle, resources Việt, tests và đồng bộ Android Tech/4UX/
+README/planning. Không backend/API/schema/migration/CI/dependency change, CEFR/client
+algorithm, personalized Home/Daily Plan, offline queue/sync hoặc task khác.
+Required TEST: focused gate/result/HTTP/lifecycle/owner tests; full wrapper clean
+lint/unit/debug/release/AndroidTest APK; actual device fixtures; baseline/CIworkflow/
+secret/Python regression/compile/diff/cached/newfiles/scope/generated/tag guards.
+Chỉ implementation agent giữ Gradle/device writer; sau TEST STOP IN_PROGRESS để
+independent AR/SR/QAR review. Không self-review/finalize/index/commit/push.
+
+PLAN TODO→IN_PROGRESS persist/readback trước mọi product/test/spec patch. Lookup
+Onboarding.java không tồn tại là diagnostic chỉ đọc; dùng OnboardingData.java thực.
+Không proxy/global-env/OS-trust mutation; current-task remote CI NOT RUN/NOT CLAIMED.
+
+
+## AND-ASMT-002 — IMPLEMENT / TEST — 2026-10-27
+
+PLAN row235/readback IN_PROGRESS có trước mọi product/test/spec patch. Phạm vi
+Android-only: typed result/CEFR parser, read-only onboarding repository/usecase/
+ViewModel/Fragment, shared auth/Main routing, result UI/checkpoint lifecycle,
+resources Việt và tests. Canonical QAR, impact AR/SR đã xác định tại PLAN. Không
+backend/API/OpenAPI/schema/migration/CI/dependency hoặc personalized Home change.
+
+Gate đọc GET users/me→profile→saved goals, không catalog-active eligibility mới;
+profile404/empty saved goals đến settings, thiếu profile CEFR đến Placement Intro,
+đủ predicate đến Home shell hiện có. Readfail/offline không coi là hoàn tất.
+Terminal answer ack đọc GET result, không suy CEFR từ nextDifficulty; score nullable
+và correct/total từ server. Result ID/owner được giữ encrypted qua Back/cold read,
+không persist result content/flag. Explicit Continue chờ valid result+fresh gate
+thành công rồi clear completed ID và route; thiếu profile đến settings, không
+backfill CEFR sau PUT, thiếu CEFR tiếp explicit INITIAL mới. Pending001/503/replay/
+owner invalidation được giữ nguyên; không autoPOST/offline queue hoặc discovery.
+
+Actual validation dùng Gradle wrapper8.13/AGP8.13.2/Java17, JDK21Temurin21.0.12.1+1,
+SDKcompile/target36/min26. JAVA_HOME/ANDROID_HOME chỉ process-local.
+- Initial compile + Assessment focused29 PASS BUILD33s, initial-focused.log.
+- Focused Assessment/OnboardingGate59 PASS BUILD16s, focused.log; gồm29 existing
+  và30 mới (gate7/result10/gateHTTP10/resultHTTP3).
+- Full clean lint/allunit/debug/release/AndroidTest APK PASS BUILD3m4, full.log;
+ 26XML221zero failure/error/skip, initial-full-reports archive.
+- Owned headless Pixel_8 PID3868, no-snapshot-load/no-snapshot-save/no-window/
+ no-audio/no-boot-anim/gpu swiftshader_indirect; cold boot59008ms, emulator5554
+ Android17/API37 online/sys.boot_completed1. Không wipe/xóa AVD.
+- Initial install + connected explicit AssessmentInstrumentedTest,
+ AssessmentResultInstrumentedTest và OnboardingInstrumentedTest17/17PASS,
+ BUILD1m59 device.log/device-initial-reports. Client fixtures + real Keystore,
+ không real backend/PostgreSQL assessment E2E hoặc M4 exit.
+- Self-inspection chuyển renderer sang resource placeholders, phân biệt read503
+ với pending chưa ack và sửa nhãn Đóng bài kiểm tra cho đúng local exit. Affected
+ lint/allunit/debug/release/APK/install/device17 PASS BUILD2m17, final.log.
+- Khóa owner-check→setValue→observer, thêm hai latch race tests; affected unit223
+ và device17 PASS BUILD2m12, final-owner.log. Đây là setValue đồng bộ trên main
+ executor, không coi postValue enqueue là bằng chứng delivery đã được bảo vệ.
+- Chốt Main queued transaction expected owner/source, recheck ở actual consumption
+ và commitNow dưới SessionManager lock; consume chỉ sau commit. Thêm device race
+ queued routeA→accountB. final-consume.log BUILDFAIL2m25:18ran/17PASS/1FAIL, unit223
+ PASS. Test queuedOldOwnerRouteCannotOpenSettingsAfterAccountSwitch timeout Home;
+ route A đã bị chặn nhưng Main UNKNOWN/LOADING cũ preserve expired assessment A
+ bất kể owner, gây dead-end sau B restore. Đây là product navigation defect,
+ không bỏ assertion/giảm test. device-consume-failure-reports giữ nguyên XML.
+- Remediation minimal: Main navigation bound stable auth owner UUID (SavedState
+ chỉ UUID), same-owner refresh/rotation giữ flow; owner đổi remove private stack/
+ auth boundary/fresh gate. Thêm actual Activity.recreate same-owner regression,
+ total19device. Affected final-navigation.log đang xác minh source cuối; chưa
+ claim final TEST PASS hoặc reviewer gate trước actual kết quả.
+
+Diagnostics chỉ đọc/command-location: Onboarding.java và hai path dự đoán
+OnboardingInstrumentedTest không tồn tại, sau đó dùng rg path thật; một lệnh gọi
+./gradlew.bat từ repository root không resolve nên không chạy test, được chạy lại
+từ android. Không coi lần chưa chạy là PASS hoặc product failure. Initial source/
+product manifests và archives được giữ để phân biệt versions với final source.
+
+Initial baseline/CIworkflow/secret audits PASS; Python46PASS6.552s/compileall.
+Fresh final guards/artifact freeze còn chờ final-navigation hoàn tất. Task giữ
+IN_PROGRESS; không reviewer claim/finalize/index/commit/push/tag/proxy/global-env/
+OS-trust mutation. Current-task remote CI NOT RUN/NOT CLAIMED; admissionCI40319306238
+exact961b4a1 PASS/HEALTHY là base evidence.
+
+
+AND-ASMT-002 final TEST readback: remediation đã PASS trong final-navigation.log,
+BUILD2m16: lint/allunit/debug/release/AndroidTest APK/install/connected explicit
+three classes. Unit26XML223PASS/0failure-error-skip (191 existing +32 mới); actual
+device19/19PASS/0failure-error-skip trên Pixel_8/emulator5554/Android17/API37.
+Device gồm6existing assessment +8result/gate mới +5affected onboarding; hai
+regression quan trọng queuedA→switchB không mở SettingsA và same-owner actual
+Activity.recreate giữ result/bookmark đều PASS. Latch unit tests kiểm owner
+serialization; actual device kiểm queued transaction consumption, không dùng
+InstantTaskExecutor inline làm bằng chứng cho Android delivery.
+
+Main giữ navigation auth-owner UUID qua SavedState (không content/token/completion
+flag); không preserve private assessment/learning khi owner đã đổi. Auth boundary
+và gate mới thay private stack cũ. Cùng owner refresh/rotation giữ flow. Main
+queue capture expected owner/source, kiểm lại ở actual main consumption rồi
+commitNow dưới SessionManager lock và chỉ consume callback sau commit. Source
+cuối không sửa sau final-navigation PASS; không optional broad rerun.
+
+Final lint0errors34warnings. Warning SetTextI18n tại renderer mới đã được sửa
+bằng resource placeholders; còn32 warnings trước task và2UnusedResources cho
+legacy assessment_return/assessment_completed hiện chưa dùng sau task002.
+Không suppress severity hoặc claim warning0; không cleanup resource lịch sử
+ngoài nhu cầu behavior. Actual product TESTFAIL18/1 tại final-consume.log và
+device-consume-failure-reports được giữ; final19PASS không ghi đè lịch sử.
+
+Artifacts TEMP/AND-ASMT-002-20261027: initial-focused.log/focused.log/full.log/
+device.log/final.log/final-owner.log/final-consume.log/final-navigation.log;
+initial-full-reports221 và initial-source/product manifest giữ version cũ.
+full-reports cuối26XML223, device-final-reports19, source-freeze.json25Java,
+product-freeze.json27source/resources, scope.json35paths (22tracked13new).
+Không claim initial full clean221 chạy source Main guard cuối; final affected
+allunit223/runtime/device19 chạy final source và có current hash khớp.
+
+Fresh final baseline/CIworkflow/secret audits PASS; Python46PASS0.763s/compileall.
+Diff/cached/new13UTF8/noBOM/singleEOF/whitespace/conflict, scope35/index empty/
+no generated-secret leakage, source25/product27/finalXML223/device19 và6preserved
+document prefixes PASS. HEAD/main/origin/live remote vẫn961b4a13b500def35465c03b6b274696de8751d1;
+hai local/remote immutable tag objects và peeled target không đổi. API/backend/
+database/migration/CI/dependencies không đổi; no personalized Home/offline queue.
+
+STOP sau TEST: AND-ASMT-002 giữ IN_PROGRESS; Gradle/device writer RELEASED, owned
+emulator giữ online cho reviewer tái lập. Chưa AR/SR/QAR review verdict, không
+self-review/finding resolution/synchronize/finalize/index/commit/push. Root tiếp
+independent AR/SR/QAR trên tracked và untracked final source. Không proxy/global
+env/OS-trust mutation. Current-task remote CI NOT RUN/NOT CLAIMED; không NEXT.
+
+
+### AND-ASMT-002 — đồng bộ independent reviewer evidence (2026-10-30)
+
+Operation: synchronize independent reviewer evidence for AND-ASMT-002;
+GOV009_DIRECT_MAIN. Đây là ghi nhận báo cáo độc lập đã nhận, không phải self-review
+hoặc FINALIZE. Root xác nhận đủ ba formal reports trong task context:
+
+- AR authority /root/and_asmt002_ar: initial PASS, APPROVE; findings=0,
+  unresolved=NONE. Review source25/product27/scope35 và owner validation
+  full223/device19/audits; không phát sinh architecture finding.
+- SR authority /root/and_asmt002_sr: initial PASS, APPROVE; findings=0,
+  unresolved=NONE. Kiểm tra owner/checkpoint, queued Main route consumption,
+  SessionManager lock/commitNow và account isolation; own baseline/secret/
+  py_compile/diff/cached/untracked13/preserved-prefix checks PASS. Đã kiểm
+  full223/device19 và lịch sử product TESTFAIL18/1.
+- Canonical QAR authority /root/and_asmt002_qar: formal initial PASS, APPROVE;
+  findings=0 (blocking0/nonblocking0), unresolved=NONE. Independent focused
+  unit61/5XML PASS, BUILD36s (qar-focused.log); independent actual device19 PASS,
+  BUILD2m38s (qar-device.log), Pixel_8/Android17/API37. Source25/product27 không
+  đổi; full archive26XML223 đã kiểm; own baseline/CIworkflow/secret/py_compile/
+  diff/cached/scope35/new13/prefix6/tag guards PASS. Writer RELEASED.
+
+Canonical mapping QAR và impact AR/SR giữ nguyên như PLAN; DBR không áp dụng vì
+không database impact. Không có reviewer FAIL, finding OPEN hoặc resolution để
+sáng tạo. Authoritative current state: AR PASS + SR PASS + QAR PASS; findings0,
+unresolved NONE. Dòng TEST STOP trước review vẫn giữ nguyên snapshot lịch sử,
+không dùng snapshot cũ đó để phủ nhận ba actual reports nhận sau.
+
+Chronology bảo toàn: product TESTFAIL final-consume.log18ran/1failure do shared
+navigation giữ private flow owner cũ → minimal navigation-owner remediation →
+owner final-navigation.log unit223/device19 PASS → independent QAR61unit/19device
+PASS. Đây là TEST failure đã khắc phục trước initial reviews, không phải reviewer
+FAIL hay waiver; archive device-consume-failure-reports18/1 được giữ nguyên.
+
+Revalidation sau gián đoạn ngày30/10: HEAD961b4a13b500def35465c03b6b274696de8751d1;
+source-freeze25Java và product-freeze27 SHA-256 khớp toàn bộ bytes hiện tại;
+scope35=22tracked+13new, index empty. full-reports26XML223/0failure-error-skip,
+device-final-reports19/0failure-error-skip và initial failure archive18/1 khớp;
+hai independent QAR logs còn hiện diện và BUILD SUCCESSFUL. Không source drift.
+Git diff --check và cached --check PASS; CRLF normalization warnings giữ nguyên.
+Artifact root: C:/Users/Hi/AppData/Local/Temp/AND-ASMT-002-20261027/.
+
+Mutation duy nhất của operation này: append synchronization evidence vào
+EXECUTION_LOG.md. Backlog row235 vẫn IN_PROGRESS, checklist789 chưa đánh dấu;
+không product patch, lifecycle transition, self-review, commit/push, proxy,
+global environment hoặc OS trust mutation. Current-task remote CI NOT RUN /
+NOT CLAIMED; base admission CI không thay cho CI của uncommitted task.
+STOP sau synchronization; chỉ FINALIZE riêng khi được điều phối gọi tiếp.
+
+
+### AND-ASMT-002 — FINALIZE (2026-10-30)
+
+Operation finalize AND-ASMT-002, GOV009_DIRECT_MAIN. Reviewer synchronization
+ở mục ngày30/10 đã ghi nhận đủ actual formal initial AR/SR/QAR PASS/APPROVE,
+findings0/unresolved NONE; canonical QAR và impact AR/SR giữ nguyên, DBR không
+áp dụng. Không self-review hay sáng tạo resolution. Chronology product TESTFAIL
+18/1 → remediation → owner223unit/19device PASS → independent QAR61unit/19device
+PASS giữ nguyên; PLAN/TEST ngày27/10 không backdate hoặc rewrite.
+
+Acceptance PASS theo owner approvals call_8206079bb15e43a9b7dc11826f4f7821:
+hiển thị server CEFR/nullable score/correct-total qua GET COMPLETED; giữ protected
+bookmark đến explicit Continue và successful owner-bound gate. Gate đọc profile,
+saved goals và profile CEFR để route Settings/Placement/Home shell; error/offline/
+content-unavailable retry reads, không client algorithm/completion flag/fake Home.
+Pending mutation giữ semantics001 và session isolation; không scope task sau.
+
+Fresh final gates30/10: baseline_audit PASS, ci_workflow_audit PASS, secret_audit
+PASS; python -m unittest discover -s tools -p 'test_*.py' chạy46PASS1.218s;
+python -m compileall -q tools PASS. Diff/cached checks PASS; source25Java/
+product27 hashes khớp; scope35=22tracked+13new/indexempty; new13UTF8/noBOM/
+EOF/whitespace/conflict PASS, generated leakage NONE, prefix6 approved docs
+preserved. Archive full26XML223/0failure-error-skip, finaldevice19/0failure-error-
+skip, preserved failure18/1 và actual independent QAR logs khớp. Không rerun
+broad product tests chỉ vì thời gian gián đoạn; reviewed source không thay đổi.
+
+Diagnostics finalization giữ trung thực: lần discovery nhầm tools/tests không
+importable nên chưa chạy test, sau đó discovery đúng tools chạy46PASS; một
+script đọc backlog bằng Windows default cp1252 lỗi decode, chạy lại explicit
+UTF8 xác minh dependency/lifecycle/XML PASS. Đây là command diagnostics, không
+product/source failure hoặc waiver. Không sửa source để vượt test.
+
+Main/HEAD/origin/main/live remote vẫn961b4a13b500def35465c03b6b274696de8751d1;
+local/remote immutable baseline tag objects và peeled targets giữ nguyên:
+baseline-v1-implementation-ready5ccf0650→ff6e13f4,
+baseline-v1-implementation-ready-r1 e3884521→34362780.
+Git authority root xác nhận base RequiredCI40319306238/job121559834137 actual
+SUCCESS/HEALTHY; current uncommitted task remote CI NOT RUN/NOT CLAIMED.
+
+Transition: backlog row235 IN_PROGRESS → DONE; checklist789 đánh dấu[x].
+Readback M4:7/14DONE,7TODO; không tuyên bố milestone exit/real-backend E2E.
+Mutation chỉ lifecycle/evidence, không product patch sau reviews. Owned emulator
+PID3868 không còn hiện hữu khi kiểm tra30/10, không kill process không rõ chủ,
+không wipe/delete AVD. Không commit/push/index/tag/proxy/global environment/
+OS trust mutation. STOP sau FINALIZE; Git publication là operation riêng:
+$english-ai-coach-git-workflow publish AND-ASMT-002.

@@ -22,7 +22,7 @@ public final class AssessmentFragment extends Fragment {
     private LinearLayout content;
     private MaterialTextView status, prompt, count;
     private RadioGroup options;
-    private MaterialButton start, submit, retry, finish;
+    private MaterialButton start, submit, retry, finish, continueResult;
     private boolean authReady;
     @Override public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle saved) {
         ScrollView scroll = new ScrollView(requireContext());
@@ -38,7 +38,9 @@ public final class AssessmentFragment extends Fragment {
         retry = button(R.string.assessment_retry); retry.setId(R.id.assessment_retry); retry.setOnClickListener(v -> {
             if (authReady) model.retry(); else ((MainActivity) requireActivity()).retryAuth();
         });
-        finish = button(R.string.assessment_return); finish.setOnClickListener(v -> back());
+        finish = button(R.string.assessment_close); finish.setOnClickListener(v -> back());
+        continueResult = button(R.string.assessment_result_continue); continueResult.setId(R.id.assessment_result_continue);
+        continueResult.setOnClickListener(v -> model.continueResult());
         return scroll;
     }
     private MaterialTextView text() {
@@ -57,6 +59,7 @@ public final class AssessmentFragment extends Fragment {
                 return type.cast(new AssessmentViewModel(dependencies.sessions,
                         new EncryptedAssessmentCheckpointStore(requireContext()),
                         AssessmentDependencies.useCase(requireContext()),
+                        com.example.englishaicoach.feature.onboarding.OnboardingGateDependencies.useCase(requireContext()),
                         command -> { if (Looper.myLooper() == Looper.getMainLooper()) command.run(); else handler.post(command); },
                         SystemClock::elapsedRealtime));
             }
@@ -77,7 +80,7 @@ public final class AssessmentFragment extends Fragment {
         });
     }
     private void hide() {
-        for (View v : new View[]{count, prompt, options, start, submit, retry, finish}) v.setVisibility(View.GONE);
+        for (View v : new View[]{count, prompt, options, start, submit, retry, finish, continueResult}) v.setVisibility(View.GONE);
         options.setOnCheckedChangeListener(null); options.removeAllViews();
     }
     private void render(AssessmentViewModel.State state) {
@@ -100,7 +103,14 @@ public final class AssessmentFragment extends Fragment {
             case ERROR: label = R.string.assessment_error; retry.setVisibility(View.VISIBLE); break;
             case OFFLINE: label = R.string.assessment_offline; break;
             case SUBMITTING: label = R.string.assessment_submitting; break;
-            case COMPLETED: label = R.string.assessment_completed; finish.setVisibility(View.VISIBLE); break;
+            case COMPLETED:
+                label = R.string.assessment_result_title;
+                AssessmentResultRenderer.render(requireContext(), prompt, count, state.result);
+                continueResult.setVisibility(View.VISIBLE); finish.setVisibility(View.VISIBLE); break;
+            case ROUTE:
+                label = R.string.onboarding_gate_loading;
+                if (isResumed()) ((MainActivity) requireActivity()).routeOnboarding(state.route, model.owner(), model::routeConsumed);
+                break;
             case CLOSED: label = R.string.assessment_closed; finish.setVisibility(View.VISIBLE); break;
             case UNKNOWN: label = R.string.assessment_unknown; finish.setVisibility(View.VISIBLE); break;
             case REUSE: label = R.string.assessment_reuse; finish.setVisibility(View.VISIBLE); break;
@@ -110,7 +120,8 @@ public final class AssessmentFragment extends Fragment {
             case REJECTED: label = R.string.assessment_rejected; finish.setVisibility(View.VISIBLE); break;
             default: label = R.string.learning_loading; break;
         }
-        if (state.error != null && "ASSESSMENT_CONTENT_UNAVAILABLE".equals(state.error.code)) label = R.string.assessment_content;
+        if (state.error != null && "ASSESSMENT_CONTENT_UNAVAILABLE".equals(state.error.code))
+            label = state.phase == AssessmentViewModel.Phase.PENDING ? R.string.assessment_content : R.string.assessment_content_read;
         status.setText(label);
     }
     private void back() {
@@ -118,13 +129,16 @@ public final class AssessmentFragment extends Fragment {
         new MaterialAlertDialogBuilder(requireContext()).setMessage(R.string.assessment_exit_confirm)
                 .setNegativeButton(R.string.learning_stay, (dialog, which) -> { })
                 .setPositiveButton(R.string.learning_exit, (dialog, which) -> {
-                    model.exit(); requireActivity().getSupportFragmentManager().popBackStack();
+                    model.exit();
+                    if (requireActivity().getSupportFragmentManager().getBackStackEntryCount() > 0)
+                        requireActivity().getSupportFragmentManager().popBackStack();
+                    else requireActivity().finish();
                 }).show();
     }
-    @Override public void onResume() { super.onResume(); if (model != null) model.resume(); }
+    @Override public void onResume() { super.onResume(); if (model != null) { model.resume(); if (authReady) render(model.state().getValue()); } }
     @Override public void onPause() { if (model != null) model.pause(); super.onPause(); }
     @Override public void onDestroyView() {
         content = null; status = null; prompt = null; count = null; options = null;
-        start = null; submit = null; retry = null; finish = null; super.onDestroyView();
+        start = null; submit = null; retry = null; finish = null; continueResult = null; super.onDestroyView();
     }
 }

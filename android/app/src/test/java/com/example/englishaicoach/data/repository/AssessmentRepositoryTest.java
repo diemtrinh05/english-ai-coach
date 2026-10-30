@@ -89,6 +89,28 @@ public final class AssessmentRepositoryTest {
         body(USER, 200); body(RESULT, 200); this.<Assessment.Result>call(callback -> repository.result(owner, ID, callback));
         assertEquals(0, ((Assessment.Result) result.get()).answered); assertNull(error.get());
     }
+    @Test public void completedResultUsesStoredCefrScoreAndCountsWithoutCalculation() throws Exception {
+        String data = RESULT.replace("IN_PROGRESS", "COMPLETED").replace("\"score\":null", "\"score\":57.14")
+                .replace("\"totalQuestions\":0", "\"totalQuestions\":28").replace("\"correctAnswers\":0", "\"correctAnswers\":16");
+        data = data.substring(0, data.length()-1) + ",\"cefrLevel\":" + OnboardingGateRepositoryTest.LEVEL + "}";
+        body(USER, 200); body(data, 200); this.<Assessment.Result>call(callback -> repository.result(owner, ID, callback));
+        Assessment.Result value = (Assessment.Result) result.get(); assertEquals("B1", value.level.code);
+        assertEquals(new java.math.BigDecimal("57.14"), value.score); assertEquals(16, value.correct); assertEquals(28, value.answered);
+        assertEquals(2, server.getRequestCount());
+    }
+    @Test public void completedMissingOrInvalidLevelIsRejectedWithoutFallback() throws Exception {
+        for (String level : new String[]{"", ",\"cefrLevel\":null", ",\"cefrLevel\":{\"code\":\"C2\"}"}) {
+            String data = RESULT.replace("IN_PROGRESS", "COMPLETED"); data = data.substring(0, data.length()-1) + level + "}";
+            body(USER, 200); body(data, 200); this.<Assessment.Result>call(callback -> repository.result(owner, ID, callback));
+            assertNull(result.get()); assertEquals(502, error.get().status);
+        }
+    }
+    @Test public void nullableCompletedScoreAndOptionalDescriptionArePreserved() throws Exception {
+        String data = RESULT.replace("IN_PROGRESS", "COMPLETED");
+        data = data.substring(0, data.length()-1) + ",\"cefrLevel\":" + OnboardingGateRepositoryTest.LEVEL.replace("}", ",\"description\":\"\"}") + "}";
+        body(USER, 200); body(data, 200); this.<Assessment.Result>call(callback -> repository.result(owner, ID, callback));
+        Assessment.Result value = (Assessment.Result) result.get(); assertNull(value.score); assertEquals("", value.level.description);
+    }
     @Test public void resultRejectsMissingScoreWrongOwnerIdAndInvalidCounts() throws Exception {
         for (String invalid : new String[]{RESULT.replace("\"score\":null,", ""), RESULT.replace(ID, EVENT), RESULT.replace("\"correctAnswers\":0", "\"correctAnswers\":1")}) {
             body(USER, 200); body(invalid, 200); this.<Assessment.Result>call(callback -> repository.result(owner, ID, callback));

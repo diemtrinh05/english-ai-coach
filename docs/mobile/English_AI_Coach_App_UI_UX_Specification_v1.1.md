@@ -1076,3 +1076,47 @@ không gửi câu cũ bằng event mới; IDEMPOTENCY_KEY_REUSE409 kết thúc f
 bằng event khác. 503 giữ pending và retry explicit; read lỗi chỉ retry read. Callback
 phiên cũ không đổi UI hoặc gửi dưới tài khoản mới. Chỉ hiển thị số đã trả lời server,
 không tự CEFR/score/XP/streak. API/backend/schema/migration không đổi.
+
+
+## AND-ASMT-002 — Kết quả Placement và điều hướng onboarding (owner duyệt 2026-10-27)
+
+Quyết định call_8206079bb15e43a9b7dc11826f4f7821 mở rộng boundary tạm của001.
+Onboarding sẵn sàng được đọc từ server: GET profile tồn tại, GET user goals có
+ít nhất một lựa chọn đã lưu (kể cả inactive), và profile.currentCefrLevel hiện
+diện hợp lệ. Không local completion flag hoặc API/mutation hoàn tất mới. Gate
+đọc sau auth/Splash/khôi phục phiên, sau lưu profile/goals và khi người dùng
+nhấn Tiếp tục tại result: thiếu profile/goals đến thiết lập, đủ profile/goals
+nhưng thiếu CEFR đến Placement Intro, đủ cả ba đến Home tab shell hiện hữu.
+Read lỗi/offline không suy diễn hoàn tất; giữ trạng thái chờ và retry read.
+Home hiện hữu chưa phải personalized Daily Plan; không gọi API chưa triển khai
+hoặc tạo plan/metric giả. AND-HOME/Daily Plan giữ phạm vi task tương ứng.
+
+Terminal answer acknowledgment chỉ xác nhận mutation đã được nhận; tiếp theo
+GET assessment để hiển thị snapshot COMPLETED có CEFR hợp lệ. Hiển thị code/name/
+description khi có, stored score (null hiển thị Chưa có), correctAnswers và
+totalQuestions từ server; không tự tính CEFR, phần trăm, score, recommendation
+hoặc suy final result từ nextDifficulty. GET lỗi chỉ retry GET, không gửi lại
+accepted answer. COMPLETED thiếu/sai CEFR là kết quả chưa dùng được, không tiến
+route bằng dữ liệu suy diễn. IN_PROGRESS tiếp flow001; CANCELLED/404 là closed,
+explicit thoát local xóa checkpoint mà không đánh dấu hoàn tất.
+
+Giữ encrypted checkpoint tối thiểu assessmentId/start identifiers/auth owner
+qua Back và cold restart để đọc lại result; không lưu nội dung result hay flag.
+Chỉ sau explicit Tiếp tục, valid result và gate đọc thành công mới xóa completed
+checkpoint rồi route destination được xác định (kể cả thiết lập/Placement).
+Back khỏi result giữ bookmark. Sau account switch/logout xóa private state,
+callback cũ không điều hướng hoặc thay checkpoint mới. Pending mutation chưa có
+ack vẫn giữ nguyên approval001: explicit retry cùng event/body kể cả closed,
+không autoPOST/offline queue. Result read503 giữ ID để retry read.
+
+Assessment hoàn tất khi chưa có profile vẫn hiển thị assessment CEFR nhưng không
+được coi onboarding sẵn sàng. Tiếp tục đến thiết lập; PUT profile không backfill
+CEFR theo BE-ASMT-004. Nếu profile sau đó còn thiếu CEFR, người dùng bắt đầu một
+INITIAL mới explicit; không tự POST hoặc thay request pending trước đó. Không
+thêm discovery/cancel API, không đổi backend/API/OpenAPI/database/migration.
+
+Điều hướng private được ràng buộc stable auth owner UUID; SavedState chỉ giữ UUID
+owner của navigation để không phục hồi màn hình A dưới phiên B. Cùng owner khi
+refresh/rotation được giữ flow; owner đổi xóa private back stack và chạy gate mới.
+Callback giữ generation guard; route đã queue kiểm lại owner/source khi tiêu thụ
+trên main. Commit/consume được tuần tự hóa với SessionManager, không chỉ kiểm lúc enqueue.
